@@ -4,7 +4,6 @@ import { UnknownDataBaseError } from '@src/core';
 import { isNull } from '@src/core/util';
 import { In, IsNull, Not, Repository } from 'typeorm';
 import {
-  AbstractRepository,
   BusinessRuleConflictDataError,
   Departure,
   Destination,
@@ -17,6 +16,7 @@ import {
   User,
 } from '../..';
 import { Transactional } from '../../util/transactional.decorator';
+import { AbstractRepository } from '../abstract-repository';
 import { IOrderRepository } from './order.repository.interface';
 
 @Injectable()
