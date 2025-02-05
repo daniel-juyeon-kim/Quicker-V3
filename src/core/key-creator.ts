@@ -1,15 +1,15 @@
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { keyCreatorConfig } from '@src/config/configs';
 import crypto from 'crypto';
 import CryptoJS from 'crypto-js';
-import { keyCreatorConfig } from './config';
 
+@Injectable()
 export class KeyCreator {
   private readonly key: string;
 
-  constructor(
-    configService: ConfigService<ReturnType<typeof keyCreatorConfig>>,
-  ) {
-    this.key = configService.get('urlCryptoKey');
+  constructor(config: ConfigService<ReturnType<typeof keyCreatorConfig>>) {
+    this.key = config.get('urlCryptoKey');
   }
 
   createReceiverUrlParameterValue<T extends object>(

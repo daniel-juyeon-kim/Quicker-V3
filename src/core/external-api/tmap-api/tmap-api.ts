@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { tmapApiConfig } from '@src/config/configs';
 import { isNull, validateResponse } from '@src/core/util';
 import fetch from 'node-fetch';
-import { tmapApiConfig } from './config';
 import { Distance } from './distance';
 import { TmapApiError } from './tmap-api.error';
 import {
