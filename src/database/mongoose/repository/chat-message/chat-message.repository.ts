@@ -4,29 +4,28 @@ import { UnknownDataBaseError } from '@src/core';
 import { isNull, isUndefined } from '@src/core/util';
 import { NotExistDataError } from '@src/database/type-orm';
 import { Model } from 'mongoose';
-import { ChatMessage } from '../../models';
+import { ChatMessages, MessageInfo } from '../../models';
+import { Transactional } from '../../util/transactional.decorator';
 import { MongoRepository } from '../abstract.repository';
+import { IChatMessageRepository } from './chat-message.repository.interface';
 
 @Injectable()
-export class ChatMessageRepository extends MongoRepository {
+export class ChatMessageRepository
+  extends MongoRepository
+  implements IChatMessageRepository
+{
   constructor(
-    @InjectModel(ChatMessage.name)
-    private readonly model: Model<ChatMessage>,
+    @InjectModel(ChatMessages.name)
+    private readonly model: Model<ChatMessages>,
   ) {
     super();
   }
 
-  async saveMessage(
-    orderId: number,
-    {
-      walletAddress,
-      message,
-      date,
-    }: { walletAddress: string; message: string; date: Date },
-  ) {
+  @Transactional()
+  async saveMessage(orderId: number, messageInfo: MessageInfo) {
     try {
       await this.createChatRoom(orderId);
-      await this.insertMessage(orderId, { walletAddress, message, date });
+      await this.insertMessage(orderId, messageInfo);
     } catch (error) {
       throw new UnknownDataBaseError(error);
     }
@@ -45,21 +44,14 @@ export class ChatMessageRepository extends MongoRepository {
     return !isNull(chatRoom);
   }
 
-  private async insertMessage(
-    orderId: number,
-    {
-      walletAddress,
-      message,
-      date,
-    }: {
-      walletAddress: string;
-      message: string;
-      date: Date;
-    },
-  ) {
+  private async insertMessage(orderId: number, messageInfo: MessageInfo) {
     await this.model.updateOne(
       { roomId: orderId },
-      { $push: { messages: { walletAddress, message, date } } },
+      {
+        $push: {
+          messages: messageInfo,
+        },
+      },
     );
   }
 

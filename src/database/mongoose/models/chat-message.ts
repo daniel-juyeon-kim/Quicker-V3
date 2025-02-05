@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-class Message {
+export class MessageInfo {
   @Prop({ required: true })
   walletAddress: string;
   @Prop({ required: true })
@@ -11,11 +11,11 @@ class Message {
 }
 
 @Schema()
-export class ChatMessage extends Document {
+export class ChatMessages extends Document {
   @Prop({ required: true })
   roomId: number;
-  @Prop({ type: [Message], default: [], required: true })
-  messages: Message[];
+  @Prop({ type: [MessageInfo], default: [], required: true })
+  messages: MessageInfo[];
 }
 
-export const ChatMessageSchema = SchemaFactory.createForClass(ChatMessage);
+export const ChatMessageSchema = SchemaFactory.createForClass(ChatMessages);

@@ -2,12 +2,12 @@ import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
-import { ChatMessage, ChatMessageSchema, NotExistDataError } from '../../..';
+import { ChatMessages, ChatMessageSchema, NotExistDataError } from '../../..';
 import { ChatMessageRepository } from './chat-message.repository';
 
 describe('ChatMessageRepository 테스트', () => {
   let mongod: MongoMemoryServer;
-  let model: Model<ChatMessage>;
+  let model: Model<ChatMessages>;
   let repository: ChatMessageRepository;
   let testModule: TestingModule;
 
@@ -19,13 +19,13 @@ describe('ChatMessageRepository 테스트', () => {
       imports: [
         MongooseModule.forRoot(url),
         MongooseModule.forFeature([
-          { name: ChatMessage.name, schema: ChatMessageSchema },
+          { name: ChatMessages.name, schema: ChatMessageSchema },
         ]),
       ],
       providers: [ChatMessageRepository],
     }).compile();
 
-    model = testModule.get(getModelToken(ChatMessage.name));
+    model = testModule.get(getModelToken(ChatMessages.name));
     repository = testModule.get(ChatMessageRepository);
   });
 

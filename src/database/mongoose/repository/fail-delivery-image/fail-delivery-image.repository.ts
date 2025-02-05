@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { UnknownDataBaseError } from '../../../../core';
 import { DuplicatedDataError, NotExistDataError } from '../../../type-orm';
 import { FailDeliveryImage } from '../../models';
 import { MongoRepository } from '../abstract.repository';
+import { IFailDeliveryImageRepository } from './fail-delivery-image.repository.interface';
 
 @Injectable()
-export class FailDeliveryImageRepository extends MongoRepository {
+export class FailDeliveryImageRepository
+  extends MongoRepository
+  implements IFailDeliveryImageRepository
+{
   constructor(
     @InjectModel(FailDeliveryImage.name)
     private readonly model: Model<FailDeliveryImage>,
@@ -33,10 +37,7 @@ export class FailDeliveryImageRepository extends MongoRepository {
 
       await image.save();
     } catch (error) {
-      if (
-        error instanceof mongoose.mongo.MongoServerError &&
-        error.code === 11000
-      ) {
+      if (this.isDuplicatedDataError(error)) {
         throw new DuplicatedDataError(
           `${orderId}에 해당되는 데이터가 이미 존재합니다.`,
         );

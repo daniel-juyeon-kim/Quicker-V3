@@ -7,11 +7,15 @@ import {
   CurrentDeliveryLocation,
   Location,
 } from '../../models/current-deliver-location';
-import { Transactional } from '../../transactional.decorator';
+import { Transactional } from '../../util/transactional.decorator';
 import { MongoRepository } from '../abstract.repository';
+import { ICurrentDeliveryLocationRepository } from './current-delivery-location.repository.interface';
 
 @Injectable()
-export class CurrentDeliveryLocationRepository extends MongoRepository {
+export class CurrentDeliveryLocationRepository
+  extends MongoRepository
+  implements ICurrentDeliveryLocationRepository
+{
   constructor(
     @InjectModel(CurrentDeliveryLocation.name)
     private readonly model: Model<CurrentDeliveryLocation>,
@@ -31,24 +35,6 @@ export class CurrentDeliveryLocationRepository extends MongoRepository {
     } catch (error) {
       throw new UnknownDataBaseError(error);
     }
-    // const session = await this.model.startSession();
-    // session.startTransaction();
-
-    // try {
-    //   if (await this.model.exists({ _id: orderId })) {
-    //     await this.model.findByIdAndUpdate(orderId, { location });
-    //     await session.commitTransaction();
-    //     return;
-    //   }
-
-    //   await this.model.create({ _id: orderId, location });
-    //   await session.commitTransaction();
-    // } catch (error) {
-    //   await session.abortTransaction();
-    //   throw new UnknownDataBaseError(error);
-    // } finally {
-    //   session.endSession();
-    // }
   }
 
   async findCurrentLocationByOrderId(orderId: number) {

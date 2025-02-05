@@ -4,7 +4,7 @@ import { DuplicatedDataError, NotExistDataError } from '@src/database/type-orm';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
 import {
-  ChatMessage,
+  ChatMessages,
   CompleteDeliveryImage,
   CompleteDeliveryImageSchema,
 } from '../../models';
@@ -12,7 +12,7 @@ import { CompleteDeliveryImageRepository } from './complete-delivery-image.repos
 
 describe('CompleteDeliveryImageRepository', () => {
   let mongod: MongoMemoryServer;
-  let model: Model<ChatMessage>;
+  let model: Model<ChatMessages>;
   let repository: CompleteDeliveryImageRepository;
   let testModule: TestingModule;
 
