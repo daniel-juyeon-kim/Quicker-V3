@@ -27,7 +27,7 @@ export const Transactional = () => {
   };
 };
 
-const validateModel = (model: Model) => {
+const validateModel = (model: Model<any>) => {
   if (!model) {
     throw new Error('model이 정의되지 않았습니다.');
   }
