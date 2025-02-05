@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { naverSmsApiConfig } from '@src/config/configs';
 import { validateResponse } from '@src/core/util';
 import CryptoJS from 'crypto-js';
-import fetch from 'node-fetch';
-import { naverSmsApiConfig } from './config';
+import fetch, { HeadersInit } from 'node-fetch';
 import { SmsApiError } from './sms-api.error';
-import { Body, Headers, SmsApi } from './sms-api.interface';
+import { Body, SmsApi } from './sms-api.interface';
 
 @Injectable()
 export class NaverSmsApi implements SmsApi {
@@ -71,7 +71,7 @@ export class NaverSmsApi implements SmsApi {
     headers,
     body,
   }: {
-    headers: Headers;
+    headers: HeadersInit;
     body: Body;
   }) {
     return await fetch(this.apiUrl, {

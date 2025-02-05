@@ -1,17 +1,16 @@
 import { ConfigService } from '@nestjs/config';
+import { keyCreatorConfig } from '@src/config/configs';
 import CryptoJS from 'crypto-js';
-
 
 export class DeliveryUrlCreator {
   private readonly encryptKey: string;
   private readonly baseUrl: string;
 
-  constructor(configService: ConfigService<ReturnType<typeof >>) {
-    validateEnvValue('urlCryptoKey', encryptKey);
-    validateEnvValue('clientServerDomain', baseUrl);
-
-    this.encryptKey = encryptKey;
-    this.baseUrl = baseUrl;
+  constructor(
+    configService: ConfigService<ReturnType<typeof keyCreatorConfig>>,
+  ) {
+    this.encryptKey = configService.get('urlCryptoKey');
+    this.baseUrl = configService.get('baseUrl');
   }
 
   createUrl<T extends object>(body: T) {
@@ -26,7 +25,7 @@ export class DeliveryUrlCreator {
   private createUrlParameter<T extends object>(body: T) {
     return CryptoJS.AES.encrypt(
       JSON.stringify(body),
-      this.encryptKey
+      this.encryptKey,
     ).toString();
   }
 }

@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
+import { dbPkCreatorConfig } from '@src/config/configs';
 import crypto from 'crypto';
-import { dbPkCreatorConfig } from './config';
 
 export class DbPkCreator {
   private readonly key: string;
