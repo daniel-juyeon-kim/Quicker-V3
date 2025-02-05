@@ -1,23 +1,48 @@
 import { EntityManager } from 'typeorm';
-import { TRANSPORTATION_ALLOW_VALUES } from '../../../../../validator/schema/routes/order/custom-validator';
-import { OrderControllerRequestData } from '../../../../../validator/schema/routes/order/order-controller-request-data';
-import { Order } from '../../entity';
-
-type BasicTransportationEntity = {
-  transportation: Record<(typeof TRANSPORTATION_ALLOW_VALUES)[number], 1 | 0>;
-};
+import { OrderEntity } from '../../entity';
 
 export interface IOrderRepository {
   findAllCreatedOrDeliveredOrderDetailByOrderIds(
     orderIds: number[],
-  ): Promise<Order[]>;
-  findAllMatchableOrderByWalletAddress(walletAddress: string): Promise<Order[]>;
+  ): Promise<OrderEntity[]>;
+  findAllMatchableOrderByWalletAddress(
+    walletAddress: string,
+  ): Promise<OrderEntity[]>;
   updateDeliveryPersonAtOrder(
     manager: EntityManager,
-    arg0: { orderId: number; walletAddress: string },
+    deliveryPerson: { orderId: number; walletAddress: string },
   ): Promise<void>;
-  create(
-    body: Omit<OrderControllerRequestData['createOrder'], 'transportation'> &
-      BasicTransportationEntity,
-  ): Promise<void>;
+  create(order: {
+    walletAddress: string;
+    detail?: string;
+    transportation: Record<TransportationUnion, 1 | 0>;
+    product: Product;
+    destination: Location;
+    departure: Location;
+    sender: DeliverParticipant;
+    receiver: DeliverParticipant;
+  }): Promise<void>;
+}
+
+interface Location {
+  x: number;
+  y: number;
+}
+interface DeliverParticipant {
+  name: string;
+  phone: string;
+}
+type TransportationUnion =
+  | 'bicycle'
+  | 'bike'
+  | 'car'
+  | 'scooter'
+  | 'truck'
+  | 'walking';
+
+interface Product {
+  width: number;
+  length: number;
+  height: number;
+  weight: number;
 }

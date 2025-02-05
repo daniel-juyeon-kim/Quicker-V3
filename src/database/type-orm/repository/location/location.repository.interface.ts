@@ -1,15 +1,14 @@
-export type DestinationDepartureLocation = {
-  id: number;
-  departure: { x: number; y: number };
-  destination: { x: number; y: number };
-};
-
 export interface ILocationRepository {
-  findDestinationDepartureByOrderId(
-    orderId: number,
-  ): Promise<DestinationDepartureLocation>;
-
-  findAllDestinationDepartureByOrderId(
-    orderIds: number[],
-  ): Promise<DestinationDepartureLocation[]>;
+  findDestinationDepartureByOrderId(orderId: number): Promise<{
+    id: number;
+    departure: { x: number; y: number };
+    destination: { x: number; y: number };
+  }>;
+  findAllDestinationDepartureByOrderId(orderIds: number[]): Promise<
+    {
+      id: number;
+      departure: { x: number; y: number };
+      destination: { x: number; y: number };
+    }[]
+  >;
 }

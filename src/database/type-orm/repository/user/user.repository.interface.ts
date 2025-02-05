@@ -1,20 +1,20 @@
+import { ProfileImageEntity, UserEntity } from '../../entity';
+
 export interface IUserRepository {
-  create(body: {
-    id: string;
-    user: {
-      walletAddress: string;
-      name: string;
-      email: string;
-      contact: string;
-    };
-    birthDate: Date;
-  }): Promise<void>;
+  create(body: { id: string; user: User; birthDate: Date }): Promise<void>;
   updateUserProfileImageIdByWalletAddress(body: {
     imageId: string;
     walletAddress: string;
   }): Promise<void>;
-  findNameByWalletAddress(walletAddress: string): Promise<{ name: string }>;
+  findNameByWalletAddress(walletAddress: string): Promise<UserEntity>;
   findUserProfileImageIdByWalletAddress(
     walletAddress: string,
-  ): Promise<{ imageId: string }>;
+  ): Promise<ProfileImageEntity>;
+}
+
+interface User {
+  walletAddress: string;
+  name: string;
+  email: string;
+  contact: string;
 }
