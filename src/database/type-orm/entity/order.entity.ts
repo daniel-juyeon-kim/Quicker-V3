@@ -7,60 +7,64 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import {
-  DeliveryPersonMatchedDate,
-  Departure,
-  Destination,
-  Product,
-  Transportation,
-  User,
+  DeliveryPersonMatchedDateEntity,
+  DepartureEntity,
+  DestinationEntity,
+  ProductEntity,
+  TransportationEntity,
+  UserEntity,
 } from '.';
 
-@Entity()
-export class Order {
+@Entity({ name: 'order' })
+export class OrderEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => User, (user) => user.requestOrder, {
+  @ManyToOne(() => UserEntity, (user) => user.requestOrder, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  requester!: User;
+  requester!: UserEntity;
 
-  @ManyToOne(() => User, (user) => user.deliverOrder, {
+  @ManyToOne(() => UserEntity, (user) => user.deliverOrder, {
     nullable: true,
   })
   @JoinColumn()
-  deliveryPerson!: User | null;
+  deliveryPerson!: UserEntity | null;
 
   @Column({ nullable: true })
   detail?: string;
 
-  @OneToOne(() => Transportation, (transportation) => transportation.order, {
-    cascade: ['insert'],
-  })
-  transportation!: Transportation;
+  @OneToOne(
+    () => TransportationEntity,
+    (transportation) => transportation.order,
+    {
+      cascade: ['insert'],
+    },
+  )
+  transportation!: TransportationEntity;
 
-  @OneToOne(() => Product, (product) => product.order, {
+  @OneToOne(() => ProductEntity, (product) => product.order, {
     cascade: ['insert'],
   })
-  product!: Product;
+  product!: ProductEntity;
 
-  @OneToOne(() => Destination, (destination) => destination.order, {
+  @OneToOne(() => DestinationEntity, (destination) => destination.order, {
     cascade: ['insert'],
   })
-  destination!: Destination;
+  destination!: DestinationEntity;
 
-  @OneToOne(() => Departure, (departure) => departure.order, {
+  @OneToOne(() => DepartureEntity, (departure) => departure.order, {
     cascade: ['insert'],
   })
-  departure!: Departure;
+  departure!: DepartureEntity;
 
   @OneToOne(
-    () => DeliveryPersonMatchedDate,
+    () => DeliveryPersonMatchedDateEntity,
     (deliveryPersonMatchedDate) => deliveryPersonMatchedDate.order,
   )
-  deliveryPersonMatchedDate!: DeliveryPersonMatchedDate;
+  deliveryPersonMatchedDate!: DeliveryPersonMatchedDateEntity;
 }
 
-export type BasicOrder = Pick<Order, 'requester' | 'detail'>;
+export type BasicOrder = Pick<OrderEntity, 'requester' | 'detail'>;

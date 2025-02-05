@@ -1,8 +1,13 @@
 import { Column, Entity, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
-import { BirthDate, JoinDate, Order, ProfileImage } from '.';
+import {
+  BirthDateEntity,
+  JoinDateEntity,
+  OrderEntity,
+  ProfileImageEntity,
+} from '.';
 
-@Entity()
-export class User {
+@Entity({ name: 'user' })
+export class UserEntity {
   @PrimaryColumn()
   id!: string;
 
@@ -18,24 +23,24 @@ export class User {
   @Column({ unique: true })
   contact!: string;
 
-  @OneToOne(() => ProfileImage, (profileImage) => profileImage.user, {
+  @OneToOne(() => ProfileImageEntity, (profileImage) => profileImage.user, {
     cascade: ['insert'],
   })
-  profileImage!: ProfileImage;
+  profileImage!: ProfileImageEntity;
 
-  @OneToOne(() => JoinDate, (joinDate) => joinDate.user, {
+  @OneToOne(() => JoinDateEntity, (joinDate) => joinDate.user, {
     cascade: ['insert'],
   })
-  joinDate!: JoinDate;
+  joinDate!: JoinDateEntity;
 
-  @OneToOne(() => BirthDate, (birthDate) => birthDate.user, {
+  @OneToOne(() => BirthDateEntity, (birthDate) => birthDate.user, {
     cascade: ['insert'],
   })
-  birthDate!: BirthDate;
+  birthDate!: BirthDateEntity;
 
-  @OneToMany(() => Order, (order) => order.requester)
-  requestOrder!: Order[];
+  @OneToMany(() => OrderEntity, (order) => order.requester)
+  requestOrder!: OrderEntity[];
 
-  @OneToMany(() => Order, (order) => order.deliveryPerson)
-  deliverOrder!: Order[];
+  @OneToMany(() => OrderEntity, (order) => order.deliveryPerson)
+  deliverOrder!: OrderEntity[];
 }

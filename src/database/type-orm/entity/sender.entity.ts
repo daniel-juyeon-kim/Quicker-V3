@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { Departure } from '.';
+import { DepartureEntity } from '.';
 
-@Entity()
-export class Sender {
+@Entity({ name: 'sender' })
+export class SenderEntity {
   @PrimaryColumn()
   id!: number;
 
@@ -12,13 +12,11 @@ export class Sender {
   @Column()
   phone!: string;
 
-  @OneToOne(() => Departure, (departure) => departure.sender, {
+  @OneToOne(() => DepartureEntity, (departure) => departure.sender, {
     cascade: ['insert'],
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  departure!: Departure;
+  departure!: DepartureEntity;
 }
-
-export type BasicSender = Omit<Sender, 'id' | 'departure'>;

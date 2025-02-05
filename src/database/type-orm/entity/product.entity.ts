@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { Order } from '.';
+import { OrderEntity } from '.';
 
-@Entity()
-export class Product {
+@Entity({ name: 'product' })
+export class ProductEntity {
   @PrimaryColumn()
   id!: number;
 
@@ -18,13 +18,11 @@ export class Product {
   @Column()
   weight!: number;
 
-  @OneToOne(() => Order, (order) => order.product, {
+  @OneToOne(() => OrderEntity, (order) => order.product, {
     cascade: ['insert'],
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  order!: Order;
+  order!: OrderEntity;
 }
-
-export type BasicProduct = Omit<Product, 'id' | 'order'>;

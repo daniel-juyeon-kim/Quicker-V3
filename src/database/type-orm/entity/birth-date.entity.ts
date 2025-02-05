@@ -1,20 +1,18 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { User } from '.';
+import { UserEntity } from '.';
 
-export type BasicBirthDate = Omit<BirthDate, 'user'>;
-
-@Entity()
-export class BirthDate {
+@Entity({ name: 'birthDate' })
+export class BirthDateEntity {
   @PrimaryColumn()
   id!: string;
 
   @Column({ type: 'date' })
   date!: Date;
 
-  @OneToOne(() => User, (user) => user.birthDate, {
+  @OneToOne(() => UserEntity, (user) => user.birthDate, {
     onDelete: 'CASCADE',
     nullable: false,
   })
   @JoinColumn({ name: 'id' })
-  user!: User;
+  user!: UserEntity;
 }

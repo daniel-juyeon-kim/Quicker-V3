@@ -1,8 +1,8 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { Order, Receiver } from '.';
+import { OrderEntity, ReceiverEntity } from '.';
 
-@Entity()
-export class Destination {
+@Entity({ name: 'destination' })
+export class DestinationEntity {
   @PrimaryColumn()
   id!: number;
 
@@ -15,18 +15,16 @@ export class Destination {
   @Column()
   detail!: string;
 
-  @OneToOne(() => Order, (order) => order.destination, {
+  @OneToOne(() => OrderEntity, (order) => order.destination, {
     cascade: ['insert'],
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  order!: Order;
+  order!: OrderEntity;
 
-  @OneToOne(() => Receiver, (receiver) => receiver.destination, {
+  @OneToOne(() => ReceiverEntity, (receiver) => receiver.destination, {
     cascade: ['insert'],
   })
-  receiver!: Receiver;
+  receiver!: ReceiverEntity;
 }
-
-export type BasicDestination = Omit<Destination, 'id' | 'order' | 'receiver'>;

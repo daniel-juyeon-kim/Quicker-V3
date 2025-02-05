@@ -1,34 +1,34 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { Order } from '.';
+import { OrderEntity } from '.';
 
-@Entity()
-export class Transportation {
+@Entity({ name: 'transportation' })
+export class TransportationEntity {
   @PrimaryColumn()
   id!: number;
 
   @Column('tinyint')
-  walking!: number;
+  walking!: 1 | 0;
 
   @Column('tinyint')
-  bicycle!: number;
+  bicycle!: 1 | 0;
 
   @Column('tinyint')
-  scooter!: number;
+  scooter!: 1 | 0;
 
   @Column('tinyint')
-  bike!: number;
+  bike!: 1 | 0;
 
   @Column('tinyint')
-  car!: number;
+  car!: 1 | 0;
 
   @Column('tinyint')
-  truck!: number;
+  truck!: 1 | 0;
 
-  @OneToOne(() => Order, (order) => order.transportation, {
+  @OneToOne(() => OrderEntity, (order) => order.transportation, {
     cascade: ['insert'],
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  order!: Order;
+  order!: OrderEntity;
 }

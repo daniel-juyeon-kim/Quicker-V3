@@ -1,15 +1,8 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { Order } from '.';
+import { OrderEntity } from '.';
 
-export interface DeliveryPersonMatchedDate {
-  id: number;
-  date: Date | null;
-}
-
-@Entity()
-export class DeliveryPersonMatchedDateEntity
-  implements DeliveryPersonMatchedDate
-{
+@Entity({ name: 'deliveryPersonMatchedDate' })
+export class DeliveryPersonMatchedDateEntity {
   @PrimaryColumn()
   id!: number;
 
@@ -20,10 +13,10 @@ export class DeliveryPersonMatchedDateEntity
   })
   date!: Date | null;
 
-  @OneToOne(() => Order, (order) => order.deliveryPersonMatchedDate, {
+  @OneToOne(() => OrderEntity, (order) => order.deliveryPersonMatchedDate, {
     cascade: ['insert'],
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  order!: Order;
+  order!: OrderEntity;
 }
