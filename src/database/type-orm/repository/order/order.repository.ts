@@ -2,18 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseError } from '@src/core';
 import { isNull } from '@src/core/util';
-import { In, IsNull, Not, Repository } from 'typeorm';
+import { EntityManager, In, IsNull, Not, Repository } from 'typeorm';
 import {
   BusinessRuleConflictDataError,
-  Departure,
-  Destination,
+  DepartureEntity,
+  DestinationEntity,
   NotExistDataError,
-  Order,
-  Product,
-  Receiver,
-  Sender,
-  Transportation,
-  User,
+  OrderEntity,
+  ProductEntity,
+  ReceiverEntity,
+  SenderEntity,
+  TransportationEntity,
+  UserEntity,
 } from '../..';
 import { Transactional } from '../../util/transactional.decorator';
 import { AbstractRepository } from '../abstract-repository';
@@ -25,21 +25,20 @@ export class OrderRepository
   implements IOrderRepository
 {
   constructor(
-    @InjectRepository(Order)
-    private readonly repository: Repository<Order>,
+    @InjectRepository(OrderEntity)
+    private readonly repository: Repository<OrderEntity>,
   ) {
     super();
   }
 
   async updateDeliveryPersonAtOrder(
-    manager: Parameters<IOrderRepository['updateDeliveryPersonAtOrder']>[0],
-    {
-      orderId,
-      walletAddress,
-    }: Parameters<IOrderRepository['updateDeliveryPersonAtOrder']>[1],
+    manager: EntityManager,
+    { orderId, walletAddress }: { orderId: number; walletAddress: string },
   ) {
     try {
-      const deliverPerson = await manager.findOneBy(User, { walletAddress });
+      const deliverPerson = await manager.findOneBy(UserEntity, {
+        walletAddress,
+      });
 
       if (isNull(deliverPerson)) {
         throw new NotExistDataError(
@@ -47,7 +46,7 @@ export class OrderRepository
         );
       }
 
-      const order = await manager.findOne(Order, {
+      const order = await manager.findOne(OrderEntity, {
         relations: { requester: true },
         select: {
           requester: { walletAddress: true },
@@ -68,7 +67,7 @@ export class OrderRepository
       }
 
       await manager.update(
-        Order,
+        OrderEntity,
         { id: orderId },
         { deliveryPerson: deliverPerson },
       );
@@ -94,47 +93,49 @@ export class OrderRepository
     transportation,
   }: Parameters<IOrderRepository['create']>[0]) {
     try {
-      const requester = await this.manager.findOneBy(User, { walletAddress });
+      const requester = await this.manager.findOneBy(UserEntity, {
+        walletAddress,
+      });
 
       this.validateNotNull(walletAddress, requester);
 
-      const order = this.manager.create(Order, {
+      const order = this.manager.create(OrderEntity, {
         detail,
         requester,
       });
 
-      await this.manager.insert(Order, order);
+      await this.manager.insert(OrderEntity, order);
 
       const id = order.id;
 
-      await this.manager.insert(Product, {
+      await this.manager.insert(ProductEntity, {
         id,
         ...product,
       });
-      await this.manager.insert(Transportation, {
+      await this.manager.insert(TransportationEntity, {
         id,
         ...transportation,
       });
-      await this.manager.insert(Destination, {
+      await this.manager.insert(DestinationEntity, {
         id,
         ...destination,
       });
-      await this.manager.insert(Receiver, {
+      await this.manager.insert(ReceiverEntity, {
         id,
         ...receiver,
       });
-      await this.manager.insert(Departure, {
+      await this.manager.insert(DepartureEntity, {
         id,
         ...departure,
       });
-      await this.manager.insert(Sender, {
+      await this.manager.insert(SenderEntity, {
         id,
         ...sender,
       });
     } catch (error) {
       if (error instanceof NotExistDataError) {
         throw new NotExistDataError(
-          `${walletAddress} 에 해당되는 사용자를 찾지 못했습니다.`,
+          `${walletAddress}에 해당되는 사용자를 찾지 못했습니다.`,
         );
       }
       throw new UnknownDataBaseError(error);
@@ -172,7 +173,7 @@ export class OrderRepository
   ) {
     try {
       return await this.repository.manager.transaction(async (manager) => {
-        const isExistUser = await manager.exists(User, {
+        const isExistUser = await manager.exists(UserEntity, {
           where: { walletAddress: deliverPersonWalletAddress },
         });
 
@@ -182,7 +183,7 @@ export class OrderRepository
           );
         }
 
-        return await manager.find(Order, {
+        return await manager.find(OrderEntity, {
           relations: {
             product: true,
             transportation: true,

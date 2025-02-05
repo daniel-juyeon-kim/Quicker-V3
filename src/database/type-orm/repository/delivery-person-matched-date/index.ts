@@ -1,1 +1,1 @@
-export * from './delivery-person-matched-date-repository';
+export * from './delivery-person-matched-date.repository';

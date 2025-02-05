@@ -1,1 +1,1 @@
-export * from './chat-room.repository';
+export * from './order-participant.repository';

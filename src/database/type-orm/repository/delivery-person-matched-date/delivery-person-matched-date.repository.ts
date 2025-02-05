@@ -3,15 +3,19 @@ import { Between, EntityManager, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseError } from '../../../../core';
-import { DeliveryPersonMatchedDate } from '../../entity';
+import { DeliveryPersonMatchedDateEntity } from '../../entity';
 import { DuplicatedDataError } from '../../util';
 import { AbstractRepository } from '../abstract-repository';
+import { IDeliveryPersonMatchedDateRepository } from './delivery-person-matched-date.repository.interface';
 
 @Injectable()
-export class DeliveryPersonMatchedDateRepository extends AbstractRepository {
+export class DeliveryPersonMatchedDateRepository
+  extends AbstractRepository
+  implements IDeliveryPersonMatchedDateRepository
+{
   constructor(
-    @InjectRepository(DeliveryPersonMatchedDate)
-    private readonly repository: Repository<DeliveryPersonMatchedDate>,
+    @InjectRepository(DeliveryPersonMatchedDateEntity)
+    private readonly repository: Repository<DeliveryPersonMatchedDateEntity>,
   ) {
     super();
   }
@@ -19,7 +23,7 @@ export class DeliveryPersonMatchedDateRepository extends AbstractRepository {
   async create(manager: EntityManager, orderId: number) {
     try {
       const matchedDateExists = await manager.existsBy(
-        DeliveryPersonMatchedDate,
+        DeliveryPersonMatchedDateEntity,
         { id: orderId },
       );
 
@@ -29,10 +33,10 @@ export class DeliveryPersonMatchedDateRepository extends AbstractRepository {
         );
       }
 
-      const matchedDate = new DeliveryPersonMatchedDate();
+      const matchedDate = new DeliveryPersonMatchedDateEntity();
       matchedDate.id = orderId;
 
-      await manager.insert(DeliveryPersonMatchedDate, matchedDate);
+      await manager.insert(DeliveryPersonMatchedDateEntity, matchedDate);
     } catch (error) {
       if (error instanceof DuplicatedDataError) {
         throw error;

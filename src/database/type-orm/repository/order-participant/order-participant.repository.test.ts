@@ -11,103 +11,111 @@ import {
   UserEntity,
 } from '../../entity';
 import { NotExistDataError } from '../../util';
-import { ReceiverRepository } from './receiver.repository';
+import { OrderParticipantRepository } from './order-participant.repository';
 
 const createUser = async (manager: EntityManager) => {
-  const id = '아이디';
-
   const user = manager.create(UserEntity, {
-    id,
+    id: '아이디',
     walletAddress: '지갑주소',
     name: '이름',
     email: '이메일',
     contact: '연락처',
     birthDate: {
-      id,
+      id: '아이디',
       date: new Date(2000, 9, 12).toISOString(),
     },
-    joinDate: {
-      id,
-      date: new Date(2023, 9, 12).toISOString(),
-    },
     profileImage: {
-      id,
-      imageId: '400',
+      id: '아이디',
+      imageId: '111',
+    },
+    joinDate: {
+      id: '아이디',
+      date: new Date(2023, 9, 12).toISOString(),
     },
   });
 
-  await manager.save(user);
+  await manager.save(UserEntity, user);
 };
 
 const createOrder = async (manager: EntityManager, requester: UserEntity) => {
+  const detail = '디테일';
+  const product = {
+    width: 0,
+    length: 0,
+    height: 0,
+    weight: 0,
+  };
+  const transportation = {
+    walking: 0,
+    bicycle: 0,
+    scooter: 0,
+    bike: 0,
+    car: 0,
+    truck: 0,
+  };
+  const destination = {
+    x: 37.5,
+    y: 112,
+    detail: '디테일',
+  };
+  const receiver = {
+    name: '이름',
+    phone: '01012345678',
+  };
+  const departure = {
+    x: 0,
+    y: 0,
+    detail: '디테일',
+  };
+  const sender = {
+    name: '이름',
+    phone: '01012345678',
+  };
+
   await manager.transaction(async (manager) => {
     const order = manager.create(OrderEntity, {
+      detail,
       requester,
-      detail: '디테일',
     });
 
     await manager.save(OrderEntity, order);
 
     const id = order.id;
 
-    const product = manager.create(ProductEntity, {
+    await manager.save(ProductEntity, {
       id,
-      width: 0,
-      length: 0,
-      height: 0,
-      weight: 0,
-      order,
+      ...product,
+      order: order,
     });
-
-    const transportation = manager.create(TransportationEntity, {
+    await manager.save(TransportationEntity, {
       id,
-      walking: 0,
-      bicycle: 0,
-      scooter: 0,
-      bike: 0,
-      car: 0,
-      truck: 0,
-      order,
+      ...transportation,
+      order: order,
     });
-
-    const destination = manager.create(DestinationEntity, {
+    await manager.save(DestinationEntity, {
       id,
-      x: 37.5,
-      y: 112,
-      detail: '디테일',
-      order,
+      ...destination,
+      order: order,
       receiver: {
         id,
-        name: '이름',
-        phone: '01012345678',
+        ...receiver,
       },
     });
-
-    const departure = manager.create(DepartureEntity, {
+    await manager.save(DepartureEntity, {
       id,
-      x: 0,
-      y: 0,
-      detail: '디테일',
-      order,
+      ...departure,
+      order: order,
       sender: {
         id,
-        name: '이름',
-        phone: '01012345678',
+        ...sender,
       },
     });
-
-    await Promise.allSettled([
-      manager.save(ProductEntity, product),
-      manager.save(TransportationEntity, transportation),
-      manager.save(DestinationEntity, destination),
-      manager.save(DepartureEntity, departure),
-    ]);
   });
 };
 
-describe('ReceiverRepository', () => {
+describe('OrderParticipantRepository', () => {
   let testModule: TestingModule;
-  let repository: ReceiverRepository;
+  let repository: OrderParticipantRepository;
   let ormRepository: Repository<OrderEntity>;
   let manager: EntityManager;
 
@@ -124,50 +132,59 @@ describe('ReceiverRepository', () => {
           DepartureEntity,
         ]),
       ],
-      providers: [ReceiverRepository],
+      providers: [OrderParticipantRepository],
     }).compile();
 
-    repository = testModule.get(ReceiverRepository);
+    repository = testModule.get(OrderParticipantRepository);
     ormRepository = testModule.get(getRepositoryToken(OrderEntity));
     manager = ormRepository.manager;
+
+    await createUser(manager);
   });
 
   beforeEach(async () => {
-    await createUser(manager);
-    const user = await manager.findOne(UserEntity, {
-      where: { id: '아이디' },
+    const user = await manager.findOneBy(UserEntity, {
+      id: '아이디',
     });
     await createOrder(manager, user);
   });
 
   afterEach(async () => {
-    await Promise.allSettled([
-      manager.clear(UserEntity),
-      manager.clear(OrderEntity),
-    ]);
+    await manager.clear(OrderEntity);
   });
 
-  describe('findPhoneNumberByOrderId 테스트', () => {
+  describe('findChatParticipantByOrderId 테스트', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const result = {
         id: orderId,
-        phone: '01012345678',
+        departure: {
+          id: orderId,
+          x: 0,
+          y: 0,
+          sender: { phone: '01012345678' },
+        },
+        destination: {
+          id: orderId,
+          x: 37.5,
+          y: 112,
+          receiver: { phone: '01012345678' },
+        },
       };
 
       await expect(
-        repository.findPhoneNumberByOrderId(manager, orderId),
+        repository.findSenderReceiverInfoByOrderId(orderId),
       ).resolves.toEqual(result);
     });
 
-    test('실패하는 테스트, 존재하지 않는 값 입력', async () => {
+    test('실패하는 테스트, 존재하지 않는 주문 아이디 입력', async () => {
       const orderId = 32;
       const error = new NotExistDataError(
         `${orderId}에 해당되는 데이터가 존재하지 않습니다.`,
       );
 
       await expect(
-        repository.findPhoneNumberByOrderId(manager, orderId),
+        repository.findSenderReceiverInfoByOrderId(orderId),
       ).rejects.toStrictEqual(error);
     });
   });

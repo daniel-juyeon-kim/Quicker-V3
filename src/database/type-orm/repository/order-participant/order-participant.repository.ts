@@ -2,15 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseError } from '@src/core';
 import { Repository } from 'typeorm';
-import { Order } from '../../entity';
+import { OrderEntity } from '../../entity';
 import { NotExistDataError } from '../../util';
 import { AbstractRepository } from '../abstract-repository';
+import { IOrderParticipantRepository } from './order-participant.repository.interface';
 
 @Injectable()
-export class OrderParticipantRepository extends AbstractRepository {
+export class OrderParticipantRepository
+  extends AbstractRepository
+  implements IOrderParticipantRepository
+{
   constructor(
-    @InjectRepository(Order)
-    private readonly repository: Repository<Order>,
+    @InjectRepository(OrderEntity)
+    private readonly repository: Repository<OrderEntity>,
   ) {
     super();
   }

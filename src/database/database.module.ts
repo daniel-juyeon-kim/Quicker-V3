@@ -1,40 +1,12 @@
 import { Global, Module } from '@nestjs/common';
-import {
-  ChatMessageRepository,
-  CompleteDeliveryImageRepository,
-  CurrentDeliveryLocationRepository,
-  FailDeliveryImageRepository,
-} from './mongoose';
-import {
-  AverageCostRepository,
-  DeliveryPersonMatchedDateRepository,
-  LocationRepository,
-  OrderParticipantRepository,
-  OrderRepository,
-  ReceiverRepository,
-  UserRepository,
-} from './type-orm';
+import { MongooseRepositoryModule } from './mongoose/mongoose-repository.module';
+import { TypeOrmRepositoryModule } from './type-orm/type-orm-repository.module';
 
-const mongoDbProviders = [
-  ChatMessageRepository,
-  CompleteDeliveryImageRepository,
-  CurrentDeliveryLocationRepository,
-  FailDeliveryImageRepository,
-];
-const typeOrmProviders = [
-  AverageCostRepository,
-  DeliveryPersonMatchedDateRepository,
-  LocationRepository,
-  OrderRepository,
-  OrderParticipantRepository,
-  ReceiverRepository,
-  UserRepository,
-];
+const repositoryModules = [TypeOrmRepositoryModule, MongooseRepositoryModule];
 
 @Global()
 @Module({
-  imports: [],
-  providers: [...mongoDbProviders, ...typeOrmProviders],
-  exports: [...mongoDbProviders, ...typeOrmProviders],
+  imports: [...repositoryModules],
+  exports: [...repositoryModules],
 })
 export class DatabaseModule {}

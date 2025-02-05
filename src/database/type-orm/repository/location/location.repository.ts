@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseError } from '@src/core';
-import { Order } from '@src/database/type-orm/entity';
+import { OrderEntity } from '@src/database/type-orm/entity';
 import { NotExistDataError } from '@src/database/type-orm/util';
 import { In, Repository } from 'typeorm';
 import { ILocationRepository } from '.';
@@ -13,8 +13,8 @@ export class LocationRepository
   implements ILocationRepository
 {
   constructor(
-    @InjectRepository(Order)
-    private readonly repository: Repository<Order>,
+    @InjectRepository(OrderEntity)
+    private readonly repository: Repository<OrderEntity>,
   ) {
     super();
   }

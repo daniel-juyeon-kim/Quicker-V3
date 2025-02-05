@@ -1,27 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-import { BirthDate, JoinDate, Order, ProfileImage, User } from '../../entity';
-import { TestTypeormModule } from '../../test-typeorm.module';
-import { DataBaseError, NotExistDataError } from '../../util';
+import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
+import { OrderEntity, ProfileImageEntity, UserEntity } from '../../entity';
+import { DuplicatedDataError, NotExistDataError } from '../../util';
 import { UserRepository } from './user.repository';
 
-let testModule: TestingModule;
-let repository: UserRepository;
-let ormRepository: Repository<Order>;
-
-beforeAll(async () => {
-  testModule = await Test.createTestingModule({
-    imports: [TestTypeormModule, TypeOrmModule.forFeature([User])],
-    providers: [UserRepository],
-  }).compile();
-
-  repository = testModule.get(UserRepository);
-  ormRepository = testModule.get(getRepositoryToken(User));
-});
-
 const createUser = async (manager: EntityManager) => {
-  const user = manager.create(User, {
+  const user = manager.create(UserEntity, {
     id: '아이디',
     walletAddress: '지갑주소',
     name: '이름',
@@ -41,194 +27,180 @@ const createUser = async (manager: EntityManager) => {
     },
   });
 
-  await manager.save(User, user);
+  await manager.save(UserEntity, user);
 };
 
-afterEach(async () => {
-  await ormRepository.clear();
-});
+describe('UserRepository', () => {
+  let testModule: TestingModule;
+  let repository: UserRepository;
+  let ormRepository: Repository<OrderEntity>;
 
-afterAll(async () => {
-  await testModule.close();
-});
+  beforeAll(async () => {
+    testModule = await Test.createTestingModule({
+      imports: [TestTypeormModule, TypeOrmModule.forFeature([UserEntity])],
+      providers: [UserRepository],
+    }).compile();
 
-describe('UserRepository 테스트', () => {
-  describe('insert', () => {
-    describe('create 테스트', () => {
-      test('통과하는 테스트', async () => {
-        const userId = '아이디';
-
-        await expect(
-          ormRepository.manager.existsBy(User, { id: userId }),
-        ).resolves.toBe(false);
-        await expect(
-          ormRepository.manager.existsBy(ProfileImage, { id: userId }),
-        ).resolves.toBe(false);
-        await expect(
-          ormRepository.manager.existsBy(BirthDate, { id: userId }),
-        ).resolves.toBe(false);
-        await expect(
-          ormRepository.manager.existsBy(JoinDate, { id: userId }),
-        ).resolves.toBe(false);
-
-        const user = {
-          id: userId,
-          walletAddress: '지갑주소',
-          name: '이름',
-          email: '이메일',
-          contact: '연락처',
-        };
-
-        const birthDate = new Date(2000, 9, 12);
-
-        await repository.create({ user, birthDate, id: userId });
-
-        const userInstance = await ormRepository.manager.findOne(User, {
-          relations: {
-            profileImage: true,
-            birthDate: true,
-            joinDate: true,
-          },
-          where: { id: userId },
-        });
-
-        expect(userInstance).not.toBeFalsy();
-        expect(userInstance?.profileImage).not.toBeFalsy();
-        expect(userInstance?.birthDate).not.toBeFalsy();
-        expect(userInstance?.joinDate).not.toBeFalsy();
-      });
-
-      test('실패하는 테스트, 이미 존재하는 아이디', async () => {
-        const userId = '아이디';
-        const user = {
-          id: userId,
-          walletAddress: '지갑주소',
-          name: '이름',
-          email: '이메일',
-          contact: '연락처',
-        };
-
-        const birthDate = new Date(2000, 9, 12);
-
-        await expect(
-          repository.create({ user, birthDate, id: userId }),
-        ).resolves.not.toThrow();
-        await expect(
-          repository.create({ user, birthDate, id: userId }),
-        ).rejects.toBeInstanceOf(DataBaseError);
-        await expect(
-          repository.create({ user, birthDate, id: userId }),
-        ).rejects.toThrow('아이디에 해당하는 데이터가 이미 존재합니다.');
-      });
-    });
+    repository = testModule.get(UserRepository);
+    ormRepository = testModule.get(getRepositoryToken(UserEntity));
   });
 
-  describe('select', () => {
-    beforeEach(async () => {
-      await createUser(ormRepository.manager);
-    });
-
-    describe('findNameByWalletAddress 테스트', () => {
-      test('통과하는 테스트', async () => {
-        await expect(
-          repository.findNameByWalletAddress('지갑주소'),
-        ).resolves.toEqual({ name: '이름' });
-      });
-
-      test('실패하는 테스트, 존재하지 않는 데이터에 접근', async () => {
-        const walletAddress = '잘못된_지갑주소';
-
-        await expect(
-          repository.findNameByWalletAddress(walletAddress),
-        ).rejects.toBeInstanceOf(NotExistDataError);
-        await expect(
-          repository.findNameByWalletAddress(walletAddress),
-        ).rejects.toThrow(
-          '지갑주소 잘못된_지갑주소에 대응되는 데이터가 존재하지 않습니다.',
-        );
-      });
-    });
-
-    describe('findUserProfileImageIdByWalletAddress 테스트', () => {
-      test('통과하는 테스트', async () => {
-        await expect(
-          repository.findUserProfileImageIdByWalletAddress('지갑주소'),
-        ).resolves.toEqual({
-          imageId: '111',
-        });
-      });
-
-      test('실패하는 테스트, 존재하지 않는 데이터에 접근', async () => {
-        const walletAddress = '잘못된_지갑주소';
-
-        await expect(
-          repository.findUserProfileImageIdByWalletAddress(walletAddress),
-        ).rejects.toBeInstanceOf(NotExistDataError);
-        await expect(
-          repository.findUserProfileImageIdByWalletAddress(walletAddress),
-        ).rejects.toThrow(
-          '지갑주소 잘못된_지갑주소에 대응되는 데이터가 존재하지 않습니다.',
-        );
-      });
-    });
+  afterEach(async () => {
+    await ormRepository.clear();
   });
 
-  describe('update', () => {
-    beforeEach(async () => {
-      await createUser(ormRepository.manager);
-    });
+  afterAll(async () => {
+    await testModule.close();
+  });
 
-    describe('updateUserProfileImageIdByWalletAddress 테스트', () => {
-      test('통과하는 테스트', async () => {
-        const walletAddress = '지갑주소';
+  describe('UserRepository 테스트', () => {
+    describe('insert', () => {
+      describe('create() 테스트', () => {
+        test('통과하는 테스트', async () => {
+          const userId = '아이디';
+          const user = {
+            id: userId,
+            walletAddress: '지갑주소',
+            name: '이름',
+            email: '이메일',
+            contact: '연락처',
+          };
+          const birthDate = new Date(2000, 9, 12);
 
-        const findProfileImageId = async (walletAddress: string) => {
-          const profileImage = await ormRepository.manager.findOne(
-            ProfileImage,
-            {
-              relations: { user: true },
-              where: { user: { walletAddress } },
-              select: {
-                id: true,
-                imageId: true,
-                user: {},
-              },
+          await repository.create({ id: userId, user, birthDate });
+
+          const userInstance = await ormRepository.manager.findOne(UserEntity, {
+            relations: {
+              profileImage: true,
+              birthDate: true,
+              joinDate: true,
             },
+            where: { id: userId },
+          });
+          expect(userInstance.profileImage).toBeTruthy();
+          expect(userInstance.birthDate).toBeTruthy();
+          expect(userInstance.joinDate).toBeTruthy();
+        });
+
+        test('실패하는 테스트, 이미 존재하는 아이디', async () => {
+          const userId = '아이디';
+          const user = {
+            id: userId,
+            walletAddress: '지갑주소',
+            name: '이름',
+            email: '이메일',
+            contact: '연락처',
+          };
+          const birthDate = new Date(2000, 9, 12);
+          const error = new DuplicatedDataError(
+            '아이디에 해당하는 데이터가 이미 존재합니다.',
           );
 
-          return { imageId: profileImage?.imageId };
-        };
+          // 사용자 생성
+          await expect(
+            repository.create({ user, birthDate, id: userId }),
+          ).resolves.not.toThrow();
 
-        await expect(findProfileImageId(walletAddress)).resolves.toEqual({
-          imageId: '111',
+          // 중복 데이터 입력, 에러 던짐
+          await expect(
+            repository.create({ user, birthDate, id: userId }),
+          ).rejects.toStrictEqual(error);
+        });
+      });
+    });
+
+    describe('select', () => {
+      beforeEach(async () => {
+        await createUser(ormRepository.manager);
+      });
+
+      afterEach(async () => {
+        await ormRepository.manager.clear(UserEntity);
+      });
+
+      describe('findNameByWalletAddress 테스트', () => {
+        test('통과하는 테스트', async () => {
+          const walletAddress = '지갑주소';
+          const result = { name: '이름' };
+
+          await expect(
+            repository.findNameByWalletAddress(walletAddress),
+          ).resolves.toEqual(result);
         });
 
-        const body = { walletAddress, imageId: '100' };
+        test('실패하는 테스트, 존재하지 않는 데이터에 접근, NotExistDataError를 던짐', async () => {
+          const walletAddress = '잘못된_지갑주소';
+          const error = new NotExistDataError(
+            '지갑주소 잘못된_지갑주소에 대응되는 데이터가 존재하지 않습니다.',
+          );
 
-        await repository.updateUserProfileImageIdByWalletAddress(body);
-
-        await expect(findProfileImageId(walletAddress)).resolves.toEqual({
-          imageId: '100',
+          await expect(
+            repository.findNameByWalletAddress(walletAddress),
+          ).rejects.toEqual(error);
         });
       });
 
-      test('실패하는 테스트, 존재하지 않는 지갑주소', async () => {
-        const body = {
-          walletAddress: '존재하지 않는 지갑주소',
-          imageId: '100',
-        };
+      describe('findUserProfileImageIdByWalletAddress 테스트', () => {
+        test('통과하는 테스트', async () => {
+          const walletAddress = '지갑주소';
+          const result = { imageId: '111' };
 
-        await expect(
-          repository.updateUserProfileImageIdByWalletAddress(body),
-        ).rejects.toBeInstanceOf(DataBaseError);
-        await expect(
-          repository.updateUserProfileImageIdByWalletAddress(body),
-        ).rejects.toBeInstanceOf(NotExistDataError);
-        await expect(
-          repository.updateUserProfileImageIdByWalletAddress(body),
-        ).rejects.toThrow(
-          '존재하지 않는 지갑주소에 대응되는 데이터가 존재하지 않습니다.',
-        );
+          await expect(
+            repository.findUserProfileImageIdByWalletAddress(walletAddress),
+          ).resolves.toEqual(result);
+        });
+
+        test('실패하는 테스트, 존재하지 않는 데이터에 접근, NotExistDataError를 던짐', async () => {
+          const walletAddress = '잘못된_지갑주소';
+          const error = new NotExistDataError(
+            '지갑주소 잘못된_지갑주소에 대응되는 데이터가 존재하지 않습니다.',
+          );
+
+          await expect(
+            repository.findUserProfileImageIdByWalletAddress(walletAddress),
+          ).rejects.toStrictEqual(error);
+        });
+      });
+    });
+
+    describe('update', () => {
+      beforeEach(async () => {
+        await createUser(ormRepository.manager);
+      });
+
+      describe('updateUserProfileImageIdByWalletAddress 테스트', () => {
+        test('통과하는 테스트', async () => {
+          const walletAddress = '지갑주소';
+          const { id } = await ormRepository.manager.findOne(UserEntity, {
+            where: { walletAddress },
+            select: { id: true },
+          });
+          const updateDto = { walletAddress, imageId: '100' };
+          const result = { imageId: '100' };
+
+          await repository.updateUserProfileImageIdByWalletAddress(updateDto);
+
+          await expect(
+            ormRepository.manager.findOne(ProfileImageEntity, {
+              where: { id },
+              select: { imageId: true },
+            }),
+          ).resolves.toEqual(result);
+        });
+
+        test('실패하는 테스트, 존재하지 않는 지갑주소, NotExistDataError를 던짐', async () => {
+          const dto = {
+            walletAddress: '존재하지 않는 지갑주소',
+            imageId: '100',
+          };
+          const error = new NotExistDataError(
+            '존재하지 않는 지갑주소에 대응되는 데이터가 존재하지 않습니다.',
+          );
+
+          await expect(
+            repository.updateUserProfileImageIdByWalletAddress(dto),
+          ).rejects.toStrictEqual(error);
+        });
       });
     });
   });

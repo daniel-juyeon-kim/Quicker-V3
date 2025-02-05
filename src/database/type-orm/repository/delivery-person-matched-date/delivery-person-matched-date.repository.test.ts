@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import {
-  DeliveryPersonMatchedDate,
-  Departure,
-  Destination,
-  Order,
-  Product,
-  Transportation,
-  User,
+  DeliveryPersonMatchedDateEntity,
+  DepartureEntity,
+  DestinationEntity,
+  OrderEntity,
+  ProductEntity,
+  TransportationEntity,
+  UserEntity,
 } from '../../entity';
-import { TestTypeormModule } from '../../test-typeorm.module';
 import { DuplicatedDataError } from '../../util';
-import { DeliveryPersonMatchedDateRepository } from './delivery-person-matched-date-repository';
+import { DeliveryPersonMatchedDateRepository } from './delivery-person-matched-date.repository';
 
 const createUser = async (
   repository: Repository<unknown>,
@@ -22,7 +22,7 @@ const createUser = async (
     contact,
   }: { userId: string; walletAddress: string; contact: string },
 ) => {
-  const user = repository.manager.create(User, {
+  const user = repository.manager.create(UserEntity, {
     id: userId,
     walletAddress,
     name: '이름',
@@ -41,7 +41,7 @@ const createUser = async (
     },
   });
 
-  return await repository.manager.save(User, user);
+  return await repository.manager.save(UserEntity, user);
 };
 
 const createOrder = async (
@@ -50,10 +50,14 @@ const createOrder = async (
     requester,
     deliveryPerson,
     orderId,
-  }: { requester: User; deliveryPerson: User | null; orderId: number },
+  }: {
+    requester: UserEntity;
+    deliveryPerson: UserEntity | null;
+    orderId: number;
+  },
 ) => {
-  await orderRepository.manager.transaction(async (manager) => {
-    const order = manager.create(Order, {
+  await repository.manager.transaction(async (manager) => {
+    const order = manager.create(OrderEntity, {
       id: orderId,
       requester,
       deliveryPerson,
@@ -64,7 +68,7 @@ const createOrder = async (
 
     const id = orderId;
 
-    const product = manager.create(Product, {
+    const product = manager.create(ProductEntity, {
       id,
       width: 0,
       length: 0,
@@ -73,7 +77,7 @@ const createOrder = async (
       order,
     });
 
-    const transportation = manager.create(Transportation, {
+    const transportation = manager.create(TransportationEntity, {
       id,
       walking: 0,
       bicycle: 0,
@@ -84,7 +88,7 @@ const createOrder = async (
       order,
     });
 
-    const destination = manager.create(Destination, {
+    const destination = manager.create(DestinationEntity, {
       id,
       x: 37.5,
       y: 112,
@@ -97,7 +101,7 @@ const createOrder = async (
       },
     });
 
-    const departure = manager.create(Departure, {
+    const departure = manager.create(DepartureEntity, {
       id,
       x: 0,
       y: 0,
@@ -111,51 +115,52 @@ const createOrder = async (
     });
 
     await Promise.allSettled([
-      manager.save(Product, product),
-      manager.save(Transportation, transportation),
-      manager.save(Destination, destination),
-      manager.save(Departure, departure),
+      manager.save(ProductEntity, product),
+      manager.save(TransportationEntity, transportation),
+      manager.save(DestinationEntity, destination),
+      manager.save(DepartureEntity, departure),
     ]);
 
     return id;
   });
 };
 
-let testModule: TestingModule;
-let repository: DeliveryPersonMatchedDateRepository;
-let orderRepository: Repository<Order>;
-
-beforeAll(async () => {
-  testModule = await Test.createTestingModule({
-    imports: [
-      TestTypeormModule,
-      TypeOrmModule.forFeature([DeliveryPersonMatchedDate]),
-    ],
-    providers: [DeliveryPersonMatchedDateRepository],
-  }).compile();
-
-  repository = testModule.get(DeliveryPersonMatchedDateRepository);
-  orderRepository = testModule.get(
-    getRepositoryToken(DeliveryPersonMatchedDate),
-  );
-});
-
-afterEach(async () => {
-  await orderRepository.manager.clear(User);
-  await orderRepository.manager.clear(Order);
-  await orderRepository.manager.clear(DeliveryPersonMatchedDate);
-});
-
 describe('DeliveryPersonMatchedDateRepository', () => {
+  let testModule: TestingModule;
+  let repository: DeliveryPersonMatchedDateRepository;
+  let ormRepository: Repository<OrderEntity>;
+  let manager: EntityManager;
+
+  beforeAll(async () => {
+    testModule = await Test.createTestingModule({
+      imports: [
+        TestTypeormModule,
+        TypeOrmModule.forFeature([DeliveryPersonMatchedDateEntity]),
+      ],
+      providers: [DeliveryPersonMatchedDateRepository],
+    }).compile();
+
+    repository = testModule.get(DeliveryPersonMatchedDateRepository);
+    ormRepository = testModule.get(
+      getRepositoryToken(DeliveryPersonMatchedDateEntity),
+    );
+    manager = ormRepository.manager;
+  });
+
+  afterEach(async () => {
+    await ormRepository.manager.clear(UserEntity);
+    await ormRepository.manager.clear(OrderEntity);
+  });
+
   describe('create()', () => {
     beforeEach(async () => {
-      const requester = await createUser(orderRepository, {
+      const requester = await createUser(ormRepository, {
         userId: '아이디',
         walletAddress: '지갑주소',
         contact: '01012341234',
       });
 
-      await createOrder(orderRepository, {
+      await createOrder(ormRepository, {
         requester,
         deliveryPerson: null,
         orderId: 1,
@@ -165,86 +170,83 @@ describe('DeliveryPersonMatchedDateRepository', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
 
-      await repository.create(orderRepository.manager, orderId);
+      await repository.create(manager, orderId);
 
-      const order = await orderRepository.manager.findOneBy(
-        DeliveryPersonMatchedDate,
-        { id: orderId },
-      );
-
-      expect(order?.id).toBe(orderId);
-      expect(order?.date).not.toBeFalsy();
+      await expect(
+        manager.findOneBy(DeliveryPersonMatchedDateEntity, {
+          id: orderId,
+        }),
+      ).resolves.toHaveProperty('id', orderId);
     });
 
-    test('실패하는 테스트, 중복인 데이터', async () => {
-      const orderId = 1;
-
-      try {
-        await repository.create(orderRepository.manager, orderId);
-
-        await expect(
-          repository.create(orderRepository.manager, orderId),
-        ).rejects.toStrictEqual(
-          new DuplicatedDataError('1에 대해 중복된 데이터가 존재합니다.'),
+    describe('실패하는 테스트', () => {
+      test('중복인 데이터 조회, DuplicatedDataError를 던짐', async () => {
+        const orderId = 1;
+        const error = new DuplicatedDataError(
+          '1에 대해 중복된 데이터가 존재합니다.',
         );
-      } catch (error) {
-        console.error(error);
-      }
+
+        await repository.create(manager, orderId);
+
+        await expect(repository.create(manager, orderId)).rejects.toStrictEqual(
+          error,
+        );
+      });
     });
   });
 
   describe('findAllOrderIdByBetweenDates()', () => {
-    const START_DATE = new Date(2000, 0, 1, 0, 0, 0, 0);
-    const END_DATE = new Date(2000, 0, 31, 23, 59, 59, 999);
+    test('통과하는 테스트', async () => {
+      const START_DATE = new Date(2000, 0, 1, 0, 0, 0, 0);
+      const END_DATE = new Date(2000, 0, 31, 23, 59, 59, 999);
 
-    beforeEach(async () => {
-      const requester = await createUser(orderRepository, {
-        userId: '아이디',
-        walletAddress: '지갑주소',
-        contact: '01012341234',
-      });
+      const createDummyData = async () => {
+        const requester = await createUser(ormRepository, {
+          userId: '아이디',
+          walletAddress: '지갑주소',
+          contact: '01012341234',
+        });
 
-      const deliveryPerson = await createUser(orderRepository, {
-        userId: '배송원 아이디',
-        walletAddress: '배송원 지갑주소',
-        contact: '01009870987',
-      });
+        const deliveryPerson = await createUser(ormRepository, {
+          userId: '배송원 아이디',
+          walletAddress: '배송원 지갑주소',
+          contact: '01009870987',
+        });
 
-      await createOrder(orderRepository, {
-        requester,
-        deliveryPerson,
-        orderId: 1,
-      });
-      await createOrder(orderRepository, {
-        requester,
-        deliveryPerson,
-        orderId: 2,
-      });
-      await createOrder(orderRepository, {
-        requester,
-        deliveryPerson,
-        orderId: 3,
-      });
-      await createOrder(orderRepository, {
-        requester,
-        deliveryPerson,
-        orderId: 4,
-      });
+        await createOrder(ormRepository, {
+          orderId: 1,
+          requester,
+          deliveryPerson,
+        });
+        await createOrder(ormRepository, {
+          orderId: 2,
+          requester,
+          deliveryPerson,
+        });
+        await createOrder(ormRepository, {
+          orderId: 3,
+          requester,
+          deliveryPerson,
+        });
+        await createOrder(ormRepository, {
+          orderId: 4,
+          requester,
+          deliveryPerson,
+        });
 
-      await orderRepository.manager.save(DeliveryPersonMatchedDate, [
-        { id: 1, date: new Date(2000, 0, 0, 23, 59, 59, 999) },
-        { id: 2, date: START_DATE },
-        { id: 3, date: END_DATE },
-        { id: 4, date: new Date(2000, 1, 1, 0, 0, 0, 0) },
-      ]);
-    });
+        await manager.save(DeliveryPersonMatchedDateEntity, [
+          { id: 1, date: new Date(2000, 0, 0, 23, 59, 59, 999) },
+          { id: 2, date: START_DATE },
+          { id: 3, date: END_DATE },
+          { id: 4, date: new Date(2000, 1, 1, 0, 0, 0, 0) },
+        ]);
+      };
 
-    describe('findAllOrderIdByBetweenDates 테스트', () => {
-      test('통과하는 테스트', async () => {
-        await expect(
-          repository.findAllOrderIdByBetweenDates(START_DATE, END_DATE),
-        ).resolves.toEqual([{ id: 2 }, { id: 3 }]);
-      });
+      await createDummyData();
+
+      await expect(
+        repository.findAllOrderIdByBetweenDates(START_DATE, END_DATE),
+      ).resolves.toEqual([{ id: 2 }, { id: 3 }]);
     });
   });
 });

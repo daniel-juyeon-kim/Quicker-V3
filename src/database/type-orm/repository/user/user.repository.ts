@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseError } from '@src/core';
 import { Repository } from 'typeorm';
-import { BirthDate, JoinDate, ProfileImage, User } from '../../entity';
+import {
+  BirthDateEntity,
+  JoinDateEntity,
+  ProfileImageEntity,
+  UserEntity,
+} from '../../entity';
 import { DuplicatedDataError, NotExistDataError } from '../../util';
 import { AbstractRepository } from '../abstract-repository';
 import { IUserRepository } from './user.repository.interface';
@@ -13,8 +18,8 @@ export class UserRepository
   implements IUserRepository
 {
   constructor(
-    @InjectRepository(User)
-    private readonly repository: Repository<User>,
+    @InjectRepository(UserEntity)
+    private readonly repository: Repository<UserEntity>,
   ) {
     super();
   }
@@ -24,12 +29,12 @@ export class UserRepository
     birthDate,
     id,
   }: {
-    user: Pick<User, 'name' | 'walletAddress' | 'email' | 'contact'>;
+    user: Pick<UserEntity, 'name' | 'walletAddress' | 'email' | 'contact'>;
     birthDate: Date;
     id: string;
   }) {
     try {
-      const userExists = await this.manager.existsBy(User, { id });
+      const userExists = await this.manager.existsBy(UserEntity, { id });
 
       if (userExists) {
         throw new DuplicatedDataError(
@@ -37,21 +42,21 @@ export class UserRepository
         );
       }
 
-      await this.manager.insert(User, {
+      await this.manager.insert(UserEntity, {
         id,
         ...user,
       });
 
-      await this.manager.insert(BirthDate, {
+      await this.manager.insert(BirthDateEntity, {
         id,
         date: birthDate,
       });
 
-      await this.manager.insert(ProfileImage, {
+      await this.manager.insert(ProfileImageEntity, {
         id,
       });
 
-      await this.manager.insert(JoinDate, {
+      await this.manager.insert(JoinDateEntity, {
         id,
       });
     } catch (error) {
@@ -111,11 +116,15 @@ export class UserRepository
     imageId: string;
   }) {
     try {
-      const user = await this.manager.findOneBy(User, { walletAddress });
+      const user = await this.manager.findOneBy(UserEntity, { walletAddress });
 
       this.validateNotNull(walletAddress, user);
 
-      await this.manager.update(ProfileImage, { id: user.id }, { imageId });
+      await this.manager.update(
+        ProfileImageEntity,
+        { id: user.id },
+        { imageId },
+      );
     } catch (error) {
       if (error instanceof NotExistDataError) {
         throw new NotExistDataError(

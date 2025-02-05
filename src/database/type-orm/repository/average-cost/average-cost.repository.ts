@@ -2,17 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UnknownDataBaseError } from '../../../../core';
-import { AverageCost } from '../../entity/average-cost.entity';
+import { AverageCostEntity } from '../../entity/average-cost.entity';
 import { DuplicatedDataError, NotExistDataError } from '../../util';
 import { Transactional } from '../../util/transactional.decorator';
 import { AbstractRepository } from '../abstract-repository';
+import {
+  AverageCostDistanceUnion,
+  IAverageCostRepository,
+} from './average-cost.repository.interface';
 
 @Injectable()
-export class AverageCostRepository extends AbstractRepository {
-  @InjectRepository(AverageCost)
-  private readonly repository: Repository<AverageCost>;
-
-  constructor() {
+export class AverageCostRepository
+  extends AbstractRepository
+  implements IAverageCostRepository
+{
+  constructor(
+    @InjectRepository(AverageCostEntity)
+    private readonly repository: Repository<AverageCostEntity>,
+  ) {
     super();
   }
 
@@ -20,7 +27,7 @@ export class AverageCostRepository extends AbstractRepository {
     distanceUnit,
     lastMonth,
   }: {
-    distanceUnit: DistanceUnit;
+    distanceUnit: AverageCostDistanceUnion;
     lastMonth: Date;
   }) {
     try {
@@ -41,15 +48,18 @@ export class AverageCostRepository extends AbstractRepository {
   }
 
   @Transactional()
-  async createAverage(averageCost: Omit<AverageCost, 'date'>, date: Date) {
+  async createAverage(
+    averageCost: Omit<AverageCostEntity, 'date'>,
+    date: Date,
+  ) {
     try {
-      if (await this.manager.existsBy(AverageCost, { date })) {
+      if (await this.manager.existsBy(AverageCostEntity, { date })) {
         throw new DuplicatedDataError(
           `${date}에 해당되는 데이터가 이미 존재합니다.`,
         );
       }
 
-      await this.manager.insert(AverageCost, { date, ...averageCost });
+      await this.manager.insert(AverageCostEntity, { date, ...averageCost });
     } catch (error) {
       if (error instanceof DuplicatedDataError) {
         throw error;
@@ -58,7 +68,3 @@ export class AverageCostRepository extends AbstractRepository {
     }
   }
 }
-
-type AverageOfCostKeys = keyof AverageCost;
-
-export type DistanceUnit = Exclude<AverageOfCostKeys, 'date'>;
