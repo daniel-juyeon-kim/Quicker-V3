@@ -4,7 +4,7 @@ import {
   MongooseModuleOptions,
   MongooseOptionsFactory,
 } from '@nestjs/mongoose';
-import { mongooseConfig } from '@src/config/configs';
+import { mongooseConfig } from '@src/core/config/configs';
 
 export class MongooseOption implements MongooseOptionsFactory {
   private readonly option: MongooseModuleOptions;

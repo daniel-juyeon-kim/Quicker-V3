@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UnknownDataBaseError } from '@src/core';
+import { UnknownDataBaseError } from '@src/core/module';
 import { isNull } from '@src/core/util';
 import { EntityManager, In, IsNull, Not, Repository } from 'typeorm';
 import {

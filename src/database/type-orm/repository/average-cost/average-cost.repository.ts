@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UnknownDataBaseError } from '@src/core/module';
 import { Repository } from 'typeorm';
-import { UnknownDataBaseError } from '../../../../core';
 import { AverageCostEntity } from '../../entity/average-cost.entity';
 import { DuplicatedDataError, NotExistDataError } from '../../util';
 import { Transactional } from '../../util/transactional.decorator';

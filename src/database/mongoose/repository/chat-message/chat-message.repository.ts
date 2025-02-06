@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UnknownDataBaseError } from '@src/core';
+import { UnknownDataBaseError } from '@src/core/module';
 import { isNull, isUndefined } from '@src/core/util';
 import { NotExistDataError } from '@src/database/type-orm';
 import { Model } from 'mongoose';

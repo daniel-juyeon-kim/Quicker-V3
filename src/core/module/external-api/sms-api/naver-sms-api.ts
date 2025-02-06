@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { naverSmsApiConfig } from '@src/config/configs';
+import { naverSmsApiConfig } from '@src/core/config/configs';
 import { validateResponse } from '@src/core/util';
 import CryptoJS from 'crypto-js';
 import fetch, { HeadersInit } from 'node-fetch';
-import { SmsApiError } from './sms-api.error';
+import { SmsApiError } from '../../error/sms-api.error';
 import { Body, SmsApi } from './sms-api.interface';
 
 @Injectable()

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChatPostMessageResponse, WebClient } from '@slack/web-api';
-import { slackbotConfig } from '@src/config/configs';
+import { slackbotConfig } from '@src/core/config/configs';
+import { ErrorMessageBotError } from '../../error/error-message-bot.error';
 import { ErrorMessage } from './error-message';
-import { ErrorMessageBotError } from './error-message-bot.error';
 import { ErrorMessageBot } from './error-message-bot.interface';
 
 @Injectable()
