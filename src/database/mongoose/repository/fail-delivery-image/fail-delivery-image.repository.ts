@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { UnknownDataBaseError } from '@src/core/module';
 import { Model } from 'mongoose';
-import { UnknownDataBaseError } from '../../../../core';
 import { DuplicatedDataError, NotExistDataError } from '../../../type-orm';
 import { FailDeliveryImage } from '../../models';
 import { MongoRepository } from '../abstract.repository';

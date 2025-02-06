@@ -1,4 +1,4 @@
-import { isNull } from './util';
+import { isNull } from '.';
 
 /**
  * 객체의 속성중 null이 있는지 확인하는 함수

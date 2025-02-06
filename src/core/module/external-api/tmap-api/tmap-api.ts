@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { tmapApiConfig } from '@src/config/configs';
+import { tmapApiConfig } from '@src/core/config/configs';
 import { isNull, validateResponse } from '@src/core/util';
 import fetch from 'node-fetch';
+import { TmapApiError } from '../../error/tmap-api.error';
 import { Distance } from './distance';
-import { TmapApiError } from './tmap-api.error';
 import {
   DestinationDepartureLocation,
   RequestBody,

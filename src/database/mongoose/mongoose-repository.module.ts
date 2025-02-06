@@ -1,7 +1,7 @@
 import { Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { mongooseConfig } from '@src/config/configs';
+import { mongooseConfig } from '@src/core/config/configs';
 import { RepositoryToken } from '@src/core/constant';
 import {
   ChatMessages,

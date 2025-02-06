@@ -1,7 +1,7 @@
 import { afterEach } from '@jest/globals';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnknownDataBaseError } from '@src/core';
+import { UnknownDataBaseError } from '@src/core/module';
 import { DuplicatedDataError, NotExistDataError } from '@src/database/type-orm';
 import { mock } from 'jest-mock-extended';
 import { MongoMemoryServer } from 'mongodb-memory-server';

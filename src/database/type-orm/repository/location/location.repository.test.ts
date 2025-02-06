@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
-import { UnknownDataBaseError } from '@src/core';
+import { UnknownDataBaseError } from '@src/core/module';
 import {
   BirthDateEntity,
   DepartureEntity,

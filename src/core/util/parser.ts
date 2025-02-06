@@ -1,4 +1,4 @@
-import { validateNumeric } from './util';
+import { validateNumeric } from '.';
 
 const SPLITTER = ',';
 

@@ -3,8 +3,8 @@ import fetch from 'node-fetch';
 
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { TmapApiError } from '../../error/tmap-api.error';
 import { TmapApi } from './tmap-api';
-import { TmapApiError } from './tmap-api.error';
 import { DestinationDepartureLocation } from './types';
 
 jest.mock('node-fetch');

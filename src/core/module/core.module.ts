@@ -7,8 +7,9 @@ import {
   naverSmsApiConfig,
   slackbotConfig,
   tmapApiConfig,
-} from '@src/config/configs';
+} from '@src/core/config/configs';
 import { Klaytn } from './blockchain';
+import { DeliveryUrlCreator } from './delivery-url-creator';
 import { NaverSmsApi, SlackBot, TmapApi } from './external-api';
 import { KeyCreator } from './key-creator';
 
@@ -17,6 +18,7 @@ const coreServices: Provider[] = [
   SlackBot,
   NaverSmsApi,
   TmapApi,
+  DeliveryUrlCreator,
   KeyCreator,
 ];
 

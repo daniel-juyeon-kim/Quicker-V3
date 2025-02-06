@@ -1,7 +1,7 @@
 import { Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmConfig } from '@src/config/configs';
+import { typeOrmConfig } from '@src/core/config/configs';
 import { RepositoryToken } from '@src/core/constant/repository';
 import {
   AverageCostEntity,

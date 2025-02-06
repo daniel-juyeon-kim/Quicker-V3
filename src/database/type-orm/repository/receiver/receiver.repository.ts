@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UnknownDataBaseError } from '@src/core';
+import { UnknownDataBaseError } from '@src/core/module';
 import { EntityManager } from 'typeorm';
 import { AbstractRepository } from '..';
 import { ReceiverEntity } from '../../entity';

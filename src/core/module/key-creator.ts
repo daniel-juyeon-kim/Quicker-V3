@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { keyCreatorConfig } from '@src/config/configs';
+import { keyCreatorConfig } from '@src/core/config/configs';
 import crypto from 'crypto';
 import CryptoJS from 'crypto-js';
 

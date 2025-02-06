@@ -1,7 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { keyCreatorConfig } from '@src/config/configs';
+import { keyCreatorConfig } from '@src/core/config/configs';
 import CryptoJS from 'crypto-js';
 
+@Injectable()
 export class DeliveryUrlCreator {
   private readonly encryptKey: string;
   private readonly baseUrl: string;

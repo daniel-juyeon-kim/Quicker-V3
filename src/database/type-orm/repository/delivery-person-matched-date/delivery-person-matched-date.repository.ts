@@ -2,7 +2,7 @@ import { Between, EntityManager, Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UnknownDataBaseError } from '../../../../core';
+import { UnknownDataBaseError } from '@src/core/module';
 import { DeliveryPersonMatchedDateEntity } from '../../entity';
 import { DuplicatedDataError } from '../../util';
 import { AbstractRepository } from '../abstract-repository';

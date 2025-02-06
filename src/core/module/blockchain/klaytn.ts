@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { klaytnConfig } from '@src/config/configs';
+import { klaytnConfig } from '@src/core/config/configs';
 import Caver, { Contract } from 'caver-js';
-import { isFulfilled } from '../util';
+import { isFulfilled } from '../../util';
 import { Blockchain } from './blockchain.interface';
 import {
   QUICKER_DLVR_PROXY_ABI,
