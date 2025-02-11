@@ -4,19 +4,19 @@ import { OrderEntity } from '.';
 @Entity({ name: 'deliveryPersonMatchedDate' })
 export class DeliveryPersonMatchedDateEntity {
   @PrimaryColumn()
-  id!: number;
+  id: number;
 
   @Column({
     type: 'datetime',
     default: () => 'CURRENT_TIMESTAMP',
     nullable: true,
   })
-  date!: Date | null;
+  date: Date | null;
 
   @OneToOne(() => OrderEntity, (order) => order.deliveryPersonMatchedDate, {
     cascade: ['insert'],
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  order!: OrderEntity;
+  order: OrderEntity;
 }

@@ -4,19 +4,19 @@ import { OrderEntity } from '.';
 @Entity({ name: 'product' })
 export class ProductEntity {
   @PrimaryColumn()
-  id!: number;
+  id: number;
 
   @Column()
-  width!: number;
+  width: number;
 
   @Column()
-  length!: number;
+  length: number;
 
   @Column()
-  height!: number;
+  height: number;
 
   @Column()
-  weight!: number;
+  weight: number;
 
   @OneToOne(() => OrderEntity, (order) => order.product, {
     cascade: ['insert'],
@@ -24,5 +24,5 @@ export class ProductEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  order!: OrderEntity;
+  order: OrderEntity;
 }

@@ -4,16 +4,16 @@ import { OrderEntity, ReceiverEntity } from '.';
 @Entity({ name: 'destination' })
 export class DestinationEntity {
   @PrimaryColumn()
-  id!: number;
+  id: number;
 
   @Column('double')
-  x!: number;
+  x: number;
 
   @Column('double')
-  y!: number;
+  y: number;
 
   @Column()
-  detail!: string;
+  detail: string;
 
   @OneToOne(() => OrderEntity, (order) => order.destination, {
     cascade: ['insert'],
@@ -21,10 +21,10 @@ export class DestinationEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  order!: OrderEntity;
+  order: OrderEntity;
 
   @OneToOne(() => ReceiverEntity, (receiver) => receiver.destination, {
     cascade: ['insert'],
   })
-  receiver!: ReceiverEntity;
+  receiver: ReceiverEntity;
 }

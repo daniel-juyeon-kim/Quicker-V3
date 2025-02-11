@@ -18,20 +18,20 @@ import {
 @Entity({ name: 'order' })
 export class OrderEntity {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id: number;
 
   @ManyToOne(() => UserEntity, (user) => user.requestOrder, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  requester!: UserEntity;
+  requester: UserEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.deliverOrder, {
     nullable: true,
   })
   @JoinColumn()
-  deliveryPerson!: UserEntity | null;
+  deliveryPerson: UserEntity | null;
 
   @Column({ nullable: true })
   detail?: string;
@@ -43,28 +43,28 @@ export class OrderEntity {
       cascade: ['insert'],
     },
   )
-  transportation!: TransportationEntity;
+  transportation: TransportationEntity;
 
   @OneToOne(() => ProductEntity, (product) => product.order, {
     cascade: ['insert'],
   })
-  product!: ProductEntity;
+  product: ProductEntity;
 
   @OneToOne(() => DestinationEntity, (destination) => destination.order, {
     cascade: ['insert'],
   })
-  destination!: DestinationEntity;
+  destination: DestinationEntity;
 
   @OneToOne(() => DepartureEntity, (departure) => departure.order, {
     cascade: ['insert'],
   })
-  departure!: DepartureEntity;
+  departure: DepartureEntity;
 
   @OneToOne(
     () => DeliveryPersonMatchedDateEntity,
     (deliveryPersonMatchedDate) => deliveryPersonMatchedDate.order,
   )
-  deliveryPersonMatchedDate!: DeliveryPersonMatchedDateEntity;
+  deliveryPersonMatchedDate: DeliveryPersonMatchedDateEntity;
 }
 
 export type BasicOrder = Pick<OrderEntity, 'requester' | 'detail'>;

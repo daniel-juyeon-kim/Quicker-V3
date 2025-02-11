@@ -9,38 +9,38 @@ import {
 @Entity({ name: 'user' })
 export class UserEntity {
   @PrimaryColumn()
-  id!: string;
+  id: string;
 
   @Column()
-  walletAddress!: string;
+  walletAddress: string;
 
   @Column()
-  name!: string;
+  name: string;
 
   @Column()
-  email!: string;
+  email: string;
 
   @Column({ unique: true })
-  contact!: string;
+  contact: string;
 
   @OneToOne(() => ProfileImageEntity, (profileImage) => profileImage.user, {
     cascade: ['insert'],
   })
-  profileImage!: ProfileImageEntity;
+  profileImage: ProfileImageEntity;
 
   @OneToOne(() => JoinDateEntity, (joinDate) => joinDate.user, {
     cascade: ['insert'],
   })
-  joinDate!: JoinDateEntity;
+  joinDate: JoinDateEntity;
 
   @OneToOne(() => BirthDateEntity, (birthDate) => birthDate.user, {
     cascade: ['insert'],
   })
-  birthDate!: BirthDateEntity;
+  birthDate: BirthDateEntity;
 
   @OneToMany(() => OrderEntity, (order) => order.requester)
-  requestOrder!: OrderEntity[];
+  requestOrder: OrderEntity[];
 
   @OneToMany(() => OrderEntity, (order) => order.deliveryPerson)
-  deliverOrder!: OrderEntity[];
+  deliverOrder: OrderEntity[];
 }
