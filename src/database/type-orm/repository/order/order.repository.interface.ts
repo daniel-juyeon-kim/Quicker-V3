@@ -1,13 +1,13 @@
-import { EntityManager } from 'typeorm';
+import { DeepPartial, EntityManager } from 'typeorm';
 import { OrderEntity } from '../../entity';
 
 export interface IOrderRepository {
   findAllCreatedOrDeliveredOrderDetailByOrderIds(
     orderIds: number[],
-  ): Promise<OrderEntity[]>;
+  ): Promise<DeepPartial<OrderEntity>[]>;
   findAllMatchableOrderByWalletAddress(
     walletAddress: string,
-  ): Promise<OrderEntity[]>;
+  ): Promise<Partial<OrderEntity[]>>;
   updateDeliveryPersonAtOrder(
     manager: EntityManager,
     deliveryPerson: { orderId: number; walletAddress: string },
@@ -15,7 +15,7 @@ export interface IOrderRepository {
   create(order: {
     walletAddress: string;
     detail?: string;
-    transportation: Record<TransportationUnion, 1 | 0>;
+    transportation: Partial<Record<TransportationUnion, 1 | 0>>;
     product: Product;
     destination: Location;
     departure: Location;

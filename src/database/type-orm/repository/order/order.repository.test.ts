@@ -177,10 +177,7 @@ describe('orderRepository 테스트', () => {
           weight: 0,
         };
         const transportation = {
-          walking: 0,
-          bicycle: 0,
-          scooter: 0,
-          bike: 0,
+          bicycle: 1,
           car: 0,
           truck: 0,
         } as const;
@@ -231,7 +228,17 @@ describe('orderRepository 테스트', () => {
             receiver: { id: 1, ...receiver },
           },
           product: { id: 1, ...product },
-          transportation: { id: 1, ...transportation },
+          transportation: {
+            id: 1,
+            ...{
+              bike: 0,
+              car: 0,
+              scooter: 0,
+              truck: 0,
+              walking: 0,
+            },
+            ...transportation,
+          },
         };
 
         await repository.create(dto);
