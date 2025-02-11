@@ -7,10 +7,8 @@ import {
 import { isEthereumAddress } from 'class-validator';
 
 @Injectable()
-export class ValidateWalletAddressPipe
-  implements PipeTransform<string, string>
-{
-  transform(value: string, metadata: ArgumentMetadata) {
+export class ValidateWalletAddressPipe implements PipeTransform<any, string> {
+  transform(value: any, metadata: ArgumentMetadata) {
     if (isEthereumAddress(value)) {
       return value;
     }
