@@ -21,7 +21,8 @@ export class NaverSmsApi implements SmsApi {
   ) {
     this.accesskey = configService.get('accesskey');
     this.secretkey = configService.get('secretkey');
-    this.apiUrl = `https://sens.apigw.ntruss.com/sms/v2/services/${configService.get('serviceId')}/messages`;
+    const serviceId = configService.get('serviceId');
+    this.apiUrl = `https://sens.apigw.ntruss.com/sms/v2/services/${serviceId}/messages`;
     this.fromNumber = configService.get('fromNumber');
   }
 
