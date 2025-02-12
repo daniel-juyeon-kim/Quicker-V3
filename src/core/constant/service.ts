@@ -6,4 +6,5 @@ export enum ServiceToken {
   ORDER_DELIVERY_PERSON_SERVICE = 'IOrderDeliveryPersonService',
   ORDER_FAIL_IMAGE_SERVICE = 'IOrderFailImageService',
   ORDER_COMPLETE_IMAGE_SERVICE = 'IOrderCompleteImageService',
+  ORDER_LOCATION_SERVICE = 'IOrderLocationService',
 }
