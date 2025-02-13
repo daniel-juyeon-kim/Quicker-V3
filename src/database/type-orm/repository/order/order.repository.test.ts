@@ -241,7 +241,7 @@ describe('orderRepository 테스트', () => {
           },
         };
 
-        await repository.create(dto);
+        await repository.createOrder(dto);
 
         await expect(
           manager.findOne(OrderEntity, {

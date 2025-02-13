@@ -1,27 +1,27 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { RepositoryToken } from '@src/core/constant';
 import { IOrderRepository } from '@src/database';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { IOrderService } from './order.service.interface';
+import { CreateOrderDto } from './dto/create-orders.dto';
+import { IOrdersService } from './orders.service.interface';
 
 @Injectable()
-export class OrderService implements IOrderService {
+export class OrdersService implements IOrdersService {
   constructor(
     @Inject(RepositoryToken.ORDER_REPOSITORY)
     private readonly repository: IOrderRepository,
   ) {}
 
   async createOrder(dto: CreateOrderDto) {
-    await this.repository.create(dto);
+    await this.repository.createOrder(dto);
   }
 
-  async findAllOrderDetail(orderIds: number[]) {
+  async findAllOrderDetailByOrderIds(orderIds: number[]) {
     return await this.repository.findAllCreatedOrDeliveredOrderDetailByOrderIds(
       orderIds,
     );
   }
 
-  async findAllMatchableOrder(walletAddress: string) {
+  async findAllMatchableOrderByWalletAddress(walletAddress: string) {
     return await this.repository.findAllMatchableOrderByWalletAddress(
       walletAddress,
     );

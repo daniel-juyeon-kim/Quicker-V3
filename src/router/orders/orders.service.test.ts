@@ -1,19 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken, ServiceToken } from '@src/core/constant';
-import { IOrderRepository } from '@src/database';
+import { UnknownDataBaseError } from '@src/core/module';
+import { IOrderRepository, NotExistDataError } from '@src/database';
 import { mock, mockClear } from 'jest-mock-extended';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { OrderService } from './order.service';
-import { IOrderService } from './order.service.interface';
+import { CreateOrderDto } from './dto/create-orders.dto';
+import { OrdersService } from './orders.service';
+import { IOrdersService } from './orders.service.interface';
 
-describe('OrderService 테스트', () => {
-  let service: IOrderService;
+describe('OrdersService', () => {
+  let service: IOrdersService;
   const repository = mock<IOrderRepository>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        { provide: ServiceToken.ORDER_SERVICE, useClass: OrderService },
+        { provide: ServiceToken.ORDER_SERVICE, useClass: OrdersService },
         {
           provide: RepositoryToken.ORDER_REPOSITORY,
           useValue: repository,
@@ -26,7 +27,7 @@ describe('OrderService 테스트', () => {
     mockClear(repository);
   });
 
-  describe('createOrder 테스트', () => {
+  describe('createOrder', () => {
     test('통과하는 테스트', async () => {
       const dto: CreateOrderDto = {
         walletAddress: '0x123456789abcdef',
@@ -66,11 +67,31 @@ describe('OrderService 테스트', () => {
 
       await expect(service.createOrder(dto)).resolves.toEqual(undefined);
 
-      expect(repository.create).toHaveBeenCalledWith(calledValue);
+      expect(repository.createOrder).toHaveBeenCalledWith(calledValue);
+    });
+
+    test('실패하는 테스트, 지갑주소에 해당되는 사용자가 없으면 NotExistDataError를 던짐', async () => {
+      const walletAddress = '0x123456789abcdef';
+      const dto: CreateOrderDto = {
+        walletAddress,
+        detail: 'Test order',
+        transportation: { truck: 1 },
+        product: { width: 10, length: 20, height: 30, weight: 5 },
+        destination: { x: 37.7749, y: -122.4194 },
+        departure: { x: 34.0522, y: -118.2437 },
+        sender: { name: 'John Doe', phone: '123-456-7890' },
+        receiver: { name: 'Jane Smith', phone: '987-654-3210' },
+      };
+      const error = new NotExistDataError(
+        `${walletAddress}에 해당되는 사용자를 찾지 못했습니다.`,
+      );
+      repository.createOrder.mockRejectedValue(error);
+
+      await expect(service.createOrder(dto)).rejects.toStrictEqual(error);
     });
   });
 
-  describe('findAllOrderDetail()', () => {
+  describe('findAllOrderDetailByOrderIds', () => {
     test('통과하는 테스트', async () => {
       const returnValue = [
         {
@@ -107,13 +128,25 @@ describe('OrderService 테스트', () => {
       );
       const orderIds = [1, 2, 3, 4];
 
-      await expect(service.findAllOrderDetail(orderIds)).resolves.toEqual(
-        returnValue,
-      );
+      await expect(
+        service.findAllOrderDetailByOrderIds(orderIds),
+      ).resolves.toEqual(returnValue);
 
       expect(
         repository.findAllCreatedOrDeliveredOrderDetailByOrderIds,
       ).toHaveBeenCalledWith(orderIds);
+    });
+
+    test('실패하는 테스트, 데이터베이스에 알 수 없는 에러가 발생하면 UnknownDataBaseError를 던짐', async () => {
+      const orderIds = [1, 2, 3];
+      const error = new UnknownDataBaseError(`알 수 없는 에러.`);
+      repository.findAllCreatedOrDeliveredOrderDetailByOrderIds.mockRejectedValue(
+        error,
+      );
+
+      await expect(
+        service.findAllOrderDetailByOrderIds(orderIds),
+      ).rejects.toStrictEqual(error);
     });
   });
 });

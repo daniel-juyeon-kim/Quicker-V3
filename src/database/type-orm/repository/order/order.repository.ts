@@ -82,7 +82,7 @@ export class OrderRepository
   }
 
   @Transactional()
-  async create({
+  async createOrder({
     walletAddress,
     detail,
     receiver,
@@ -91,7 +91,7 @@ export class OrderRepository
     departure,
     product,
     transportation,
-  }: Parameters<IOrderRepository['create']>[0]) {
+  }: Parameters<IOrderRepository['createOrder']>[0]) {
     try {
       const requester = await this.manager.findOneBy(UserEntity, {
         walletAddress,

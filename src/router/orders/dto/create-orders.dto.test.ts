@@ -1,9 +1,9 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { describe } from 'node:test';
-import { CreateOrderDto } from './create-order.dto';
+import { CreateOrderDto } from './create-orders.dto';
 
-describe('CreateOrderDto', () => {
+describe('CreateOrdersDto', () => {
   const validData = {
     walletAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
     detail: 'Test order',

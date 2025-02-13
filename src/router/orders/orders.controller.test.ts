@@ -5,27 +5,27 @@ import { NotExistDataError, OrderEntity } from '@src/database';
 import { mock, mockClear } from 'jest-mock-extended';
 import { describe } from 'node:test';
 import { DeepPartial } from 'typeorm';
-import { OrderController } from './order.controller';
-import { OrderService } from './order.service';
-import { IOrderService } from './order.service.interface';
+import { OrdersController } from './orders.controller';
+import { OrdersService } from './orders.service';
+import { IOrdersService } from './orders.service.interface';
 
-describe('OrderController', () => {
-  let controller: OrderController;
-  const service = mock<IOrderService>();
+describe('OrdersController', () => {
+  let controller: OrdersController;
+  const service = mock<IOrdersService>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [OrderController],
+      controllers: [OrdersController],
       providers: [{ provide: ServiceToken.ORDER_SERVICE, useValue: service }],
     }).compile();
 
-    controller = module.get(OrderController);
+    controller = module.get(OrdersController);
 
     mockClear(service);
   });
 
-  describe('createOrder()', () => {
-    const dto: Parameters<OrderService['createOrder']>[0] = {
+  describe('createOrder', () => {
+    const dto: Parameters<OrdersService['createOrder']>[0] = {
       walletAddress: '0x123456789abcdef',
       detail: 'Fragile, handle with care',
       transportation: {
@@ -57,31 +57,31 @@ describe('OrderController', () => {
     };
 
     test('통과하는 테스트', async () => {
-      await expect(controller.create(dto)).resolves.toEqual(undefined);
+      await expect(controller.createOrder(dto)).resolves.toEqual(undefined);
 
       expect(service.createOrder).toHaveBeenCalledWith(dto);
     });
 
-    test('실패하는 테스트, 알 수 없는 DB 에러 헨들링', async () => {
+    test('실패하는 테스트, 알 수 없는 에러 발생 UnknownDataBaseError를 던짐', async () => {
       const error = new UnknownDataBaseError('알 수 없는 DB 에러');
       service.createOrder.mockRejectedValue(error);
 
-      await expect(controller.create(dto)).rejects.toStrictEqual(error);
+      await expect(controller.createOrder(dto)).rejects.toStrictEqual(error);
 
       expect(service.createOrder).toHaveBeenCalledWith(dto);
     });
 
-    test('실패하는 테스트, 존재하지 않는 데이터 에러', async () => {
+    test('실패하는 테스트, 데이터가 존재하지 않으면 NotExistDataError를 던짐', async () => {
       const error = new NotExistDataError('존재하지 않는 데이터');
       service.createOrder.mockRejectedValue(error);
 
-      await expect(controller.create(dto)).rejects.toStrictEqual(error);
+      await expect(controller.createOrder(dto)).rejects.toStrictEqual(error);
 
       expect(service.createOrder).toHaveBeenCalledWith(dto);
     });
   });
 
-  describe('getMatchableOrdersByWalletAddress()', () => {
+  describe('findAllMatchableOrder', () => {
     test('통과하는 테스트', async () => {
       const walletAddress = '배송원 지갑주소';
       const resolveValue: DeepPartial<OrderEntity[]> = [
@@ -101,29 +101,35 @@ describe('OrderController', () => {
           },
         },
       ];
-      service.findAllMatchableOrder.mockResolvedValueOnce(resolveValue);
+      service.findAllMatchableOrderByWalletAddress.mockResolvedValueOnce(
+        resolveValue,
+      );
 
       await expect(
         controller.findAllMatchableOrder(walletAddress),
       ).resolves.toEqual(resolveValue);
 
-      expect(service.findAllMatchableOrder).toHaveBeenCalledWith(walletAddress);
+      expect(service.findAllMatchableOrderByWalletAddress).toHaveBeenCalledWith(
+        walletAddress,
+      );
     });
 
-    test('실패하는 테스트, next 호출', async () => {
+    test('실패하는 테스트, 존재하지 않는 정보를 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '배송원 지갑주소';
       const error = new NotExistDataError('회원이 존재하지 않습니다.');
-      service.findAllMatchableOrder.mockRejectedValueOnce(error);
+      service.findAllMatchableOrderByWalletAddress.mockRejectedValueOnce(error);
 
       await expect(
         controller.findAllMatchableOrder(walletAddress),
       ).rejects.toStrictEqual(error);
 
-      expect(service.findAllMatchableOrder).toHaveBeenCalledWith(walletAddress);
+      expect(service.findAllMatchableOrderByWalletAddress).toHaveBeenCalledWith(
+        walletAddress,
+      );
     });
   });
 
-  describe('getOrdersDetail()', () => {
+  describe('findAllOrderDetail', () => {
     test('통과하는 테스트', async () => {
       const orderIds = [1, 2, 3, 4];
       const resolveValue: DeepPartial<OrderEntity[]> = [
@@ -184,27 +190,29 @@ describe('OrderController', () => {
           },
         },
       ];
-      service.findAllOrderDetail.mockResolvedValueOnce(resolveValue);
+      service.findAllOrderDetailByOrderIds.mockResolvedValueOnce(resolveValue);
 
       await expect(
         controller.findAllOrderDetail(orderIds),
       ).resolves.toStrictEqual(resolveValue);
 
-      expect(service.findAllOrderDetail).toHaveBeenCalledWith(orderIds);
+      expect(service.findAllOrderDetailByOrderIds).toHaveBeenCalledWith(
+        orderIds,
+      );
     });
 
-    describe('실패하는 테스트', () => {
-      test('예상하지 못한 에러 발생', async () => {
-        const orderIds = [1, 2, 3, 4];
-        const error = new UnknownDataBaseError('알 수 없는 에러');
-        service.findAllOrderDetail.mockRejectedValueOnce(error);
+    test('실패하는 테스트, 알 수 없는 에러 발생 UnknownDataBaseError를 던짐', async () => {
+      const orderIds = [1, 2, 3, 4];
+      const error = new UnknownDataBaseError('알 수 없는 에러');
+      service.findAllOrderDetailByOrderIds.mockRejectedValueOnce(error);
 
-        await expect(
-          controller.findAllOrderDetail(orderIds),
-        ).rejects.toStrictEqual(error);
+      await expect(
+        controller.findAllOrderDetail(orderIds),
+      ).rejects.toStrictEqual(error);
 
-        expect(service.findAllOrderDetail).toHaveBeenCalledWith(orderIds);
-      });
+      expect(service.findAllOrderDetailByOrderIds).toHaveBeenCalledWith(
+        orderIds,
+      );
     });
   });
 });

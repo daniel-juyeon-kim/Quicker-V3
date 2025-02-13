@@ -12,7 +12,7 @@ export interface IOrderRepository {
     manager: EntityManager,
     deliveryPerson: { orderId: number; walletAddress: string },
   ): Promise<void>;
-  create(order: {
+  createOrder(order: {
     walletAddress: string;
     detail?: string;
     transportation: Partial<Record<TransportationUnion, 1 | 0>>;
