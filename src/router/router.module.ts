@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ChatModule } from './chat/chat.module';
+import { ChatsModule } from './chats/chats.module';
 import { OrderAverageModule } from './order-average/order-average.module';
 import { OrderDeliveryPersonModule } from './order-delivery-person/order-delivery-person.module';
 import { OrderImageModule } from './order-image/order-image.module';
@@ -9,7 +9,7 @@ import { SenderReceiverInfoModule } from './sender-receiver-info/sender-receiver
 import { UsersModule } from './users/users.module';
 
 const routeModules = [
-  ChatModule,
+  ChatsModule,
   UsersModule,
   OrderModule,
   OrderAverageModule,

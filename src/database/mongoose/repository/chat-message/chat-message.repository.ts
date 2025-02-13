@@ -35,18 +35,18 @@ export class ChatMessageRepository
     if (await this.isExistChatRoom(orderId)) {
       return;
     }
-    await new this.model({ roomId: orderId }).save();
+    await new this.model({ id: orderId }).save();
   }
 
   private async isExistChatRoom(orderId: number) {
-    const chatRoom = await this.model.exists({ roomId: orderId });
+    const chatRoom = await this.model.exists({ id: orderId });
 
     return !isNull(chatRoom);
   }
 
   private async insertMessage(orderId: number, messageInfo: MessageInfo) {
     await this.model.updateOne(
-      { roomId: orderId },
+      { id: orderId },
       {
         $push: {
           messages: messageInfo,
@@ -57,9 +57,9 @@ export class ChatMessageRepository
 
   async findAllMessageByOrderId(orderId: number) {
     const messages = await this.model
-      .findOne({ roomId: orderId })
+      .findOne({ id: orderId })
       .select({ messages: { _id: 0 } })
-      .select({ _id: 0, roomId: 0, __v: 0 })
+      .select({ _id: 0, id: 0, __v: 0 })
       .lean();
 
     this.validateNull(messages);
@@ -67,10 +67,10 @@ export class ChatMessageRepository
     return messages;
   }
 
-  async findRecentMessageByOrderId(roomId: number) {
+  async findRecentMessageByOrderId(orderId: number) {
     try {
       const userMessages = await this.model
-        .findOne({ roomId: roomId }, '-messages._id')
+        .findOne({ id: orderId }, '-messages._id')
         .lean();
 
       this.validateNull(userMessages);
@@ -85,7 +85,7 @@ export class ChatMessageRepository
     } catch (error) {
       if (error instanceof NotExistDataError) {
         throw new NotExistDataError(
-          `${roomId}에 대한 데이터가 존재하지 않습니다.`,
+          `${orderId}에 대한 데이터가 존재하지 않습니다.`,
         );
       }
       throw new UnknownDataBaseError(error);
