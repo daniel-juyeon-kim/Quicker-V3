@@ -1,17 +1,16 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { UpdateUserDto } from './update-user.dto';
+import { UpdateUsersDto } from './update-users.dto';
 
-describe('UpdateUserDto Validation', () => {
+describe('UpdateUserDto', () => {
   const getValidationErrors = async (dto: object) => {
-    const instance = plainToInstance(UpdateUserDto, dto);
+    const instance = plainToInstance(UpdateUsersDto, dto);
     return validate(instance);
   };
 
   describe('통과하는 테스트', () => {
     test('유효한 형식', async () => {
       const dto = {
-        walletAddress: '0xA1b2C3d4E5F67890abcdef1234567890ABCDEF12',
         imageId: '001',
       };
 
@@ -22,21 +21,19 @@ describe('UpdateUserDto Validation', () => {
   });
 
   describe('실패하는 테스트', () => {
-    test('walletAddress가 number타입', async () => {
+    test('imageId가 문자열 타입 숫자가 아님', async () => {
       const dto = {
-        walletAddress: 123456, // 잘못된 타입 (number)
-        imageId: '001',
+        imageId: 'lsiafenl',
       };
 
       const errors = await getValidationErrors(dto);
 
       expect(errors.length).toEqual(1);
-      expect(errors.map((e) => e.property)).toEqual(['walletAddress']);
+      expect(errors.map((e) => e.property)).toEqual(['imageId']);
     });
 
     test('imageId가 number타입', async () => {
       const dto = {
-        walletAddress: '0xA1b2C3d4E5F67890abcdef1234567890ABCDEF12',
         imageId: 999, // 잘못된 타입 (number)
       };
 
@@ -46,16 +43,13 @@ describe('UpdateUserDto Validation', () => {
       expect(errors.map((e) => e.property)).toEqual(['imageId']);
     });
 
-    test('모든 필드가 누락', async () => {
+    test('필드 누락', async () => {
       const dto = {};
 
       const errors = await getValidationErrors(dto);
 
-      expect(errors.length).toEqual(2);
-      expect(errors.map((e) => e.property)).toEqual([
-        'walletAddress',
-        'imageId',
-      ]);
+      expect(errors.length).toEqual(1);
+      expect(errors.map((e) => e.property)).toEqual(['imageId']);
     });
   });
 });

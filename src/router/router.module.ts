@@ -6,11 +6,11 @@ import { OrderImageModule } from './order-image/order-image.module';
 import { OrderLocationModule } from './order-location/order-location.module';
 import { OrderModule } from './order/order.module';
 import { SenderReceiverInfoModule } from './sender-receiver-info/sender-receiver-info.module';
-import { UserModule } from './user/user.module';
+import { UsersModule } from './users/users.module';
 
 const routeModules = [
   ChatModule,
-  UserModule,
+  UsersModule,
   OrderModule,
   OrderAverageModule,
   OrderDeliveryPersonModule,

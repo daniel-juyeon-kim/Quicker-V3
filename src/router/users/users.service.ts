@@ -2,10 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { RepositoryToken } from '@src/core/constant';
 import { KeyCreator } from '@src/core/module';
 import { IUserRepository } from '@src/database';
-import { IUserService } from './user.service.interface';
+import { IUsersService } from './users.service.interface';
 
 @Injectable()
-export class UserService implements IUserService {
+export class UsersService implements IUsersService {
   constructor(
     @Inject(RepositoryToken.USER_REPOSITORY)
     private readonly repository: IUserRepository,
@@ -23,20 +23,24 @@ export class UserService implements IUserService {
     const userBirthDateObject = new Date(birthDate);
     const id = this.dbUserPkCreator.createDbUserId(user.contact);
 
-    await this.repository.create({ user, birthDate: userBirthDateObject, id });
+    await this.repository.createUser({
+      user,
+      birthDate: userBirthDateObject,
+      id,
+    });
   }
 
   async findUserNameByWalletAddress(walletAddress: string) {
     return await this.repository.findNameByWalletAddress(walletAddress);
   }
 
-  async findUserImageId(walletAddress: string) {
+  async findUserProfileImageIdByWalletAddress(walletAddress: string) {
     return await this.repository.findUserProfileImageIdByWalletAddress(
       walletAddress,
     );
   }
 
-  async updateUserImageId({ imageId, walletAddress }) {
+  async updateUserProfileImageId({ imageId, walletAddress }) {
     await this.repository.updateUserProfileImageIdByWalletAddress({
       imageId,
       walletAddress,

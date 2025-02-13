@@ -9,6 +9,7 @@ import {
   UserEntity,
 } from '../../entity';
 import { DuplicatedDataError, NotExistDataError } from '../../util';
+import { Transactional } from '../../util/transactional.decorator';
 import { AbstractRepository } from '../abstract-repository';
 import { IUserRepository } from './user.repository.interface';
 
@@ -24,7 +25,8 @@ export class UserRepository
     super();
   }
 
-  async create({
+  @Transactional()
+  async createUser({
     user,
     birthDate,
     id,
@@ -108,6 +110,7 @@ export class UserRepository
     }
   }
 
+  @Transactional()
   async updateUserProfileImageIdByWalletAddress({
     walletAddress,
     imageId,

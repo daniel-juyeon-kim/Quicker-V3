@@ -1,16 +1,16 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { CreateUserDto } from './create-user.dto';
+import { CreateUsersDto } from './create-users.dto';
 
 describe('CreateUserDto', () => {
   describe('통과하는 테스트', () => {
     test('모든 필드가 통과함', async () => {
-      const dto = plainToInstance(CreateUserDto, {
+      const dto = plainToInstance(CreateUsersDto, {
         walletAddress: '0xA1b2C3d4E5F67890abcdef1234567890ABCDEF12',
         name: 'John Doe',
         email: 'john@example.com',
         contact: '010-1234-7890',
-        birthDate: '2000-01-01T00:00:00.000Z', // 문자열이지만 @Type(() => Date)로 변환됨
+        birthDate: '2000-01-01T00:00:00.000Z',
       });
       const result = [];
 
@@ -20,7 +20,7 @@ describe('CreateUserDto', () => {
 
   describe('실패하는 테스트', () => {
     test('모든 필드 누락', async () => {
-      const dto = plainToInstance(CreateUserDto, {});
+      const dto = plainToInstance(CreateUsersDto, {});
       const result = [
         {
           children: [],
@@ -69,7 +69,7 @@ describe('CreateUserDto', () => {
     });
 
     test('잘못된 데이터 타입', async () => {
-      const dto = plainToInstance(CreateUserDto, {
+      const dto = plainToInstance(CreateUsersDto, {
         walletAddress: 12345, // 잘못된 타입 (string이 아님)
         name: true, // 잘못된 타입
         email: 'invalid-email', // 유효하지 않은 이메일

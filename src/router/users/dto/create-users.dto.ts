@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import 'reflect-metadata';
 
-export class CreateUserDto {
+export class CreateUsersDto {
   @IsEthereumAddress()
   walletAddress: string;
 
@@ -21,6 +21,7 @@ export class CreateUserDto {
   @IsPhoneNumber('KR')
   contact: string;
 
+  // TODO: 나이제한 추가
   @Type(() => Date)
   @IsDate()
   birthDate: Date;
