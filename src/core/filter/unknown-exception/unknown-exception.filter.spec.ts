@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { CoreToken } from '@src/core/constant';
+import { CoreToken, LoggerToken } from '@src/core/constant';
 import {
   ErrorMessage,
   ErrorMessageBot,
@@ -29,7 +29,7 @@ describe('UnknownExceptionFilter', () => {
 
     filter = unit;
     messageBot = unitRef.get(CoreToken.ERROR_MESSAGE_BOT);
-    logger = unitRef.get(Logger);
+    logger = unitRef.get(LoggerToken.UNKNOWN_EXCEPTION_LOGGER);
   });
 
   describe('catch', () => {

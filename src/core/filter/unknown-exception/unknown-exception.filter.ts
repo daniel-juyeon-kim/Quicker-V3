@@ -1,15 +1,25 @@
 import {
   ArgumentsHost,
   Catch,
+  Inject,
   InternalServerErrorException,
+  LoggerService,
 } from '@nestjs/common';
+import { LoggerToken } from '@src/core/constant';
 import { ErrorMessage, UnknownException } from '@src/core/module';
 import { CustomException } from '@src/core/module/exception/custom.exception';
-import { AbstractExceptionFilter } from '../abstract-exception.filter';
+import { ErrorReportExceptionFilter } from '../abstract/abstract-exception.filter';
 import { ExceptionTypes } from '../interface/exception-types';
 
 @Catch()
-export class UnknownExceptionFilter extends AbstractExceptionFilter<CustomException> {
+export class UnknownExceptionFilter extends ErrorReportExceptionFilter<CustomException> {
+  constructor(
+    @Inject(LoggerToken.UNKNOWN_EXCEPTION_LOGGER)
+    protected readonly logger: LoggerService,
+  ) {
+    super();
+  }
+
   async catch(exception: CustomException, host: ArgumentsHost) {
     if (exception instanceof UnknownException) {
       const date = new Date();

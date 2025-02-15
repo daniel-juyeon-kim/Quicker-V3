@@ -3,10 +3,10 @@ import {
   BadGatewayException,
   ConflictException,
   InternalServerErrorException,
-  Logger,
+  LoggerService,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CoreToken } from '@src/core/constant';
+import { CoreToken, LoggerToken } from '@src/core/constant';
 import {
   ErrorMessageBot,
   SmsApiException,
@@ -25,7 +25,6 @@ import { GlobalExceptionFilter } from './global-exception.filter';
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
   const mockHost = mock<ArgumentsHost>();
-  const logger = mock<Logger>();
   const smsApi = mock<ErrorMessageBot>();
 
   beforeEach(async () => {
@@ -39,8 +38,20 @@ describe('GlobalExceptionFilter', () => {
         SmsApiExceptionFilter,
         TmapApiExceptionFilter,
         {
-          provide: Logger,
-          useValue: logger,
+          provide: LoggerToken.ERROR_MESSAGE_BOT_EXCEPTION_LOGGER,
+          useValue: mock<LoggerService>(),
+        },
+        {
+          provide: LoggerToken.SMS_API_EXCEPTION_LOGGER,
+          useValue: mock<LoggerService>(),
+        },
+        {
+          provide: LoggerToken.TMAP_API_EXCEPTION_LOGGER,
+          useValue: mock<LoggerService>(),
+        },
+        {
+          provide: LoggerToken.UNKNOWN_EXCEPTION_LOGGER,
+          useValue: mock<LoggerService>(),
         },
         {
           provide: CoreToken.ERROR_MESSAGE_BOT,

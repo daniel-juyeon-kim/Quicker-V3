@@ -1,6 +1,6 @@
 import { TestBed } from '@automock/jest';
 import { ArgumentsHost, Logger } from '@nestjs/common';
-import { CoreToken } from '@src/core/constant';
+import { CoreToken, LoggerToken } from '@src/core/constant';
 import {
   ErrorMessage,
   ErrorMessageBot,
@@ -24,7 +24,7 @@ describe('SmsApiExceptionFilter', () => {
     const { unit, unitRef } = TestBed.create(SmsApiExceptionFilter).compile();
 
     filter = unit;
-    logger = unitRef.get(Logger);
+    logger = unitRef.get(LoggerToken.SMS_API_EXCEPTION_LOGGER);
     errorMessageBot = unitRef.get(CoreToken.ERROR_MESSAGE_BOT);
   });
 

@@ -2,6 +2,7 @@ import {
   ArgumentsHost,
   Catch,
   ConflictException,
+  ExceptionFilter,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -12,10 +13,11 @@ import {
   DuplicatedDataException,
   NotExistDataException,
 } from '@src/database';
-import { AbstractExceptionFilter } from '../abstract-exception.filter';
 
 @Catch()
-export class DatabaseExceptionFilter extends AbstractExceptionFilter<CustomException> {
+export class DatabaseExceptionFilter
+  implements ExceptionFilter<CustomException>
+{
   catch(exception: CustomException, host: ArgumentsHost) {
     if (exception instanceof DataBaseException) {
       this.catchDuplicateDataException(exception);

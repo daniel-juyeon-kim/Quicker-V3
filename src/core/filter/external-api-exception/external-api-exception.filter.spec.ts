@@ -1,6 +1,10 @@
-import { ArgumentsHost, BadGatewayException, Logger } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  BadGatewayException,
+  LoggerService,
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { CoreToken } from '@src/core/constant';
+import { CoreToken, LoggerToken } from '@src/core/constant';
 import {
   ErrorMessageBot,
   ErrorMessageBotException,
@@ -17,9 +21,6 @@ import { TmapApiExceptionFilter } from './tmap-api-exception/tmap-api-exception.
 describe('ExternalApiExceptionFilter', () => {
   let filter: ExternalApiExceptionFilter;
 
-  const logger = mock<Logger>();
-  const errorMessageBot = mock<ErrorMessageBot>();
-
   const mockHost = mock<ArgumentsHost>();
 
   beforeEach(async () => {
@@ -30,12 +31,24 @@ describe('ExternalApiExceptionFilter', () => {
         SmsApiExceptionFilter,
         TmapApiExceptionFilter,
         {
-          provide: Logger,
-          useValue: logger,
+          provide: LoggerToken.ERROR_MESSAGE_BOT_EXCEPTION_LOGGER,
+          useValue: mock<LoggerService>(),
+        },
+        {
+          provide: LoggerToken.SMS_API_EXCEPTION_LOGGER,
+          useValue: mock<LoggerService>(),
+        },
+        {
+          provide: LoggerToken.TMAP_API_EXCEPTION_LOGGER,
+          useValue: mock<LoggerService>(),
+        },
+        {
+          provide: LoggerToken.UNKNOWN_EXCEPTION_LOGGER,
+          useValue: mock<LoggerService>(),
         },
         {
           provide: CoreToken.ERROR_MESSAGE_BOT,
-          useValue: errorMessageBot,
+          useValue: mock<ErrorMessageBot>(),
         },
       ],
     }).compile();

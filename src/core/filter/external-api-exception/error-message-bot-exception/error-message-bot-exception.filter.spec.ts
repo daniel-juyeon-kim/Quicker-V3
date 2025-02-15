@@ -1,12 +1,13 @@
 import { TestBed } from '@automock/jest';
-import { ArgumentsHost, Logger } from '@nestjs/common';
+import { ArgumentsHost, LoggerService } from '@nestjs/common';
+import { LoggerToken } from '@src/core/constant';
 import { ErrorMessageBotException, TmapApiException } from '@src/core/module';
 import { mock } from 'jest-mock-extended';
 import { ErrorMessageBotExceptionFilter } from './error-message-bot-exception.filter';
 
 describe('ErrorMessageBotExceptionFilter', () => {
   let filter: ErrorMessageBotExceptionFilter;
-  let logger: jest.Mocked<Logger>;
+  let logger: jest.Mocked<LoggerService>;
 
   const mockHost = mock<ArgumentsHost>();
 
@@ -16,7 +17,7 @@ describe('ErrorMessageBotExceptionFilter', () => {
     ).compile();
 
     filter = unit;
-    logger = unitRef.get(Logger);
+    logger = unitRef.get(LoggerToken.ERROR_MESSAGE_BOT_EXCEPTION_LOGGER);
   });
 
   describe('catch', () => {

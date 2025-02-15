@@ -13,8 +13,6 @@ export class GlobalExceptionFilter implements ExceptionFilter<CustomException> {
   ) {}
 
   async catch(exception: CustomException, host: ArgumentsHost) {
-    const date = new Date();
-
     // 1. 데이터 베이스 계층 에러
     this.databaseExceptionFilter.catch(exception, host);
     // 2. 외부 api 에러 확인

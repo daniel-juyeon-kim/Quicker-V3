@@ -1,9 +1,17 @@
-import { ArgumentsHost, Catch } from '@nestjs/common';
+import { ArgumentsHost, Catch, Inject, LoggerService } from '@nestjs/common';
+import { LoggerToken } from '@src/core/constant';
 import { ExternalApiException, TmapApiException } from '@src/core/module';
-import { AbstractExceptionFilter } from '../../abstract-exception.filter';
+import { ErrorReportExceptionFilter } from '../../abstract/abstract-exception.filter';
 
 @Catch()
-export class TmapApiExceptionFilter extends AbstractExceptionFilter<ExternalApiException> {
+export class TmapApiExceptionFilter extends ErrorReportExceptionFilter<ExternalApiException> {
+  constructor(
+    @Inject(LoggerToken.TMAP_API_EXCEPTION_LOGGER)
+    protected readonly logger: LoggerService,
+  ) {
+    super();
+  }
+
   async catch(exception: ExternalApiException, host: ArgumentsHost) {
     if (exception instanceof TmapApiException) {
       const date = new Date();
