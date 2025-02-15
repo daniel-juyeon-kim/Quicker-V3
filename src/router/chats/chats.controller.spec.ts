@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
-import { NotExistDataError } from '@src/database';
+import { NotExistDataException } from '@src/database';
 import { mock } from 'jest-mock-extended';
 import { ChatsController } from './chats.controller';
 import { ChatsService } from './chats.service';
@@ -38,7 +38,7 @@ describe('ChatsController', () => {
 
     test('실패하는 테스트, 데이터베이스에 해당 데이터가 없음 NotExistDataError를 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataError('데이터가 존재하지 않습니다.');
+      const error = new NotExistDataException('데이터가 존재하지 않습니다.');
 
       service.findRecentMessageByOrderId.mockRejectedValueOnce(error);
 

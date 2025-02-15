@@ -3,7 +3,7 @@ import { WebClient } from '@slack/web-api';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { mock } from 'jest-mock-extended';
-import { ErrorMessage, ErrorMessageBotError, SlackBot } from '../..';
+import { ErrorMessage, ErrorMessageBotException, SlackBot } from '../..';
 
 const webClient = {
   provide: WebClient,
@@ -40,8 +40,8 @@ describe('SlackBot 테스트', () => {
       const error = new Error('에러 메시지');
 
       await expect(
-        slackBot.sendMessage(new ErrorMessage({ date, error })),
-      ).rejects.toStrictEqual(new ErrorMessageBotError(error));
+        slackBot.sendMessage(new ErrorMessage({ date, exception: error })),
+      ).rejects.toStrictEqual(new ErrorMessageBotException(error));
     });
   });
 });

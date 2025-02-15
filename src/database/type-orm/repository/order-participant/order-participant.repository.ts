@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import { Repository } from 'typeorm';
 import { OrderEntity } from '../../entity';
-import { NotExistDataError } from '../../util';
+import { NotExistDataException } from '../../util';
 import { AbstractRepository } from '../abstract-repository';
 import { IOrderParticipantRepository } from './order-participant.repository.interface';
 
@@ -50,12 +50,12 @@ export class OrderParticipantRepository
 
       return order;
     } catch (error) {
-      if (error instanceof NotExistDataError) {
-        throw new NotExistDataError(
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException(
           `${orderId}에 해당되는 데이터가 존재하지 않습니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 }

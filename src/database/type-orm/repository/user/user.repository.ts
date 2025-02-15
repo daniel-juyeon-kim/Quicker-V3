@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import { Repository } from 'typeorm';
 import {
   BirthDateEntity,
@@ -8,7 +8,7 @@ import {
   ProfileImageEntity,
   UserEntity,
 } from '../../entity';
-import { DuplicatedDataError, NotExistDataError } from '../../util';
+import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { Transactional } from '../../util/transactional.decorator';
 import { AbstractRepository } from '../abstract-repository';
 import { IUserRepository } from './user.repository.interface';
@@ -39,7 +39,7 @@ export class UserRepository
       const userExists = await this.manager.existsBy(UserEntity, { id });
 
       if (userExists) {
-        throw new DuplicatedDataError(
+        throw new DuplicatedDataException(
           `${id}에 해당하는 데이터가 이미 존재합니다.`,
         );
       }
@@ -62,10 +62,10 @@ export class UserRepository
         id,
       });
     } catch (error) {
-      if (error instanceof DuplicatedDataError) {
+      if (error instanceof DuplicatedDataException) {
         throw error;
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -80,12 +80,12 @@ export class UserRepository
 
       return name;
     } catch (error) {
-      if (error instanceof NotExistDataError) {
-        throw new NotExistDataError(
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException(
           `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -101,12 +101,12 @@ export class UserRepository
 
       return user.profileImage;
     } catch (error) {
-      if (error instanceof NotExistDataError) {
-        throw new NotExistDataError(
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException(
           `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -129,12 +129,12 @@ export class UserRepository
         { imageId },
       );
     } catch (error) {
-      if (error instanceof NotExistDataError) {
-        throw new NotExistDataError(
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException(
           `${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 }

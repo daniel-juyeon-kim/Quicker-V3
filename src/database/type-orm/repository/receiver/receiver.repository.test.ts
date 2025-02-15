@@ -10,7 +10,7 @@ import {
   TransportationEntity,
   UserEntity,
 } from '../../entity';
-import { NotExistDataError } from '../../util';
+import { NotExistDataException } from '../../util';
 import { ReceiverRepository } from './receiver.repository';
 
 const createUser = async (manager: EntityManager) => {
@@ -162,7 +162,7 @@ describe('ReceiverRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 값 입력', async () => {
       const orderId = 32;
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `${orderId}에 해당되는 데이터가 존재하지 않습니다.`,
       );
 

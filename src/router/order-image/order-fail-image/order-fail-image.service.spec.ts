@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken } from '@src/core/constant';
-import { DuplicatedDataError, NotExistDataError } from '@src/database';
+import { DuplicatedDataException, NotExistDataException } from '@src/database';
 import { IFailDeliveryImageRepository } from '@src/database/mongoose/repository/fail-delivery-image/fail-delivery-image.repository.interface';
 import { mock, mockClear } from 'jest-mock-extended';
 import { Readable } from 'stream';
@@ -66,7 +66,7 @@ describe('OrderFailImageService', () => {
         buffer: Buffer.from('file content'),
       };
       const reason = '이유';
-      const error = new DuplicatedDataError(
+      const error = new DuplicatedDataException(
         `${orderId}에 해당되는 데이터가 이미 존재합니다.`,
       );
       repository.createFailDeliveryImage.mockRejectedValueOnce(error);
@@ -100,7 +100,7 @@ describe('OrderFailImageService', () => {
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `${orderId}에 해당되는 실패 이미지가 존재하지 않습니다.`,
       );
       repository.findFailDeliveryImageByOrderId.mockRejectedValueOnce(error);

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import { isNull, isUndefined } from '@src/core/util';
-import { NotExistDataError } from '@src/database/type-orm';
+import { NotExistDataException } from '@src/database/type-orm';
 import { Model } from 'mongoose';
 import { ChatMessages, MessageInfo } from '../../models';
 import { Transactional } from '../../util/transactional.decorator';
@@ -27,7 +27,7 @@ export class ChatMessageRepository
       await this.createChatRoom(orderId);
       await this.insertMessage(orderId, messageInfo);
     } catch (error) {
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -78,17 +78,17 @@ export class ChatMessageRepository
       const recentMessage = userMessages.messages.pop();
 
       if (isUndefined(recentMessage)) {
-        throw new NotExistDataError('데이터가 존재하지 않습니다.');
+        throw new NotExistDataException('데이터가 존재하지 않습니다.');
       }
 
       return recentMessage;
     } catch (error) {
-      if (error instanceof NotExistDataError) {
-        throw new NotExistDataError(
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException(
           `${orderId}에 대한 데이터가 존재하지 않습니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
-import { UnknownDataBaseError } from '@src/core/module';
-import { NotExistDataError, OrderEntity } from '@src/database';
+import { UnknownDataBaseException } from '@src/core/module';
+import { NotExistDataException, OrderEntity } from '@src/database';
 import { mock, mockClear } from 'jest-mock-extended';
 import { describe } from 'node:test';
 import { DeepPartial } from 'typeorm';
@@ -63,7 +63,7 @@ describe('OrdersController', () => {
     });
 
     test('실패하는 테스트, 알 수 없는 에러 발생 UnknownDataBaseError를 던짐', async () => {
-      const error = new UnknownDataBaseError('알 수 없는 DB 에러');
+      const error = new UnknownDataBaseException('알 수 없는 DB 에러');
       service.createOrder.mockRejectedValue(error);
 
       await expect(controller.createOrder(dto)).rejects.toStrictEqual(error);
@@ -72,7 +72,7 @@ describe('OrdersController', () => {
     });
 
     test('실패하는 테스트, 데이터가 존재하지 않으면 NotExistDataError를 던짐', async () => {
-      const error = new NotExistDataError('존재하지 않는 데이터');
+      const error = new NotExistDataException('존재하지 않는 데이터');
       service.createOrder.mockRejectedValue(error);
 
       await expect(controller.createOrder(dto)).rejects.toStrictEqual(error);
@@ -116,7 +116,7 @@ describe('OrdersController', () => {
 
     test('실패하는 테스트, 존재하지 않는 정보를 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '배송원 지갑주소';
-      const error = new NotExistDataError('회원이 존재하지 않습니다.');
+      const error = new NotExistDataException('회원이 존재하지 않습니다.');
       service.findAllMatchableOrderByWalletAddress.mockRejectedValueOnce(error);
 
       await expect(
@@ -203,7 +203,7 @@ describe('OrdersController', () => {
 
     test('실패하는 테스트, 알 수 없는 에러 발생 UnknownDataBaseError를 던짐', async () => {
       const orderIds = [1, 2, 3, 4];
-      const error = new UnknownDataBaseError('알 수 없는 에러');
+      const error = new UnknownDataBaseException('알 수 없는 에러');
       service.findAllOrderDetailByOrderIds.mockRejectedValueOnce(error);
 
       await expect(

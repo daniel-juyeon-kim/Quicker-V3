@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken } from '@src/core/constant';
-import { createLastMonth, UnknownDataBaseError } from '@src/core/module';
-import { NotExistDataError } from '@src/database';
+import { createLastMonth, UnknownDataBaseException } from '@src/core/module';
+import { NotExistDataException } from '@src/database';
 import { IAverageCostRepository } from '@src/database/type-orm/repository/average-cost/average-cost.repository.interface';
 import { mock, mockClear } from 'jest-mock-extended';
 import { OrderAverageService } from './order-average.service';
@@ -48,7 +48,7 @@ describe('OrderAverageService', () => {
     describe('실패하는 테스트', () => {
       test('NotExistDataError를 던짐', async () => {
         const distance = 50;
-        const error = new NotExistDataError('데이터가 존재하지 않습니다.');
+        const error = new NotExistDataException('데이터가 존재하지 않습니다.');
         repository.findAverageCostByDateAndDistanceUnit.mockRejectedValueOnce(
           error,
         );
@@ -60,7 +60,7 @@ describe('OrderAverageService', () => {
 
       test('UnknownDataBaseError를 던짐', async () => {
         const distance = 50;
-        const error = new UnknownDataBaseError(new Error('알수없는 에러'));
+        const error = new UnknownDataBaseException(new Error('알수없는 에러'));
         repository.findAverageCostByDateAndDistanceUnit.mockRejectedValueOnce(
           error,
         );

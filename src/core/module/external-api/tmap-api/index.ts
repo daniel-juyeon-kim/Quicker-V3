@@ -1,3 +1,3 @@
-export * from '../../error/tmap-api.error';
+export * from '../../exception/tmap-api.exception';
 export * from './tmap-api';
 export * from './types';

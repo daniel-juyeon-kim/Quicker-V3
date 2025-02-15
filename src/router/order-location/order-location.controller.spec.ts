@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
-import { NotExistDataError } from '@src/database';
+import { NotExistDataException } from '@src/database';
 import { mock, mockClear } from 'jest-mock-extended';
 import { OrderLocationController } from './order-location.controller';
 import { OrderLocationService } from './order-location.service';
@@ -45,7 +45,7 @@ describe('OrderLocationController', () => {
 
     test('실패하는 테스트, 데이터가 존재하지 않아 예외 발생', async () => {
       const orderId = 1;
-      const error = new NotExistDataError('존재하지 않는 데이터');
+      const error = new NotExistDataException('존재하지 않는 데이터');
       service.findDepartureAndDestinationByOrderId.mockRejectedValueOnce(error);
 
       await expect(controller.getCoordinates(orderId)).rejects.toStrictEqual(

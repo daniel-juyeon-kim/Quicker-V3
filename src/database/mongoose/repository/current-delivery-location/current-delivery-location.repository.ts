@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import { Model } from 'mongoose';
-import { NotExistDataError } from '../../../type-orm';
+import { NotExistDataException } from '../../../type-orm';
 import {
   CurrentDeliveryLocation,
   Location,
@@ -33,7 +33,7 @@ export class CurrentDeliveryLocationRepository
 
       await this.model.create({ _id: orderId, location });
     } catch (error) {
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -48,12 +48,12 @@ export class CurrentDeliveryLocationRepository
 
       return document.location;
     } catch (error) {
-      if (error instanceof NotExistDataError) {
-        throw new NotExistDataError(
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException(
           `${orderId}에 대한 데이터가 존재하지 않습니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 }

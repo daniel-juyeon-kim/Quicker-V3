@@ -3,7 +3,7 @@ import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import { OrderEntity, ProfileImageEntity, UserEntity } from '../../entity';
-import { DuplicatedDataError, NotExistDataError } from '../../util';
+import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { UserRepository } from './user.repository';
 
 const createUser = async (manager: EntityManager) => {
@@ -92,7 +92,7 @@ describe('UserRepository', () => {
             contact: '연락처',
           };
           const birthDate = new Date(2000, 9, 12);
-          const error = new DuplicatedDataError(
+          const error = new DuplicatedDataException(
             `${userId}에 해당하는 데이터가 이미 존재합니다.`,
           );
 
@@ -130,7 +130,7 @@ describe('UserRepository', () => {
 
         test('실패하는 테스트, 존재하지 않는 데이터에 접근하면 NotExistDataError를 던짐', async () => {
           const walletAddress = '0x23h298fhooweifhoi82938';
-          const error = new NotExistDataError(
+          const error = new NotExistDataException(
             `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
           );
 
@@ -152,7 +152,7 @@ describe('UserRepository', () => {
 
         test('실패하는 테스트, 존재하지 않는 데이터에 접근하면 NotExistDataError를 던짐', async () => {
           const walletAddress = '0x23h298fhooweifhoi82938';
-          const error = new NotExistDataError(
+          const error = new NotExistDataException(
             `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
           );
 
@@ -194,7 +194,7 @@ describe('UserRepository', () => {
             walletAddress,
             imageId: '100',
           };
-          const error = new NotExistDataError(
+          const error = new NotExistDataException(
             `${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
           );
 

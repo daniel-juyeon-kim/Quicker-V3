@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import fetch from 'node-fetch';
-import { NaverSmsApi, SmsApiError } from '..';
+import { NaverSmsApi, SmsApiException } from '..';
 
 jest.mock('node-fetch');
 
@@ -45,7 +45,7 @@ describe('NaverSmsApi 테스트', () => {
           deliveryTrackingUrl,
           receiverPhoneNumber,
         ),
-      ).rejects.toStrictEqual(new SmsApiError(error));
+      ).rejects.toStrictEqual(new SmsApiException(error));
     });
   });
 });

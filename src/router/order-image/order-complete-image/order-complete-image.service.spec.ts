@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken } from '@src/core/constant';
-import { DuplicatedDataError, NotExistDataError } from '@src/database';
+import { DuplicatedDataException, NotExistDataException } from '@src/database';
 import { ICompleteDeliveryImageRepository } from '@src/database/mongoose/repository/complete-delivery-image/complete-delivery-image.repository.interface';
 import { Buffer } from 'buffer';
 import { mock, mockClear } from 'jest-mock-extended';
@@ -65,7 +65,7 @@ describe('OrderCompleteImageService', () => {
         buffer: Buffer.from('file content'),
       };
       const orderId = 1;
-      const error = new DuplicatedDataError(
+      const error = new DuplicatedDataException(
         `${orderId}에 해당되는 데이터가 이미 존재합니다.`,
       );
 
@@ -93,7 +93,7 @@ describe('OrderCompleteImageService', () => {
 
     test('실패하는 테스트', async () => {
       const orderId = 1;
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `${orderId}에 해당되는 이미지 버퍼가 존재하지 않습니다.`,
       );
 

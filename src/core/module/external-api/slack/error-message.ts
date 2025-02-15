@@ -1,13 +1,16 @@
 export class ErrorMessage<T> {
   private readonly date: Date;
-  private readonly error: T;
+  private readonly exception: T;
 
-  constructor({ date, error }: { date: Date; error: T }) {
+  constructor({ date, exception }: { date: Date; exception: T }) {
     this.date = date;
-    this.error = error;
+    this.exception = exception;
   }
 
   public parseToStringForSlack() {
-    return `*에러 발생 [ ${this.date.toLocaleString("ko-KR")} ]* \n\n` + `${JSON.stringify(this.error)}`;
+    return (
+      `*에러 발생 [ ${this.date.toLocaleString('ko-KR')} ]* \n\n` +
+      `${JSON.stringify(this.exception)}`
+    );
   }
 }

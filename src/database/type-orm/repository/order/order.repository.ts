@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import { isNull } from '@src/core/util';
 import { EntityManager, In, IsNull, Not, Repository } from 'typeorm';
 import {
-  BusinessRuleConflictDataError,
+  BusinessRuleConflictDataException,
   DepartureEntity,
   DestinationEntity,
-  NotExistDataError,
+  NotExistDataException,
   OrderEntity,
   ProductEntity,
   ReceiverEntity,
@@ -41,7 +41,7 @@ export class OrderRepository
       });
 
       if (isNull(deliverPerson)) {
-        throw new NotExistDataError(
+        throw new NotExistDataException(
           `${walletAddress} 에 대응되는 사용자가 존재하지 않습니다.`,
         );
       }
@@ -55,13 +55,13 @@ export class OrderRepository
       });
 
       if (isNull(order)) {
-        throw new NotExistDataError(
+        throw new NotExistDataException(
           `${orderId} 에 대응되는 주문이 존재하지 않습니다.`,
         );
       }
 
       if (deliverPerson.walletAddress === order.requester.walletAddress) {
-        throw new BusinessRuleConflictDataError(
+        throw new BusinessRuleConflictDataException(
           `${walletAddress}가 의뢰인의 지갑주소와 동일합니다.`,
         );
       }
@@ -72,12 +72,12 @@ export class OrderRepository
         { deliveryPerson: deliverPerson },
       );
     } catch (error) {
-      if (error instanceof NotExistDataError) {
+      if (error instanceof NotExistDataException) {
         throw error;
-      } else if (error instanceof BusinessRuleConflictDataError) {
+      } else if (error instanceof BusinessRuleConflictDataException) {
         throw error;
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -133,12 +133,12 @@ export class OrderRepository
         ...sender,
       });
     } catch (error) {
-      if (error instanceof NotExistDataError) {
-        throw new NotExistDataError(
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException(
           `${walletAddress}에 해당되는 사용자를 찾지 못했습니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -161,10 +161,10 @@ export class OrderRepository
 
       return requester;
     } catch (error) {
-      if (error instanceof NotExistDataError) {
+      if (error instanceof NotExistDataException) {
         throw error;
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -178,7 +178,7 @@ export class OrderRepository
         });
 
         if (!isExistUser) {
-          throw new NotExistDataError(
+          throw new NotExistDataException(
             `${deliverPersonWalletAddress}에 해당하는 사용자가 존재하지 않습니다.`,
           );
         }
@@ -225,12 +225,12 @@ export class OrderRepository
         });
       });
     } catch (error) {
-      if (error instanceof NotExistDataError) {
-        throw new NotExistDataError(
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException(
           `${deliverPersonWalletAddress}에 해당하는 사용자가 존재하지 않습니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -279,7 +279,7 @@ export class OrderRepository
 
       return order;
     } catch (error) {
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -287,7 +287,7 @@ export class OrderRepository
     try {
       await this.repository.delete(orderId);
     } catch (error) {
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 }

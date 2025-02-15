@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken, ServiceToken } from '@src/core/constant';
-import { UnknownDataBaseError } from '@src/core/module';
-import { IOrderRepository, NotExistDataError } from '@src/database';
+import { UnknownDataBaseException } from '@src/core/module';
+import { IOrderRepository, NotExistDataException } from '@src/database';
 import { mock, mockClear } from 'jest-mock-extended';
 import { CreateOrderDto } from './dto/create-orders.dto';
 import { OrdersService } from './orders.service';
@@ -82,7 +82,7 @@ describe('OrdersService', () => {
         sender: { name: 'John Doe', phone: '123-456-7890' },
         receiver: { name: 'Jane Smith', phone: '987-654-3210' },
       };
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `${walletAddress}에 해당되는 사용자를 찾지 못했습니다.`,
       );
       repository.createOrder.mockRejectedValue(error);
@@ -139,7 +139,7 @@ describe('OrdersService', () => {
 
     test('실패하는 테스트, 데이터베이스에 알 수 없는 에러가 발생하면 UnknownDataBaseError를 던짐', async () => {
       const orderIds = [1, 2, 3];
-      const error = new UnknownDataBaseError(`알 수 없는 에러.`);
+      const error = new UnknownDataBaseException(`알 수 없는 에러.`);
       repository.findAllCreatedOrDeliveredOrderDetailByOrderIds.mockRejectedValue(
         error,
       );

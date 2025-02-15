@@ -3,7 +3,7 @@ import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import { AverageCostEntity } from '../../entity';
-import { DuplicatedDataError, NotExistDataError } from '../../util';
+import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { AverageCostRepository } from './average-cost.repository';
 
 describe('AverageCostRepository', () => {
@@ -59,7 +59,7 @@ describe('AverageCostRepository', () => {
     describe('실패하는 테스트', () => {
       test('이미 데이터가 존재하는 테스트, DuplicatedDataError를 던짐', async () => {
         const createDate = new Date(1990, 4, 1);
-        const error = new DuplicatedDataError(
+        const error = new DuplicatedDataException(
           `${createDate}에 해당되는 데이터가 이미 존재합니다.`,
         );
 
@@ -131,7 +131,7 @@ describe('AverageCostRepository', () => {
       test('존재하지 않는 데이터 조회 테스트, NotExistDataError를 던짐', async () => {
         const lastMonth = new Date(1993, 3, 1);
         const distanceUnit = '40KM';
-        const error = new NotExistDataError(
+        const error = new NotExistDataException(
           `${lastMonth}에 대한 데이터가 존재하지 않습니다.`,
         );
 

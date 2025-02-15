@@ -9,7 +9,10 @@ describe('ErrorMessage 테스트', () => {
         stack: '스텍트레이스',
       };
       const occurDate = new Date(1995, 11, 17, 3, 24, 0);
-      const errorMessage = new ErrorMessage({ error, date: occurDate });
+      const errorMessage = new ErrorMessage({
+        exception: error,
+        date: occurDate,
+      });
 
       const expectMessage = `*에러 발생 [ ${occurDate.toLocaleString('ko-KR')} ]* \n\n${JSON.stringify(error)}`;
 

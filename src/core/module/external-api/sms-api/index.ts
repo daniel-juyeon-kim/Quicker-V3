@@ -1,3 +1,3 @@
-export * from '../../error/sms-api.error';
+export * from '../../exception/sms-api.exception';
 export * from './naver-sms-api';
 export * from './sms-api.interface';

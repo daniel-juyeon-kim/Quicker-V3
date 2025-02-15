@@ -1,6 +1,9 @@
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DuplicatedDataError, NotExistDataError } from '@src/database/type-orm';
+import {
+  DuplicatedDataException,
+  NotExistDataException,
+} from '@src/database/type-orm';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
 import {
@@ -69,7 +72,7 @@ describe('CompleteDeliveryImageRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 값 입력', async () => {
       const orderId = 3;
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `${orderId}에 해당되는 이미지 버퍼가 존재하지 않습니다.`,
       );
 
@@ -100,7 +103,7 @@ describe('CompleteDeliveryImageRepository', () => {
     describe('실패하는 테스트', () => {
       test('중복된 데이터', async () => {
         const orderId = 1;
-        const error = new DuplicatedDataError(
+        const error = new DuplicatedDataException(
           `${orderId}에 해당되는 데이터가 이미 존재합니다.`,
         );
 

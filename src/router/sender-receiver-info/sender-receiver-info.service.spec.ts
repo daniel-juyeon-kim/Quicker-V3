@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken } from '@src/core/constant';
-import { NotExistDataError } from '@src/database';
+import { NotExistDataException } from '@src/database';
 import { IOrderParticipantRepository } from '@src/database/type-orm/repository/order-participant/order-participant.repository.interface';
 import { mock } from 'jest-mock-extended';
 import { SenderReceiverInfoService } from './sender-receiver-info.service';
@@ -58,7 +58,7 @@ describe('SenderReceiverInfoService', () => {
 
     test('실패하는 테스트', async () => {
       const orderId = 1;
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `${orderId}에 해당되는 데이터가 존재하지 않습니다.`,
       );
 

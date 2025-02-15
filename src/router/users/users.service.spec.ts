@@ -2,9 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken } from '@src/core/constant';
 import { KeyCreator } from '@src/core/module';
 import {
-  DuplicatedDataError,
+  DuplicatedDataException,
   IUserRepository,
-  NotExistDataError,
+  NotExistDataException,
 } from '@src/database';
 import { mock, mockClear } from 'jest-mock-extended';
 import { UsersService } from './users.service';
@@ -62,7 +62,7 @@ describe('UsersService', () => {
         contact: '연락처',
         birthDate: '2000/01/01',
       };
-      const error = new DuplicatedDataError(`데이터가 이미 존재합니다.`);
+      const error = new DuplicatedDataException(`데이터가 이미 존재합니다.`);
 
       // 사용자 생성
       await expect(service.createUser(dto)).resolves.toEqual(undefined);
@@ -91,7 +91,7 @@ describe('UsersService', () => {
 
     test('실패하는 테스트, 존재하지 않는 사용자의 지갑주소로 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '존재하지 않는 지갑주소';
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
       );
       repository.findNameByWalletAddress.mockRejectedValue(error);
@@ -121,7 +121,7 @@ describe('UsersService', () => {
 
     test('실패하는 테스트, 존재하지 않는 사용자의 지갑주소로 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '존재하지 않는 지갑주소';
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
       );
       repository.findUserProfileImageIdByWalletAddress.mockRejectedValue(error);
@@ -145,7 +145,7 @@ describe('UsersService', () => {
 
     test('실패하는 테스트, 존재하지 않는 사용자의 지갑주소로 프로필 이미지 아이디를 업데이트하면 NotExistDataError를 던짐', async () => {
       const dto = { walletAddress: '존재하지 않는 지갑주소', imageId: '100' };
-      const error = new NotExistDataError(`데이터가 존재하지 않습니다.`);
+      const error = new NotExistDataException(`데이터가 존재하지 않습니다.`);
       repository.updateUserProfileImageIdByWalletAddress.mockRejectedValue(
         error,
       );

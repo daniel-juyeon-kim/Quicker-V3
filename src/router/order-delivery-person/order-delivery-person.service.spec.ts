@@ -5,8 +5,8 @@ import { RepositoryToken } from '@src/core/constant';
 import {
   DeliveryUrlCreator,
   NaverSmsApi,
-  SmsApiError,
-  UnknownDataBaseError,
+  SmsApiException,
+  UnknownDataBaseException,
 } from '@src/core/module';
 import {
   CurrentDeliveryLocationRepository,
@@ -15,7 +15,7 @@ import {
   DepartureEntity,
   DestinationEntity,
   IOrderRepository,
-  NotExistDataError,
+  NotExistDataException,
   OrderEntity,
   OrderRepository,
   ProductEntity,
@@ -100,7 +100,7 @@ describe('OrderDeliveryPersonService', () => {
 
     test('실패하는 테스트, NotExistDataError를 던짐 ', async () => {
       const orderId = 1;
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `${orderId}에 대한 데이터가 존재하지 않습니다.`,
       );
       currentDeliveryLocationRepository.findCurrentLocationByOrderId.mockRejectedValueOnce(
@@ -139,7 +139,7 @@ describe('OrderDeliveryPersonService', () => {
         x: 128.25424,
         y: 35.95234,
       };
-      const error = new UnknownDataBaseError('알 수 없는 에러');
+      const error = new UnknownDataBaseException('알 수 없는 에러');
       currentDeliveryLocationRepository.saveDeliveryPersonLocation.mockRejectedValueOnce(
         error,
       );
@@ -369,7 +369,7 @@ describe('OrderDeliveryPersonService', () => {
       test('실패하는 테스트, db 계층에서 에러 NotExistDataError를 던짐', async () => {
         const orderId = 2;
         const walletAddress = '배송원 지갑주소';
-        const error = new NotExistDataError(
+        const error = new NotExistDataException(
           `${orderId} 에 대응되는 주문이 존재하지 않습니다.`,
         );
 
@@ -388,7 +388,7 @@ describe('OrderDeliveryPersonService', () => {
       });
 
       test('실패하는 테스트, 외부 api 에러 SmsApiError를 던짐', async () => {
-        const error = new SmsApiError('에러');
+        const error = new SmsApiException('에러');
 
         smsApi.sendDeliveryTrackingMessage.mockRejectedValueOnce(error);
 

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import { OrderEntity } from '@src/database/type-orm/entity';
-import { NotExistDataError } from '@src/database/type-orm/util';
+import { NotExistDataException } from '@src/database/type-orm/util';
 import { In, Repository } from 'typeorm';
 import { ILocationRepository } from '.';
 import { AbstractRepository } from '../abstract-repository';
@@ -35,10 +35,10 @@ export class LocationRepository
 
       return destinationDeparture;
     } catch (error) {
-      if (error instanceof NotExistDataError) {
+      if (error instanceof NotExistDataException) {
         throw error;
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 

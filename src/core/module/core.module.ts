@@ -1,4 +1,4 @@
-import { Global, Module, Provider } from '@nestjs/common';
+import { Global, Logger, Module, Provider } from '@nestjs/common';
 import { ConfigModule, ConfigService, ConfigType } from '@nestjs/config';
 import { WebClient } from '@slack/web-api';
 import {
@@ -8,6 +8,7 @@ import {
   slackbotConfig,
   tmapApiConfig,
 } from '@src/core/config/configs';
+import { CoreToken } from '../constant';
 import { Klaytn } from './blockchain';
 import { DeliveryUrlCreator } from './delivery-url-creator';
 import { NaverSmsApi, SlackBot, TmapApi } from './external-api';
@@ -15,7 +16,11 @@ import { KeyCreator } from './key-creator';
 
 const coreServices: Provider[] = [
   Klaytn,
-  SlackBot,
+  Logger,
+  {
+    provide: CoreToken.ERROR_MESSAGE_BOT,
+    useClass: SlackBot,
+  },
   NaverSmsApi,
   TmapApi,
   DeliveryUrlCreator,
