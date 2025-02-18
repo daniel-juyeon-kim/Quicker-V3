@@ -87,11 +87,11 @@ describe('OrderDeliveryPersonService', () => {
     mockClear(smsApi);
   });
 
-  describe('findCurrentLocation()', () => {
+  describe('findCurrentLocationByOrderId', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
 
-      await service.findCurrentLocation(orderId);
+      await service.findCurrentLocationByOrderId(orderId);
 
       expect(
         currentDeliveryLocationRepository.findCurrentLocationByOrderId,
@@ -107,16 +107,16 @@ describe('OrderDeliveryPersonService', () => {
         error,
       );
 
-      await expect(service.findCurrentLocation(orderId)).rejects.toStrictEqual(
-        error,
-      );
+      await expect(
+        service.findCurrentLocationByOrderId(orderId),
+      ).rejects.toStrictEqual(error);
       expect(
         currentDeliveryLocationRepository.findCurrentLocationByOrderId,
       ).toHaveBeenCalledWith(orderId);
     });
   });
 
-  describe('createDeliveryPersonCurrentLocation()', () => {
+  describe('createCurrentLocation', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const location = { x: 128.25424, y: 35.95234 };
@@ -125,9 +125,9 @@ describe('OrderDeliveryPersonService', () => {
         ...location,
       };
 
-      await expect(
-        service.createDeliveryPersonCurrentLocation(dto),
-      ).resolves.toEqual(undefined);
+      await expect(service.createCurrentLocation(dto)).resolves.toEqual(
+        undefined,
+      );
       expect(
         currentDeliveryLocationRepository.saveDeliveryPersonLocation,
       ).toHaveBeenCalledWith(orderId, location);
@@ -144,9 +144,9 @@ describe('OrderDeliveryPersonService', () => {
         error,
       );
 
-      await expect(
-        service.createDeliveryPersonCurrentLocation(dto),
-      ).rejects.toStrictEqual(error);
+      await expect(service.createCurrentLocation(dto)).rejects.toStrictEqual(
+        error,
+      );
     });
   });
 

@@ -24,13 +24,13 @@ export class OrderDeliveryPersonService implements IOrderDeliveryPersonService {
     private readonly smsApi: NaverSmsApi,
   ) {}
 
-  async findCurrentLocation(orderId: number) {
+  async findCurrentLocationByOrderId(orderId: number) {
     return await this.currentDeliveryLocationRepository.findCurrentLocationByOrderId(
       orderId,
     );
   }
 
-  async createDeliveryPersonCurrentLocation({
+  async createCurrentLocation({
     orderId,
     x,
     y,

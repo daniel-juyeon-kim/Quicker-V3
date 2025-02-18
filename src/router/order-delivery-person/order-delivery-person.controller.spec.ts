@@ -26,33 +26,37 @@ describe('OrderDeliveryPersonController', () => {
     mockClear(service);
   });
 
-  describe('findDeliveryPersonCurrentLocation()', () => {
+  describe('findDeliveryPersonCurrentLocation', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const resolveValue = { x: 126.73, y: 37.71 };
-      service.findCurrentLocation.mockResolvedValueOnce(resolveValue);
+      service.findCurrentLocationByOrderId.mockResolvedValueOnce(resolveValue);
 
       await expect(
         controller.findDeliveryPersonCurrentLocation(orderId),
       ).resolves.toEqual(resolveValue);
 
-      expect(service.findCurrentLocation).toHaveBeenCalledWith(orderId);
+      expect(service.findCurrentLocationByOrderId).toHaveBeenCalledWith(
+        orderId,
+      );
     });
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
       const orderId = 1;
       const error = new NotExistDataException('데이터가 존재하지 않습니다.');
-      service.findCurrentLocation.mockRejectedValueOnce(error);
+      service.findCurrentLocationByOrderId.mockRejectedValueOnce(error);
 
       await expect(
         controller.findDeliveryPersonCurrentLocation(orderId),
       ).rejects.toStrictEqual(error);
 
-      expect(service.findCurrentLocation).toHaveBeenCalledWith(orderId);
+      expect(service.findCurrentLocationByOrderId).toHaveBeenCalledWith(
+        orderId,
+      );
     });
   });
 
-  describe('getDeliveryPersonCurrentLocation()', () => {
+  describe('createDeliveryPersonCurrentLocation', () => {
     test('통과하는 테스트', async () => {
       const dto = {
         x: 126.73,
@@ -62,9 +66,7 @@ describe('OrderDeliveryPersonController', () => {
 
       await controller.createDeliveryPersonCurrentLocation(dto);
 
-      expect(service.createDeliveryPersonCurrentLocation).toHaveBeenCalledWith(
-        dto,
-      );
+      expect(service.createCurrentLocation).toHaveBeenCalledWith(dto);
     });
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
@@ -74,19 +76,17 @@ describe('OrderDeliveryPersonController', () => {
         orderId: 1,
       };
       const error = new NotExistDataException('데이터가 존재하지 않습니다.');
-      service.createDeliveryPersonCurrentLocation.mockRejectedValueOnce(error);
+      service.createCurrentLocation.mockRejectedValueOnce(error);
 
       await expect(
         controller.createDeliveryPersonCurrentLocation(dto),
       ).rejects.toStrictEqual(error);
 
-      expect(service.createDeliveryPersonCurrentLocation).toHaveBeenCalledWith(
-        dto,
-      );
+      expect(service.createCurrentLocation).toHaveBeenCalledWith(dto);
     });
   });
 
-  describe('updateDeliveryPersonLocation()', () => {
+  describe('updateDeliveryPersonLocation', () => {
     const walletAddress = '지갑주소';
     const orderId = 1;
 

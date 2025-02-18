@@ -1,7 +1,7 @@
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsPositive } from 'class-validator';
 
 export class CreateDeliveryPersonLocationDto {
-  @IsNumber()
+  @IsPositive()
   orderId: number;
 
   @IsNumber()

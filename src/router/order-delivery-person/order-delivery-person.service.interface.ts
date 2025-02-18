@@ -1,9 +1,9 @@
 import { Location } from '@src/database';
 
 export interface IOrderDeliveryPersonService {
-  findCurrentLocation(orderId: number): Promise<Location>;
+  findCurrentLocationByOrderId(orderId: number): Promise<Location>;
 
-  createDeliveryPersonCurrentLocation({
+  createCurrentLocation({
     orderId,
     x,
     y,
