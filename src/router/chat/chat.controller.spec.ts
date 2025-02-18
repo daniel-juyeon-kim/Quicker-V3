@@ -2,23 +2,23 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
 import { NotExistDataException } from '@src/database';
 import { mock } from 'jest-mock-extended';
-import { ChatsController } from './chats.controller';
-import { ChatsService } from './chats.service';
+import { ChatController } from './chat.controller';
+import { ChatService } from './chat.service';
 
-describe('ChatsController', () => {
-  const service = mock<ChatsService>();
-  let controller: ChatsController;
+describe('ChatController', () => {
+  const service = mock<ChatService>();
+  let controller: ChatController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ChatsController],
+      controllers: [ChatController],
       providers: [{ provide: ServiceToken.CHAT_SERVICE, useValue: service }],
     }).compile();
 
-    controller = module.get<ChatsController>(ChatsController);
+    controller = module.get<ChatController>(ChatController);
   });
 
-  describe('findRecentMessage', () => {
+  describe('findRecentMessageByOrderId', () => {
     test('통과하는 테스트', async () => {
       const date = new Date(2000, 1, 1);
       const orderId = 1;

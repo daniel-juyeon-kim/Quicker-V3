@@ -1,5 +1,5 @@
 import { MessageInfo } from '@src/database';
 
-export interface IChatsService {
+export interface IChatService {
   findRecentMessageByOrderId(orderId: number): Promise<MessageInfo>;
 }

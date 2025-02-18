@@ -3,16 +3,16 @@ import { RepositoryToken } from '@src/core/constant';
 import { NotExistDataException } from '@src/database';
 import { IChatMessageRepository } from '@src/database/mongoose/repository/chat-message/chat-message.repository.interface';
 import { mock, mockClear } from 'jest-mock-extended';
-import { ChatsService } from './chats.service';
+import { ChatService } from './chat.service';
 
-describe('ChatsService', () => {
-  let service: ChatsService;
+describe('ChatService', () => {
+  let service: ChatService;
   const repository = mock<IChatMessageRepository>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ChatsService,
+        ChatService,
         {
           provide: RepositoryToken.CHAT_MESSAGE_REPOSITORY,
           useValue: repository,
@@ -20,7 +20,7 @@ describe('ChatsService', () => {
       ],
     }).compile();
 
-    service = module.get<ChatsService>(ChatsService);
+    service = module.get<ChatService>(ChatService);
 
     mockClear(repository);
   });
