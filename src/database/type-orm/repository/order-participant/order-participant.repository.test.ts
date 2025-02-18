@@ -45,7 +45,7 @@ const createOrder = async (manager: EntityManager, requester: UserEntity) => {
     height: 0,
     weight: 0,
   };
-  const transportation = {
+  const transportation: Partial<TransportationEntity> = {
     walking: 0,
     bicycle: 0,
     scooter: 0,
@@ -153,7 +153,7 @@ describe('OrderParticipantRepository', () => {
     await manager.clear(OrderEntity);
   });
 
-  describe('findChatParticipantByOrderId 테스트', () => {
+  describe('findSenderReceiverLocationAndPhoneNumberByOrderId 테스트', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const result = {
@@ -173,18 +173,18 @@ describe('OrderParticipantRepository', () => {
       };
 
       await expect(
-        repository.findSenderReceiverInfoByOrderId(orderId),
+        repository.findSenderReceiverLocationAndPhoneNumberByOrderId(orderId),
       ).resolves.toEqual(result);
     });
 
-    test('실패하는 테스트, 존재하지 않는 주문 아이디 입력', async () => {
+    test('실패하는 테스트, 존재하지 않는 주문 아이디 입력 NotExistDataException 던짐', async () => {
       const orderId = 32;
       const error = new NotExistDataException(
         `${orderId}에 해당되는 데이터가 존재하지 않습니다.`,
       );
 
       await expect(
-        repository.findSenderReceiverInfoByOrderId(orderId),
+        repository.findSenderReceiverLocationAndPhoneNumberByOrderId(orderId),
       ).rejects.toStrictEqual(error);
     });
   });

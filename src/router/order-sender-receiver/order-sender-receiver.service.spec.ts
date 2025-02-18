@@ -3,17 +3,17 @@ import { RepositoryToken } from '@src/core/constant';
 import { NotExistDataException } from '@src/database';
 import { IOrderParticipantRepository } from '@src/database/type-orm/repository/order-participant/order-participant.repository.interface';
 import { mock } from 'jest-mock-extended';
-import { SenderReceiverInfoService } from './sender-receiver-info.service';
+import { OrderSenderReceiverService } from './order-sender-receiver.service';
 
-describe('SenderReceiverInfoService', () => {
-  let service: SenderReceiverInfoService;
+describe('OrderSenderReceiverService', () => {
+  let service: OrderSenderReceiverService;
 
   const repository = mock<IOrderParticipantRepository>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        SenderReceiverInfoService,
+        OrderSenderReceiverService,
         {
           provide: RepositoryToken.ORDER_PARTICIPANT_REPOSITORY,
           useValue: repository,
@@ -21,10 +21,10 @@ describe('SenderReceiverInfoService', () => {
       ],
     }).compile();
 
-    service = module.get<SenderReceiverInfoService>(SenderReceiverInfoService);
+    service = module.get(OrderSenderReceiverService);
   });
 
-  describe('findSenderReceiverInfo()', () => {
+  describe('findSenderReceiverLocationAndPhoneNumberByOrderId', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const resolvedValue = {
@@ -43,29 +43,31 @@ describe('SenderReceiverInfoService', () => {
           receiver: { phone: '01046231234' },
         },
       };
-      repository.findSenderReceiverInfoByOrderId.mockResolvedValueOnce(
+      repository.findSenderReceiverLocationAndPhoneNumberByOrderId.mockResolvedValueOnce(
         resolvedValue,
       );
 
       await expect(
-        service.findSenderReceiverInfo(orderId),
+        service.findSenderReceiverLocationAndPhoneNumberByOrderId(orderId),
       ).resolves.toStrictEqual(resolvedValue);
 
-      expect(repository.findSenderReceiverInfoByOrderId).toHaveBeenCalledWith(
-        orderId,
-      );
+      expect(
+        repository.findSenderReceiverLocationAndPhoneNumberByOrderId,
+      ).toHaveBeenCalledWith(orderId);
     });
 
-    test('실패하는 테스트', async () => {
+    test('실패하는 테스트, NotExistDataException 던짐', async () => {
       const orderId = 1;
       const error = new NotExistDataException(
         `${orderId}에 해당되는 데이터가 존재하지 않습니다.`,
       );
 
-      repository.findSenderReceiverInfoByOrderId.mockRejectedValueOnce(error);
+      repository.findSenderReceiverLocationAndPhoneNumberByOrderId.mockRejectedValueOnce(
+        error,
+      );
 
       await expect(
-        service.findSenderReceiverInfo(orderId),
+        service.findSenderReceiverLocationAndPhoneNumberByOrderId(orderId),
       ).rejects.toStrictEqual(error);
     });
   });

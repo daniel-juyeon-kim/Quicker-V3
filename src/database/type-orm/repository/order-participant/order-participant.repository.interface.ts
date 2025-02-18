@@ -1,5 +1,5 @@
 export interface IOrderParticipantRepository {
-  findSenderReceiverInfoByOrderId(orderId: number): Promise<{
+  findSenderReceiverLocationAndPhoneNumberByOrderId(orderId: number): Promise<{
     id: number;
     departure: {
       id: number;

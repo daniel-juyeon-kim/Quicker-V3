@@ -19,7 +19,7 @@ export class OrderParticipantRepository
     super();
   }
 
-  async findSenderReceiverInfoByOrderId(orderId: number) {
+  async findSenderReceiverLocationAndPhoneNumberByOrderId(orderId: number) {
     try {
       const order = await this.repository.findOne({
         relations: {

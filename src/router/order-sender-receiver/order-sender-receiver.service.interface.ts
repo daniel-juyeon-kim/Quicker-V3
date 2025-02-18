@@ -1,5 +1,5 @@
-export interface ISenderReceiverInfoService {
-  findSenderReceiverInfo(orderId: number): Promise<{
+export interface IOrderSenderReceiverService {
+  findSenderReceiverLocationAndPhoneNumberByOrderId(orderId: number): Promise<{
     id: number;
     departure: {
       id: number;

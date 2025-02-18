@@ -4,8 +4,8 @@ import { OrderAverageModule } from './order-average/order-average.module';
 import { OrderDeliveryPersonModule } from './order-delivery-person/order-delivery-person.module';
 import { OrderImageModule } from './order-image/order-image.module';
 import { OrderLocationModule } from './order-location/order-location.module';
+import { OrderSenderReceiverModule } from './order-sender-receiver/order-sender-receiver.module';
 import { OrderModule } from './order/order.module';
-import { SenderReceiverInfoModule } from './sender-receiver-info/sender-receiver-info.module';
 import { UserModule } from './user/user.module';
 
 const routeModules = [
@@ -16,7 +16,7 @@ const routeModules = [
   OrderDeliveryPersonModule,
   OrderImageModule,
   OrderLocationModule,
-  SenderReceiverInfoModule,
+  OrderSenderReceiverModule,
 ];
 
 @Module({
