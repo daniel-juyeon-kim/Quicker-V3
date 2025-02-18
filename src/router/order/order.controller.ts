@@ -9,26 +9,26 @@ import {
 } from '@nestjs/common';
 import { ARRAY_SEPARATOR, ServiceToken } from '@src/core/constant';
 import { ValidateWalletAddressPipe } from '@src/core/pipe/wallet-address-pipe/wallet-address.pipe';
-import { CreateOrderDto } from './dto/create-orders.dto';
-import { IOrdersService } from './orders.service.interface';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { IOrderService } from './order.service.interface';
 
 @Controller('orders')
-export class OrdersController {
+export class OrderController {
   constructor(
     @Inject(ServiceToken.ORDER_SERVICE)
-    private readonly service: IOrdersService,
+    private readonly orderService: IOrderService,
   ) {}
 
   @Post()
   async createOrder(@Body() createOrderDto: CreateOrderDto) {
-    await this.service.createOrder(createOrderDto);
+    await this.orderService.createOrder(createOrderDto);
   }
 
   @Get('matchable')
   async findAllMatchableOrder(
     @Query('walletAddress', ValidateWalletAddressPipe) walletAddress: string,
   ) {
-    return await this.service.findAllMatchableOrderByWalletAddress(
+    return await this.orderService.findAllMatchableOrderByWalletAddress(
       walletAddress,
     );
   }
@@ -41,6 +41,6 @@ export class OrdersController {
     )
     orderIds: number[],
   ) {
-    return await this.service.findAllOrderDetailByOrderIds(orderIds);
+    return await this.orderService.findAllOrderDetailByOrderIds(orderIds);
   }
 }

@@ -5,27 +5,27 @@ import { NotExistDataException, OrderEntity } from '@src/database';
 import { mock, mockClear } from 'jest-mock-extended';
 import { describe } from 'node:test';
 import { DeepPartial } from 'typeorm';
-import { OrdersController } from './orders.controller';
-import { OrdersService } from './orders.service';
-import { IOrdersService } from './orders.service.interface';
+import { OrderController } from './order.controller';
+import { OrderService } from './order.service';
+import { IOrderService } from './order.service.interface';
 
-describe('OrdersController', () => {
-  let controller: OrdersController;
-  const service = mock<IOrdersService>();
+describe('OrderController', () => {
+  let controller: OrderController;
+  const service = mock<IOrderService>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [OrdersController],
+      controllers: [OrderController],
       providers: [{ provide: ServiceToken.ORDER_SERVICE, useValue: service }],
     }).compile();
 
-    controller = module.get(OrdersController);
+    controller = module.get(OrderController);
 
     mockClear(service);
   });
 
   describe('createOrder', () => {
-    const dto: Parameters<OrdersService['createOrder']>[0] = {
+    const dto: Parameters<OrderService['createOrder']>[0] = {
       walletAddress: '0x123456789abcdef',
       detail: 'Fragile, handle with care',
       transportation: {

@@ -1,5 +1,5 @@
 import { validate } from 'class-validator';
-import { TransportationDto } from './create-orders.dto';
+import { TransportationDto } from './create-order.dto';
 
 describe('transportationDto', () => {
   describe('parsePartialTransportationEntity', () => {

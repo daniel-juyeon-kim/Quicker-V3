@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsPhoneNumber,
+  IsPositive,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -72,16 +73,16 @@ class DeliverParticipant {
 }
 
 class Product {
-  @IsNumber()
+  @IsPositive()
   width: number;
 
-  @IsNumber()
+  @IsPositive()
   length: number;
 
-  @IsNumber()
+  @IsPositive()
   height: number;
 
-  @IsNumber()
+  @IsPositive()
   weight: number;
 }
 

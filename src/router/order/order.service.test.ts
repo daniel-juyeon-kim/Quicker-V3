@@ -3,18 +3,18 @@ import { RepositoryToken, ServiceToken } from '@src/core/constant';
 import { UnknownDataBaseException } from '@src/core/module';
 import { IOrderRepository, NotExistDataException } from '@src/database';
 import { mock, mockClear } from 'jest-mock-extended';
-import { CreateOrderDto } from './dto/create-orders.dto';
-import { OrdersService } from './orders.service';
-import { IOrdersService } from './orders.service.interface';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { OrderService } from './order.service';
+import { IOrderService } from './order.service.interface';
 
-describe('OrdersService', () => {
-  let service: IOrdersService;
+describe('OrderService', () => {
+  let service: IOrderService;
   const repository = mock<IOrderRepository>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        { provide: ServiceToken.ORDER_SERVICE, useClass: OrdersService },
+        { provide: ServiceToken.ORDER_SERVICE, useClass: OrderService },
         {
           provide: RepositoryToken.ORDER_REPOSITORY,
           useValue: repository,

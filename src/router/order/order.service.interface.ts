@@ -1,8 +1,8 @@
 import { OrderEntity } from '@src/database';
 import { DeepPartial } from 'typeorm';
-import { CreateOrderDto } from './dto/create-orders.dto';
+import { CreateOrderDto } from './dto/create-order.dto';
 
-export interface IOrdersService {
+export interface IOrderService {
   createOrder(dto: CreateOrderDto): Promise<void>;
   findAllOrderDetailByOrderIds(
     orderIds: number[],
