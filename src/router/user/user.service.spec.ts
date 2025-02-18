@@ -6,11 +6,13 @@ import {
   IUserRepository,
   NotExistDataException,
 } from '@src/database';
+import { plainToInstance } from 'class-transformer';
 import { mock, mockClear } from 'jest-mock-extended';
-import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UserService } from './user.service';
 
-describe('UsersService', () => {
-  let service: UsersService;
+describe('UserService', () => {
+  let service: UserService;
   const repository = mock<IUserRepository>();
   const dbUserPkCreator = mock<KeyCreator>();
 
@@ -20,24 +22,24 @@ describe('UsersService', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UsersService,
+        UserService,
         { provide: RepositoryToken.USER_REPOSITORY, useValue: repository },
         { provide: KeyCreator, useValue: dbUserPkCreator },
       ],
     }).compile();
 
-    service = module.get<UsersService>(UsersService);
+    service = module.get<UserService>(UserService);
   });
 
   describe('createUser', () => {
     test('통과하는 테스트', async () => {
-      const dto = {
+      const dto = plainToInstance(CreateUserDto, {
         walletAddress: '지갑주소',
         name: '이름',
         email: '이메일',
         contact: '연락처',
         birthDate: '2000/01/01',
-      };
+      });
       const calledValue = {
         id: undefined,
         birthDate: new Date(2000, 0, 1),
@@ -55,13 +57,13 @@ describe('UsersService', () => {
     });
 
     test('실패하는 테스트, 중복 회원 가입이면 DuplicatedDataError를 던짐', async () => {
-      const dto = {
+      const dto = plainToInstance(CreateUserDto, {
         walletAddress: '지갑주소',
         name: '이름',
         email: '이메일',
         contact: '연락처',
         birthDate: '2000/01/01',
-      };
+      });
       const error = new DuplicatedDataException(`데이터가 이미 존재합니다.`);
 
       // 사용자 생성

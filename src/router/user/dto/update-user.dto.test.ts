@@ -1,10 +1,10 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { UpdateUsersDto } from './update-users.dto';
+import { UpdateUserDto } from './update-user.dto';
 
 describe('UpdateUserDto', () => {
   const getValidationErrors = async (dto: object) => {
-    const instance = plainToInstance(UpdateUsersDto, dto);
+    const instance = plainToInstance(UpdateUserDto, dto);
     return validate(instance);
   };
 

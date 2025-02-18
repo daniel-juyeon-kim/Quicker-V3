@@ -1,6 +1,6 @@
 import { IsNumberString } from 'class-validator';
 
-export class UpdateUsersDto {
+export class UpdateUserDto {
   @IsNumberString()
   imageId: string;
 }

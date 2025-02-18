@@ -9,34 +9,34 @@ import {
 } from '@nestjs/common';
 import { ServiceToken } from '@src/core/constant';
 import { ValidateWalletAddressPipe } from '@src/core/pipe/wallet-address-pipe/wallet-address.pipe';
-import { CreateUsersDto } from './dto/create-users.dto';
-import { UpdateUsersDto } from './dto/update-users.dto';
-import { IUsersService } from './users.service.interface';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { IUserService } from './user.service.interface';
 
 @Controller('users')
-export class UsersController {
+export class UserController {
   constructor(
     @Inject(ServiceToken.USER_SERVICE)
-    private readonly service: IUsersService,
+    private readonly userService: IUserService,
   ) {}
 
   @Post()
-  async createUser(@Body() dto: CreateUsersDto) {
-    await this.service.createUser(dto);
+  async createUser(@Body() dto: CreateUserDto) {
+    await this.userService.createUser(dto);
   }
 
   @Get(':walletAddress/name')
   async findUserName(
     @Param('walletAddress', ValidateWalletAddressPipe) walletAddress: string,
   ) {
-    return await this.service.findUserNameByWalletAddress(walletAddress);
+    return await this.userService.findUserNameByWalletAddress(walletAddress);
   }
 
   @Get(':walletAddress/profile-image/id')
   async findUserProfileImageId(
     @Param('walletAddress', ValidateWalletAddressPipe) walletAddress: string,
   ) {
-    return await this.service.findUserProfileImageIdByWalletAddress(
+    return await this.userService.findUserProfileImageIdByWalletAddress(
       walletAddress,
     );
   }
@@ -44,9 +44,9 @@ export class UsersController {
   @Patch(':walletAddress/profile-image/id')
   async updateUserProfileImageId(
     @Param('walletAddress', ValidateWalletAddressPipe) walletAddress: string,
-    @Body() dto: UpdateUsersDto,
+    @Body() dto: UpdateUserDto,
   ) {
-    await this.service.updateUserProfileImageId({
+    await this.userService.updateUserProfileImageId({
       walletAddress,
       ...dto,
     });

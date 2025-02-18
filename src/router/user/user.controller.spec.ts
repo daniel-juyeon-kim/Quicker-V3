@@ -2,27 +2,27 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
 import { DuplicatedDataException, NotExistDataException } from '@src/database';
 import { mock } from 'jest-mock-extended';
-import { CreateUsersDto } from './dto/create-users.dto';
-import { UpdateUsersDto } from './dto/update-users.dto';
-import { UsersController } from './users.controller';
-import { IUsersService } from './users.service.interface';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserController } from './user.controller';
+import { IUserService } from './user.service.interface';
 
 describe('UsersController', () => {
-  const service = mock<IUsersService>();
-  let controller: UsersController;
+  const service = mock<IUserService>();
+  let controller: UserController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UsersController],
+      controllers: [UserController],
       providers: [{ provide: ServiceToken.USER_SERVICE, useValue: service }],
     }).compile();
 
-    controller = module.get<UsersController>(UsersController);
+    controller = module.get<UserController>(UserController);
   });
 
   describe('createUser', () => {
     test('통과하는 테스트', async () => {
-      const dto: CreateUsersDto = {
+      const dto: CreateUserDto = {
         walletAddress: '문자열',
         name: '문자열',
         email: 'temp@gmail.com',
@@ -37,7 +37,7 @@ describe('UsersController', () => {
     });
 
     test('실패하는 테스트, 이미 동일한 지갑주소로 등록된 사용자가 있으면 DuplicatedDataError를 던짐', async () => {
-      const dto: CreateUsersDto = {
+      const dto: CreateUserDto = {
         walletAddress: '문자열',
         name: '문자열',
         email: 'temp@gmail.com',
@@ -67,7 +67,7 @@ describe('UsersController', () => {
       );
     });
 
-    test('실패하는 테스트, 지갑주소로 조회하면 NotExistDataError를 던짐', async () => {
+    test('실패하는 테스트, 존재하지 않는 지갑주소로 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '0x123';
       const error = new NotExistDataException('데이터가 존재하지 않습니다.');
       service.findUserNameByWalletAddress.mockRejectedValueOnce(error);
@@ -84,7 +84,7 @@ describe('UsersController', () => {
   describe('updateUserProfileImageId', () => {
     test('통과하는 테스트', async () => {
       const walletAddress = '0x123';
-      const dto: UpdateUsersDto = {
+      const dto: UpdateUserDto = {
         imageId: 'image123',
       };
       const resolvedValue = undefined;
@@ -101,7 +101,7 @@ describe('UsersController', () => {
 
     test('실패하는 테스트, 존재하지 않는 지갑주소로 요청하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '0x123';
-      const dto: UpdateUsersDto = {
+      const dto: UpdateUserDto = {
         imageId: 'image123',
       };
       const error = new NotExistDataException('유저가 존재하지 않습니다.');
@@ -133,7 +133,7 @@ describe('UsersController', () => {
       ).toHaveBeenCalledWith(walletAddress);
     });
 
-    test('실패하는 테스트, 존재하지  NotExistDataError를 던짐', async () => {
+    test('실패하는 테스트, 존재하지 않는 지갑주소는 NotExistDataError를 던짐', async () => {
       const walletAddress = '0x123';
       const error = new NotExistDataException(
         '이미지 데이터가 존재하지 않습니다.',
