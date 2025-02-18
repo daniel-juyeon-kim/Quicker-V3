@@ -10,8 +10,10 @@ export class OrderLocationController {
   ) {}
 
   @Get(':orderId/coordinates')
-  async getCoordinates(@Param('orderId', ParseIntPipe) orderId: number) {
-    return await this.orderLocationService.findDepartureAndDestinationByOrderId(
+  async findDepartureDestinationCoordinates(
+    @Param('orderId', ParseIntPipe) orderId: number,
+  ) {
+    return await this.orderLocationService.findDepartureDestinationByOrderId(
       orderId,
     );
   }

@@ -21,7 +21,7 @@ describe('OrderLocationController', () => {
     mockClear(service);
   });
 
-  describe('getCoordinates()', () => {
+  describe('findDepartureDestinationCoordinates', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const resolvedValue = {
@@ -30,15 +30,15 @@ describe('OrderLocationController', () => {
         destination: { x: 129.0756, y: 35.1796 },
       };
 
-      service.findDepartureAndDestinationByOrderId.mockResolvedValueOnce(
+      service.findDepartureDestinationByOrderId.mockResolvedValueOnce(
         resolvedValue,
       );
 
-      await expect(controller.getCoordinates(orderId)).resolves.toStrictEqual(
-        resolvedValue,
-      );
+      await expect(
+        controller.findDepartureDestinationCoordinates(orderId),
+      ).resolves.toStrictEqual(resolvedValue);
 
-      expect(service.findDepartureAndDestinationByOrderId).toHaveBeenCalledWith(
+      expect(service.findDepartureDestinationByOrderId).toHaveBeenCalledWith(
         orderId,
       );
     });
@@ -46,11 +46,11 @@ describe('OrderLocationController', () => {
     test('실패하는 테스트, 데이터가 존재하지 않아 예외 발생', async () => {
       const orderId = 1;
       const error = new NotExistDataException('존재하지 않는 데이터');
-      service.findDepartureAndDestinationByOrderId.mockRejectedValueOnce(error);
+      service.findDepartureDestinationByOrderId.mockRejectedValueOnce(error);
 
-      await expect(controller.getCoordinates(orderId)).rejects.toStrictEqual(
-        error,
-      );
+      await expect(
+        controller.findDepartureDestinationCoordinates(orderId),
+      ).rejects.toStrictEqual(error);
     });
   });
 });

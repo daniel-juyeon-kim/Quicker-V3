@@ -7,10 +7,12 @@ import { IOrderLocationService } from './order-location.service.interface';
 export class OrderLocationService implements IOrderLocationService {
   constructor(
     @Inject(RepositoryToken.LOCATION_REPOSITORY)
-    private readonly repository: ILocationRepository,
+    private readonly locationRepository: ILocationRepository,
   ) {}
 
-  async findDepartureAndDestinationByOrderId(orderId: number) {
-    return await this.repository.findDestinationDepartureByOrderId(orderId);
+  async findDepartureDestinationByOrderId(orderId: number) {
+    return await this.locationRepository.findDestinationDepartureByOrderId(
+      orderId,
+    );
   }
 }

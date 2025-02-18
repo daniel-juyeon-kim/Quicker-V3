@@ -23,7 +23,7 @@ describe('OrderLocationService', () => {
     mockClear(repository);
   });
 
-  describe('findDepartureAndDestinationByOrderId()', () => {
+  describe('findDepartureDestinationByOrderId', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const resolvedValue = {
@@ -36,7 +36,7 @@ describe('OrderLocationService', () => {
       );
 
       await expect(
-        service.findDepartureAndDestinationByOrderId(orderId),
+        service.findDepartureDestinationByOrderId(orderId),
       ).resolves.toStrictEqual(resolvedValue);
       expect(repository.findDestinationDepartureByOrderId).toHaveBeenCalledWith(
         orderId,
@@ -52,7 +52,7 @@ describe('OrderLocationService', () => {
       repository.findDestinationDepartureByOrderId.mockRejectedValueOnce(error);
 
       await expect(
-        service.findDepartureAndDestinationByOrderId(orderId),
+        service.findDepartureDestinationByOrderId(orderId),
       ).rejects.toStrictEqual(error);
     });
   });
