@@ -1,5 +1,5 @@
 export interface IOrderAverageService {
-  findLatestOrderAverageCost(
+  findLatestOrderAverageCostByDistance(
     distance: number,
   ): Promise<{ averageCost: number }>;
 }

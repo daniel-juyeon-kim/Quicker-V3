@@ -12,7 +12,7 @@ export class OrderAverageService implements IOrderAverageService {
     private readonly repository: IAverageCostRepository,
   ) {}
 
-  async findLatestOrderAverageCost(
+  async findLatestOrderAverageCostByDistance(
     distance: number,
   ): Promise<{ averageCost: number }> {
     const distanceUnit = findDistanceKey(distance);

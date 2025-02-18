@@ -25,7 +25,7 @@ describe('OrderAverageService', () => {
     mockClear(repository);
   });
 
-  describe('findLatestOrderAverageCost()', () => {
+  describe('findLatestOrderAverageCostByDistance', () => {
     test('통과하는 테스트', async () => {
       const distance = 50;
       const resolvedValue = 100;
@@ -35,7 +35,7 @@ describe('OrderAverageService', () => {
       );
 
       await expect(
-        service.findLatestOrderAverageCost(distance),
+        service.findLatestOrderAverageCostByDistance(distance),
       ).resolves.toEqual({ averageCost: resolvedValue });
       expect(
         repository.findAverageCostByDateAndDistanceUnit,
@@ -54,7 +54,7 @@ describe('OrderAverageService', () => {
         );
 
         await expect(
-          service.findLatestOrderAverageCost(distance),
+          service.findLatestOrderAverageCostByDistance(distance),
         ).rejects.toStrictEqual(error);
       });
 
@@ -66,7 +66,7 @@ describe('OrderAverageService', () => {
         );
 
         await expect(
-          service.findLatestOrderAverageCost(distance),
+          service.findLatestOrderAverageCostByDistance(distance),
         ).rejects.toStrictEqual(error);
       });
     });

@@ -24,26 +24,32 @@ describe('OrderAverageController', () => {
     mockClear(service);
   });
 
-  describe('getLatestAverageCost()', () => {
+  describe('findLatestAverageCost', () => {
     test('통과하는 테스트', async () => {
       const distance = 50;
       const resolveValue = { averageCost: 123000 };
-      service.findLatestOrderAverageCost.mockResolvedValueOnce(resolveValue);
-
-      await expect(controller.getLatestAverageCost(distance)).resolves.toEqual(
+      service.findLatestOrderAverageCostByDistance.mockResolvedValueOnce(
         resolveValue,
       );
-      expect(service.findLatestOrderAverageCost).toHaveBeenCalledWith(distance);
+
+      await expect(controller.findLatestAverageCost(distance)).resolves.toEqual(
+        resolveValue,
+      );
+      expect(service.findLatestOrderAverageCostByDistance).toHaveBeenCalledWith(
+        distance,
+      );
     });
 
     describe('실패하는 테스트', () => {
       test('예상하지 못한 에러 발생', async () => {
         const distance = 50;
         const error = new UnknownDataBaseException('알 수 없는 에러');
-        service.findLatestOrderAverageCost.mockRejectedValueOnce(error);
+        service.findLatestOrderAverageCostByDistance.mockRejectedValueOnce(
+          error,
+        );
 
         await expect(
-          controller.getLatestAverageCost(distance),
+          controller.findLatestAverageCost(distance),
         ).rejects.toStrictEqual(error);
       });
     });
