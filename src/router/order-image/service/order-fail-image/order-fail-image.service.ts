@@ -7,11 +7,13 @@ import { IOrderFailImageService } from './order-fail-image.service.interface';
 export class OrderFailImageService implements IOrderFailImageService {
   constructor(
     @Inject(RepositoryToken.FAIL_DELIVERY_IMAGE_REPOSITORY)
-    private readonly repository: IFailDeliveryImageRepository,
+    private readonly failDeliveryImageRepository: IFailDeliveryImageRepository,
   ) {}
 
-  async findOrderFailImage(orderId: number) {
-    return await this.repository.findFailDeliveryImageByOrderId(orderId);
+  async findOrderFailImageByOrderId(orderId: number) {
+    return await this.failDeliveryImageRepository.findFailDeliveryImageByOrderId(
+      orderId,
+    );
   }
 
   async createFailImage({
@@ -23,7 +25,7 @@ export class OrderFailImageService implements IOrderFailImageService {
     reason: string;
     file: Express.Multer.File;
   }) {
-    await this.repository.createFailDeliveryImage({
+    await this.failDeliveryImageRepository.createFailDeliveryImage({
       orderId,
       reason,
       bufferImage: file.buffer,

@@ -7,12 +7,14 @@ import { IOrderCompleteImageService } from './order-complete-image.service.inter
 export class OrderCompleteImageService implements IOrderCompleteImageService {
   constructor(
     @Inject(RepositoryToken.COMPLETE_DELIVERY_IMAGE_REPOSITORY)
-    private readonly repository: ICompleteDeliveryImageRepository,
+    private readonly completeDeliveryImageRepository: ICompleteDeliveryImageRepository,
   ) {}
 
-  async findCompleteImageBuffer(orderId: number) {
+  async findCompleteImageBufferByOrderId(orderId: number) {
     const buffer =
-      await this.repository.findCompleteImageBufferByOrderId(orderId);
+      await this.completeDeliveryImageRepository.findCompleteImageBufferByOrderId(
+        orderId,
+      );
     return { buffer };
   }
 
@@ -23,6 +25,9 @@ export class OrderCompleteImageService implements IOrderCompleteImageService {
     orderId: number;
     buffer: Buffer;
   }) {
-    await this.repository.create({ orderId, bufferImage: buffer });
+    await this.completeDeliveryImageRepository.create({
+      orderId,
+      bufferImage: buffer,
+    });
   }
 }

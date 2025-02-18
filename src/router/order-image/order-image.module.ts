@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ServiceToken } from '@src/core/constant';
-import { OrderCompleteImageService } from './order-complete-image/order-complete-image.service';
-import { OrderFailImageService } from './order-fail-image/order-fail-image.service';
 import { OrderImageController } from './order-image.controller';
+import { OrderCompleteImageService } from './service/order-complete-image/order-complete-image.service';
+import { OrderFailImageService } from './service/order-fail-image/order-fail-image.service';
 
 @Module({
   controllers: [OrderImageController],

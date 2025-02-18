@@ -14,8 +14,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ServiceToken, SUPPORT_IMAGE_EXT_REG_EXP } from '@src/core/constant';
 import { CreateCompleteOrderImageDto } from './dto/create-order-complete-image.dto';
 import { CreateOrderFailImageDto } from './dto/create-order-fail-image.dto';
-import { IOrderCompleteImageService } from './order-complete-image/order-complete-image.service.interface';
-import { IOrderFailImageService } from './order-fail-image/order-fail-image.service.interface';
+import { IOrderCompleteImageService } from './service/order-complete-image/order-complete-image.service.interface';
+import { IOrderFailImageService } from './service/order-fail-image/order-fail-image.service.interface';
 
 @Controller('orders')
 export class OrderImageController {
@@ -27,8 +27,8 @@ export class OrderImageController {
   ) {}
 
   @Get(':orderId/image/fail')
-  getFailImage(@Param('orderId', ParseIntPipe) orderId: number) {
-    return this.orderFailImageService.findOrderFailImage(orderId);
+  findFailImage(@Param('orderId', ParseIntPipe) orderId: number) {
+    return this.orderFailImageService.findOrderFailImageByOrderId(orderId);
   }
 
   @Post('image/fail')
@@ -46,8 +46,10 @@ export class OrderImageController {
   }
 
   @Get(':orderId/image/complete')
-  getCompleteImageBuffer(@Param('orderId', ParseIntPipe) orderId: number) {
-    return this.orderCompleteImageService.findCompleteImageBuffer(orderId);
+  findCompleteImageBuffer(@Param('orderId', ParseIntPipe) orderId: number) {
+    return this.orderCompleteImageService.findCompleteImageBufferByOrderId(
+      orderId,
+    );
   }
 
   @Post('image/complete')

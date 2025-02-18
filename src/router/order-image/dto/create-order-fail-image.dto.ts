@@ -1,7 +1,7 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsPositive, IsString } from 'class-validator';
 
 export class CreateOrderFailImageDto {
-  @IsNumber()
+  @IsPositive()
   orderId: number;
 
   @IsString()

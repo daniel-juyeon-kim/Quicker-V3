@@ -3,9 +3,9 @@ import { ServiceToken } from '@src/core/constant';
 import { DuplicatedDataException, NotExistDataException } from '@src/database';
 import { mock } from 'jest-mock-extended';
 import { Readable } from 'stream';
-import { IOrderCompleteImageService } from './order-complete-image/order-complete-image.service.interface';
-import { IOrderFailImageService } from './order-fail-image/order-fail-image.service.interface';
 import { OrderImageController } from './order-image.controller';
+import { IOrderCompleteImageService } from './service/order-complete-image/order-complete-image.service.interface';
+import { IOrderFailImageService } from './service/order-fail-image/order-fail-image.service.interface';
 
 describe('OrderImageController', () => {
   let controller: OrderImageController;
@@ -31,7 +31,7 @@ describe('OrderImageController', () => {
     controller = module.get<OrderImageController>(OrderImageController);
   });
 
-  describe('getFailImage()', () => {
+  describe('findFailImage', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const resolvedValue = {
@@ -39,31 +39,33 @@ describe('OrderImageController', () => {
         image: Buffer.from([102, 97, 107, 101, 66, 117]),
         reason: '이유',
       };
-      orderFailImageService.findOrderFailImage.mockResolvedValueOnce(
+      orderFailImageService.findOrderFailImageByOrderId.mockResolvedValueOnce(
         resolvedValue,
       );
 
-      await expect(controller.getFailImage(orderId)).resolves.toStrictEqual(
+      await expect(controller.findFailImage(orderId)).resolves.toStrictEqual(
         resolvedValue,
       );
 
-      expect(orderFailImageService.findOrderFailImage).toHaveBeenCalledWith(
-        orderId,
-      );
+      expect(
+        orderFailImageService.findOrderFailImageByOrderId,
+      ).toHaveBeenCalledWith(orderId);
     });
 
     test('실패하는 테스트, 존재하지 않는 데이터 접근', async () => {
       const orderId = 1;
       const error = new NotExistDataException('존재하지 않는 데이터');
-      orderFailImageService.findOrderFailImage.mockRejectedValueOnce(error);
+      orderFailImageService.findOrderFailImageByOrderId.mockRejectedValueOnce(
+        error,
+      );
 
-      await expect(controller.getFailImage(orderId)).rejects.toStrictEqual(
+      await expect(controller.findFailImage(orderId)).rejects.toStrictEqual(
         error,
       );
     });
   });
 
-  describe('postFailImage()', () => {
+  describe('postFailImage', () => {
     const file = {
       fieldname: 'uploadedFile',
       originalname: 'example.png',
@@ -108,21 +110,23 @@ describe('OrderImageController', () => {
     });
   });
 
-  describe('getCompleteImage()', () => {
+  describe('findCompleteImageBuffer', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const buffer = Buffer.from([102, 97, 107, 101, 66, 117]);
 
-      orderCompleteImageService.findCompleteImageBuffer.mockResolvedValueOnce({
-        buffer,
-      });
+      orderCompleteImageService.findCompleteImageBufferByOrderId.mockResolvedValueOnce(
+        {
+          buffer,
+        },
+      );
 
       await expect(
-        controller.getCompleteImageBuffer(orderId),
+        controller.findCompleteImageBuffer(orderId),
       ).resolves.toStrictEqual({ buffer });
 
       expect(
-        orderCompleteImageService.findCompleteImageBuffer,
+        orderCompleteImageService.findCompleteImageBufferByOrderId,
       ).toHaveBeenCalledWith(orderId);
     });
 
@@ -130,17 +134,17 @@ describe('OrderImageController', () => {
       const orderId = 1;
       const error = new NotExistDataException('존재하지 않는 데이터');
 
-      orderCompleteImageService.findCompleteImageBuffer.mockRejectedValueOnce(
+      orderCompleteImageService.findCompleteImageBufferByOrderId.mockRejectedValueOnce(
         error,
       );
 
       await expect(
-        controller.getCompleteImageBuffer(orderId),
+        controller.findCompleteImageBuffer(orderId),
       ).rejects.toStrictEqual(error);
     });
   });
 
-  describe('postCompleteImageBuffer()', () => {
+  describe('postCompleteImageBuffer', () => {
     const file = {
       fieldname: 'uploadedFile',
       originalname: 'example.png',
