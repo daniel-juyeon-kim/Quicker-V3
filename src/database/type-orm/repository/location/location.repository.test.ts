@@ -217,7 +217,7 @@ describe('LocationRepository', () => {
       ];
 
       await expect(
-        repository.findAllDestinationDepartureByOrderId(orderIds),
+        repository.findAllDestinationDepartureByOrderIds(orderIds),
       ).resolves.toEqual(result);
     });
 
@@ -233,7 +233,7 @@ describe('LocationRepository', () => {
         ];
 
         await expect(
-          repository.findAllDestinationDepartureByOrderId(orderIds),
+          repository.findAllDestinationDepartureByOrderIds(orderIds),
         ).resolves.toEqual(result);
       });
 
@@ -242,7 +242,7 @@ describe('LocationRepository', () => {
         const result = [];
 
         await expect(
-          repository.findAllDestinationDepartureByOrderId(orderIds),
+          repository.findAllDestinationDepartureByOrderIds(orderIds),
         ).resolves.toEqual(result);
       });
     });

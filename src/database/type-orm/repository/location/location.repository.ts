@@ -42,7 +42,7 @@ export class LocationRepository
     }
   }
 
-  async findAllDestinationDepartureByOrderId(orderIds: number[]) {
+  async findAllDestinationDepartureByOrderIds(orderIds: number[]) {
     const orderLocations = await this.repository.find({
       where: { id: In(orderIds) },
       relations: { departure: true, destination: true },
