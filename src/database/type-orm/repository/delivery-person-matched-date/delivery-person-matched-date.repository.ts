@@ -2,9 +2,9 @@ import { Between, EntityManager, Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import { DeliveryPersonMatchedDateEntity } from '../../entity';
-import { DuplicatedDataError } from '../../util';
+import { DuplicatedDataException } from '../../util';
 import { AbstractRepository } from '../abstract-repository';
 import { IDeliveryPersonMatchedDateRepository } from './delivery-person-matched-date.repository.interface';
 
@@ -28,7 +28,7 @@ export class DeliveryPersonMatchedDateRepository
       );
 
       if (matchedDateExists) {
-        throw new DuplicatedDataError(
+        throw new DuplicatedDataException(
           `${orderId}에 대해 중복된 데이터가 존재합니다.`,
         );
       }
@@ -38,10 +38,10 @@ export class DeliveryPersonMatchedDateRepository
 
       await manager.insert(DeliveryPersonMatchedDateEntity, matchedDate);
     } catch (error) {
-      if (error instanceof DuplicatedDataError) {
+      if (error instanceof DuplicatedDataException) {
         throw error;
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -52,7 +52,7 @@ export class DeliveryPersonMatchedDateRepository
         where: { date: Between(startDate, endDate) },
       });
     } catch (error) {
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 }

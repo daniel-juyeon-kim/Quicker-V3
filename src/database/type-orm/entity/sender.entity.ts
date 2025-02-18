@@ -4,13 +4,13 @@ import { DepartureEntity } from '.';
 @Entity({ name: 'sender' })
 export class SenderEntity {
   @PrimaryColumn()
-  id!: number;
+  id: number;
 
   @Column()
-  name!: string;
+  name: string;
 
   @Column()
-  phone!: string;
+  phone: string;
 
   @OneToOne(() => DepartureEntity, (departure) => departure.sender, {
     cascade: ['insert'],
@@ -18,5 +18,5 @@ export class SenderEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  departure!: DepartureEntity;
+  departure: DepartureEntity;
 }

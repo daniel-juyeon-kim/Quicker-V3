@@ -78,7 +78,7 @@ export default [
     },
   },
   {
-    files: ['**/*.entity.ts'],
+    files: ['**/*.entity.ts', '**/*.dto.ts'],
     rules: {
       'lines-between-class-members': [
         'warn',

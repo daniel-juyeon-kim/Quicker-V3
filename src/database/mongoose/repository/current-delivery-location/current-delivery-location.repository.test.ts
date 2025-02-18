@@ -1,7 +1,7 @@
 import { expect } from '@jest/globals';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotExistDataError } from '@src/database/type-orm';
+import { NotExistDataException } from '@src/database/type-orm';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
 import {
@@ -106,7 +106,7 @@ describe('CurrentDeliverLocationRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 값 입력', async () => {
       const orderId = 99;
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `${orderId}에 대한 데이터가 존재하지 않습니다.`,
       );
 

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import {
   BirthDateEntity,
   DepartureEntity,
@@ -17,7 +17,7 @@ import {
 import { mock } from 'jest-mock-extended';
 import { EntityManager, Repository } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
-import { NotExistDataError } from '../../util';
+import { NotExistDataException } from '../../util';
 import { LocationRepository } from './location.repository';
 
 const createUser = async (manager: EntityManager) => {
@@ -175,7 +175,7 @@ describe('LocationRepository', () => {
     describe('실패하는 테스트', () => {
       test('존재하지 않는 값 저장, NotExistDataError를 던짐', async () => {
         const orderId = 32;
-        const error = new NotExistDataError(
+        const error = new NotExistDataException(
           `${orderId}에 대한 데이터가 존재하지 않습니다.`,
         );
 
@@ -187,7 +187,7 @@ describe('LocationRepository', () => {
       test('예측하지 못한 에러, unknownError를 던짐', async () => {
         const orderId = 1;
         const originalError = new Error('알 수 없는 에러');
-        const error = new UnknownDataBaseError(originalError);
+        const error = new UnknownDataBaseException(originalError);
         const ormRepository = mock<Repository<OrderEntity>>();
         const repository = new LocationRepository(ormRepository);
 

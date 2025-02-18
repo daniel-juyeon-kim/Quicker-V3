@@ -4,25 +4,25 @@ import { OrderEntity } from '.';
 @Entity({ name: 'transportation' })
 export class TransportationEntity {
   @PrimaryColumn()
-  id!: number;
+  id: number;
 
-  @Column('tinyint')
-  walking!: 1 | 0;
+  @Column('tinyint', { default: 0 })
+  walking: 1 | 0;
 
-  @Column('tinyint')
-  bicycle!: 1 | 0;
+  @Column('tinyint', { default: 0 })
+  bicycle: 1 | 0;
 
-  @Column('tinyint')
-  scooter!: 1 | 0;
+  @Column('tinyint', { default: 0 })
+  scooter: 1 | 0;
 
-  @Column('tinyint')
-  bike!: 1 | 0;
+  @Column('tinyint', { default: 0 })
+  bike: 1 | 0;
 
-  @Column('tinyint')
-  car!: 1 | 0;
+  @Column('tinyint', { default: 0 })
+  car: 1 | 0;
 
-  @Column('tinyint')
-  truck!: 1 | 0;
+  @Column('tinyint', { default: 0 })
+  truck: 1 | 0;
 
   @OneToOne(() => OrderEntity, (order) => order.transportation, {
     cascade: ['insert'],
@@ -30,5 +30,5 @@ export class TransportationEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  order!: OrderEntity;
+  order: OrderEntity;
 }

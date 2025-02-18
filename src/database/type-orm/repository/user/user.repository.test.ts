@@ -3,7 +3,7 @@ import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import { OrderEntity, ProfileImageEntity, UserEntity } from '../../entity';
-import { DuplicatedDataError, NotExistDataError } from '../../util';
+import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { UserRepository } from './user.repository';
 
 const createUser = async (manager: EntityManager) => {
@@ -54,8 +54,8 @@ describe('UserRepository', () => {
   });
 
   describe('UserRepository 테스트', () => {
-    describe('insert', () => {
-      describe('create() 테스트', () => {
+    describe('create', () => {
+      describe('createUser', () => {
         test('통과하는 테스트', async () => {
           const userId = '아이디';
           const user = {
@@ -67,7 +67,7 @@ describe('UserRepository', () => {
           };
           const birthDate = new Date(2000, 9, 12);
 
-          await repository.create({ id: userId, user, birthDate });
+          await repository.createUser({ id: userId, user, birthDate });
 
           const userInstance = await ormRepository.manager.findOne(UserEntity, {
             relations: {
@@ -82,7 +82,7 @@ describe('UserRepository', () => {
           expect(userInstance.joinDate).toBeTruthy();
         });
 
-        test('실패하는 테스트, 이미 존재하는 아이디', async () => {
+        test('실패하는 테스트, 이미 존재하는 아이디는 DuplicatedDataError를 던짐', async () => {
           const userId = '아이디';
           const user = {
             id: userId,
@@ -92,24 +92,24 @@ describe('UserRepository', () => {
             contact: '연락처',
           };
           const birthDate = new Date(2000, 9, 12);
-          const error = new DuplicatedDataError(
-            '아이디에 해당하는 데이터가 이미 존재합니다.',
+          const error = new DuplicatedDataException(
+            `${userId}에 해당하는 데이터가 이미 존재합니다.`,
           );
 
           // 사용자 생성
           await expect(
-            repository.create({ user, birthDate, id: userId }),
+            repository.createUser({ user, birthDate, id: userId }),
           ).resolves.not.toThrow();
 
           // 중복 데이터 입력, 에러 던짐
           await expect(
-            repository.create({ user, birthDate, id: userId }),
+            repository.createUser({ user, birthDate, id: userId }),
           ).rejects.toStrictEqual(error);
         });
       });
     });
 
-    describe('select', () => {
+    describe('find', () => {
       beforeEach(async () => {
         await createUser(ormRepository.manager);
       });
@@ -118,7 +118,7 @@ describe('UserRepository', () => {
         await ormRepository.manager.clear(UserEntity);
       });
 
-      describe('findNameByWalletAddress 테스트', () => {
+      describe('findNameByWalletAddress', () => {
         test('통과하는 테스트', async () => {
           const walletAddress = '지갑주소';
           const result = { name: '이름' };
@@ -128,10 +128,10 @@ describe('UserRepository', () => {
           ).resolves.toEqual(result);
         });
 
-        test('실패하는 테스트, 존재하지 않는 데이터에 접근, NotExistDataError를 던짐', async () => {
-          const walletAddress = '잘못된_지갑주소';
-          const error = new NotExistDataError(
-            '지갑주소 잘못된_지갑주소에 대응되는 데이터가 존재하지 않습니다.',
+        test('실패하는 테스트, 존재하지 않는 데이터에 접근하면 NotExistDataError를 던짐', async () => {
+          const walletAddress = '0x23h298fhooweifhoi82938';
+          const error = new NotExistDataException(
+            `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
           );
 
           await expect(
@@ -140,7 +140,7 @@ describe('UserRepository', () => {
         });
       });
 
-      describe('findUserProfileImageIdByWalletAddress 테스트', () => {
+      describe('findUserProfileImageIdByWalletAddress', () => {
         test('통과하는 테스트', async () => {
           const walletAddress = '지갑주소';
           const result = { imageId: '111' };
@@ -150,10 +150,10 @@ describe('UserRepository', () => {
           ).resolves.toEqual(result);
         });
 
-        test('실패하는 테스트, 존재하지 않는 데이터에 접근, NotExistDataError를 던짐', async () => {
-          const walletAddress = '잘못된_지갑주소';
-          const error = new NotExistDataError(
-            '지갑주소 잘못된_지갑주소에 대응되는 데이터가 존재하지 않습니다.',
+        test('실패하는 테스트, 존재하지 않는 데이터에 접근하면 NotExistDataError를 던짐', async () => {
+          const walletAddress = '0x23h298fhooweifhoi82938';
+          const error = new NotExistDataException(
+            `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
           );
 
           await expect(
@@ -188,13 +188,14 @@ describe('UserRepository', () => {
           ).resolves.toEqual(result);
         });
 
-        test('실패하는 테스트, 존재하지 않는 지갑주소, NotExistDataError를 던짐', async () => {
+        test('실패하는 테스트, 회원으로 등록되지 않은 지갑주소로 이미지 아이디를 업데이트하면 NotExistDataError를 던짐', async () => {
+          const walletAddress = '0x23h298fhooweifhoi82938';
           const dto = {
-            walletAddress: '존재하지 않는 지갑주소',
+            walletAddress,
             imageId: '100',
           };
-          const error = new NotExistDataError(
-            '존재하지 않는 지갑주소에 대응되는 데이터가 존재하지 않습니다.',
+          const error = new NotExistDataException(
+            `${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
           );
 
           await expect(

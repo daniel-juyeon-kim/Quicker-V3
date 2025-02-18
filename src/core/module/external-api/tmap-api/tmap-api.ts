@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { tmapApiConfig } from '@src/core/config/configs';
 import { isNull, validateResponse } from '@src/core/util';
 import fetch from 'node-fetch';
-import { TmapApiError } from '../../error/tmap-api.error';
+import { TmapApiException } from '../../exception/tmap-api.exception';
 import { Distance } from './distance';
 import {
   DestinationDepartureLocation,
@@ -58,7 +58,7 @@ export class TmapApi {
 
       return this.floorByKM(totalDistance);
     } catch (e) {
-      throw new TmapApiError(e);
+      throw new TmapApiException(e);
     }
   }
 

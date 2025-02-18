@@ -10,7 +10,10 @@ import {
   TransportationEntity,
   UserEntity,
 } from '../../entity';
-import { BusinessRuleConflictDataError, NotExistDataError } from '../../util';
+import {
+  BusinessRuleConflictDataException,
+  NotExistDataException,
+} from '../../util';
 import { OrderRepository } from './order.repository';
 
 const createUser = async (
@@ -177,10 +180,7 @@ describe('orderRepository 테스트', () => {
           weight: 0,
         };
         const transportation = {
-          walking: 0,
-          bicycle: 0,
-          scooter: 0,
-          bike: 0,
+          bicycle: 1,
           car: 0,
           truck: 0,
         } as const;
@@ -231,10 +231,20 @@ describe('orderRepository 테스트', () => {
             receiver: { id: 1, ...receiver },
           },
           product: { id: 1, ...product },
-          transportation: { id: 1, ...transportation },
+          transportation: {
+            id: 1,
+            ...{
+              bike: 0,
+              car: 0,
+              scooter: 0,
+              truck: 0,
+              walking: 0,
+            },
+            ...transportation,
+          },
         };
 
-        await repository.create(dto);
+        await repository.createOrder(dto);
 
         await expect(
           manager.findOne(OrderEntity, {
@@ -473,7 +483,7 @@ describe('orderRepository 테스트', () => {
         test('배송원이 DB에 존재하지 않는 경우', async () => {
           const anotherDeliveryPersonWalletAddress =
             '존재하지 않는 배송원의 지갑주소';
-          const error = new NotExistDataError(
+          const error = new NotExistDataException(
             `${anotherDeliveryPersonWalletAddress}에 해당하는 사용자가 존재하지 않습니다.`,
           );
 
@@ -599,7 +609,7 @@ describe('orderRepository 테스트', () => {
             orderId: 1,
             walletAddress: '존재하지 않는 지갑주소',
           };
-          const error = new NotExistDataError(
+          const error = new NotExistDataException(
             '존재하지 않는 지갑주소 에 대응되는 사용자가 존재하지 않습니다.',
           );
 
@@ -613,7 +623,7 @@ describe('orderRepository 테스트', () => {
             walletAddress: DELIVERY_PERSON_WALLET_ADDRESS,
             orderId: 2,
           };
-          const error = new NotExistDataError(
+          const error = new NotExistDataException(
             '2 에 대응되는 주문이 존재하지 않습니다.',
           );
 
@@ -629,7 +639,7 @@ describe('orderRepository 테스트', () => {
             walletAddress,
             orderId,
           };
-          const error = new BusinessRuleConflictDataError(
+          const error = new BusinessRuleConflictDataException(
             `${walletAddress}가 의뢰인의 지갑주소와 동일합니다.`,
           );
 

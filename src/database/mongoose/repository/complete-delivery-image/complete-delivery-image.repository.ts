@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import { Model } from 'mongoose';
-import { DuplicatedDataError, NotExistDataError } from '../../../type-orm';
+import {
+  DuplicatedDataException,
+  NotExistDataException,
+} from '../../../type-orm';
 import { CompleteDeliveryImage } from '../../models/complete-delivery-image';
 import { MongoRepository } from '../abstract.repository';
 import { ICompleteDeliveryImageRepository } from './complete-delivery-image.repository.interface';
@@ -32,11 +35,11 @@ export class CompleteDeliveryImageRepository
       await image.save();
     } catch (error) {
       if (this.isDuplicatedDataError(error)) {
-        throw new DuplicatedDataError(
+        throw new DuplicatedDataException(
           `${orderId}에 해당되는 데이터가 이미 존재합니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -50,12 +53,12 @@ export class CompleteDeliveryImageRepository
 
       return image.toJSON().bufferImage;
     } catch (error) {
-      if (error instanceof NotExistDataError) {
-        throw new NotExistDataError(
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException(
           `${orderId}에 해당되는 이미지 버퍼가 존재하지 않습니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 }

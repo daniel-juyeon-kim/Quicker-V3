@@ -11,7 +11,7 @@ import {
   TransportationEntity,
   UserEntity,
 } from '../../entity';
-import { DuplicatedDataError } from '../../util';
+import { DuplicatedDataException } from '../../util';
 import { DeliveryPersonMatchedDateRepository } from './delivery-person-matched-date.repository';
 
 const createUser = async (
@@ -182,7 +182,7 @@ describe('DeliveryPersonMatchedDateRepository', () => {
     describe('실패하는 테스트', () => {
       test('중복인 데이터 조회, DuplicatedDataError를 던짐', async () => {
         const orderId = 1;
-        const error = new DuplicatedDataError(
+        const error = new DuplicatedDataException(
           '1에 대해 중복된 데이터가 존재합니다.',
         );
 

@@ -13,7 +13,7 @@ export class MessageInfo {
 @Schema()
 export class ChatMessages extends Document {
   @Prop({ required: true })
-  roomId: number;
+  id: number;
   @Prop({ type: [MessageInfo], default: [], required: true })
   messages: MessageInfo[];
 }

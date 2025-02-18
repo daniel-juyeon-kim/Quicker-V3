@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import { Repository } from 'typeorm';
 import { AverageCostEntity } from '../../entity/average-cost.entity';
-import { DuplicatedDataError, NotExistDataError } from '../../util';
+import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { Transactional } from '../../util/transactional.decorator';
 import { AbstractRepository } from '../abstract-repository';
 import {
@@ -40,10 +40,10 @@ export class AverageCostRepository
 
       return average[distanceUnit];
     } catch (error) {
-      if (error instanceof NotExistDataError) {
+      if (error instanceof NotExistDataException) {
         throw error;
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -54,17 +54,17 @@ export class AverageCostRepository
   ) {
     try {
       if (await this.manager.existsBy(AverageCostEntity, { date })) {
-        throw new DuplicatedDataError(
+        throw new DuplicatedDataException(
           `${date}에 해당되는 데이터가 이미 존재합니다.`,
         );
       }
 
       await this.manager.insert(AverageCostEntity, { date, ...averageCost });
     } catch (error) {
-      if (error instanceof DuplicatedDataError) {
+      if (error instanceof DuplicatedDataException) {
         throw error;
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 }

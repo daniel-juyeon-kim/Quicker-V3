@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { isNull } from '@src/core/util';
 import { EntityManager } from 'typeorm';
-import { NotExistDataError } from '../util';
+import { NotExistDataException } from '../util';
 
 export abstract class AbstractRepository {
   @Inject(EntityManager)
@@ -13,7 +13,7 @@ export abstract class AbstractRepository {
     data: T | null,
   ): asserts data is T {
     if (isNull(data)) {
-      throw new NotExistDataError(
+      throw new NotExistDataException(
         `${findOption.toString()}에 대한 데이터가 존재하지 않습니다.`,
       );
     }

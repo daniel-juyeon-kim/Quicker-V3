@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TmapApiError } from '../../error/tmap-api.error';
+import { TmapApiException } from '../../exception/tmap-api.exception';
 import { TmapApi } from './tmap-api';
 import { DestinationDepartureLocation } from './types';
 
@@ -45,7 +45,7 @@ describe('TmapApi', () => {
       ).resolves.toStrictEqual([
         {
           status: 'rejected',
-          reason: new TmapApiError(error),
+          reason: new TmapApiException(error),
         },
       ]);
     });

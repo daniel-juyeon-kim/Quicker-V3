@@ -1,8 +1,11 @@
 import { afterEach } from '@jest/globals';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnknownDataBaseError } from '@src/core/module';
-import { DuplicatedDataError, NotExistDataError } from '@src/database/type-orm';
+import { UnknownDataBaseException } from '@src/core/module';
+import {
+  DuplicatedDataException,
+  NotExistDataException,
+} from '@src/database/type-orm';
 import { mock } from 'jest-mock-extended';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
@@ -70,7 +73,7 @@ describe('FailDeliveryImageRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 값 입력', async () => {
       const orderId = 2;
-      const error = new NotExistDataError(
+      const error = new NotExistDataException(
         `${orderId}에 해당되는 실패 이미지가 존재하지 않습니다.`,
       );
 
@@ -89,7 +92,7 @@ describe('FailDeliveryImageRepository', () => {
 
       await expect(
         repository.findFailDeliveryImageByOrderId(orderId),
-      ).rejects.toBeInstanceOf(UnknownDataBaseError);
+      ).rejects.toBeInstanceOf(UnknownDataBaseException);
     });
   });
 
@@ -118,7 +121,7 @@ describe('FailDeliveryImageRepository', () => {
 
     test('실패하는 테스트, 중복 데이터', async () => {
       const orderId = 1;
-      const error = new DuplicatedDataError(
+      const error = new DuplicatedDataException(
         `${orderId}에 해당되는 데이터가 이미 존재합니다.`,
       );
 

@@ -8,14 +8,19 @@ import {
   slackbotConfig,
   tmapApiConfig,
 } from '@src/core/config/configs';
+import { CoreToken } from '../constant';
 import { Klaytn } from './blockchain';
 import { DeliveryUrlCreator } from './delivery-url-creator';
 import { NaverSmsApi, SlackBot, TmapApi } from './external-api';
 import { KeyCreator } from './key-creator';
+import { FilterLoggersModule } from './filter-loggers/filter-loggers.module';
 
 const coreServices: Provider[] = [
   Klaytn,
-  SlackBot,
+  {
+    provide: CoreToken.ERROR_MESSAGE_BOT,
+    useClass: SlackBot,
+  },
   NaverSmsApi,
   TmapApi,
   DeliveryUrlCreator,
@@ -37,6 +42,7 @@ const webClient = {
     ConfigModule.forFeature(naverSmsApiConfig),
     ConfigModule.forFeature(tmapApiConfig),
     ConfigModule.forFeature(keyCreatorConfig),
+    FilterLoggersModule,
   ],
   providers: [...coreServices, webClient],
   exports: [...coreServices],

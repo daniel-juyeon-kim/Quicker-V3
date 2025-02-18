@@ -4,7 +4,7 @@ import { naverSmsApiConfig } from '@src/core/config/configs';
 import { validateResponse } from '@src/core/util';
 import CryptoJS from 'crypto-js';
 import fetch, { HeadersInit } from 'node-fetch';
-import { SmsApiError } from '../../error/sms-api.error';
+import { SmsApiException } from '../../exception/sms-api.exception';
 import { Body, SmsApi } from './sms-api.interface';
 
 @Injectable()
@@ -21,7 +21,8 @@ export class NaverSmsApi implements SmsApi {
   ) {
     this.accesskey = configService.get('accesskey');
     this.secretkey = configService.get('secretkey');
-    this.apiUrl = `https://sens.apigw.ntruss.com/sms/v2/services/${configService.get('serviceId')}/messages`;
+    const serviceId = configService.get('serviceId');
+    this.apiUrl = `https://sens.apigw.ntruss.com/sms/v2/services/${serviceId}/messages`;
     this.fromNumber = configService.get('fromNumber');
   }
 
@@ -39,7 +40,7 @@ export class NaverSmsApi implements SmsApi {
 
       validateResponse(response);
     } catch (e) {
-      throw new SmsApiError(e);
+      throw new SmsApiException(e);
     }
   }
 

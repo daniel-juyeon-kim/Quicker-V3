@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UnknownDataBaseError } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/module';
 import { isNull, isUndefined } from '@src/core/util';
-import { NotExistDataError } from '@src/database/type-orm';
+import { NotExistDataException } from '@src/database/type-orm';
 import { Model } from 'mongoose';
 import { ChatMessages, MessageInfo } from '../../models';
 import { Transactional } from '../../util/transactional.decorator';
@@ -27,7 +27,7 @@ export class ChatMessageRepository
       await this.createChatRoom(orderId);
       await this.insertMessage(orderId, messageInfo);
     } catch (error) {
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 
@@ -35,18 +35,18 @@ export class ChatMessageRepository
     if (await this.isExistChatRoom(orderId)) {
       return;
     }
-    await new this.model({ roomId: orderId }).save();
+    await new this.model({ id: orderId }).save();
   }
 
   private async isExistChatRoom(orderId: number) {
-    const chatRoom = await this.model.exists({ roomId: orderId });
+    const chatRoom = await this.model.exists({ id: orderId });
 
     return !isNull(chatRoom);
   }
 
   private async insertMessage(orderId: number, messageInfo: MessageInfo) {
     await this.model.updateOne(
-      { roomId: orderId },
+      { id: orderId },
       {
         $push: {
           messages: messageInfo,
@@ -57,9 +57,9 @@ export class ChatMessageRepository
 
   async findAllMessageByOrderId(orderId: number) {
     const messages = await this.model
-      .findOne({ roomId: orderId })
+      .findOne({ id: orderId })
       .select({ messages: { _id: 0 } })
-      .select({ _id: 0, roomId: 0, __v: 0 })
+      .select({ _id: 0, id: 0, __v: 0 })
       .lean();
 
     this.validateNull(messages);
@@ -67,10 +67,10 @@ export class ChatMessageRepository
     return messages;
   }
 
-  async findRecentMessageByOrderId(roomId: number) {
+  async findRecentMessageByOrderId(orderId: number) {
     try {
       const userMessages = await this.model
-        .findOne({ roomId: roomId }, '-messages._id')
+        .findOne({ id: orderId }, '-messages._id')
         .lean();
 
       this.validateNull(userMessages);
@@ -78,17 +78,17 @@ export class ChatMessageRepository
       const recentMessage = userMessages.messages.pop();
 
       if (isUndefined(recentMessage)) {
-        throw new NotExistDataError('데이터가 존재하지 않습니다.');
+        throw new NotExistDataException('데이터가 존재하지 않습니다.');
       }
 
       return recentMessage;
     } catch (error) {
-      if (error instanceof NotExistDataError) {
-        throw new NotExistDataError(
-          `${roomId}에 대한 데이터가 존재하지 않습니다.`,
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException(
+          `${orderId}에 대한 데이터가 존재하지 않습니다.`,
         );
       }
-      throw new UnknownDataBaseError(error);
+      throw new UnknownDataBaseException(error);
     }
   }
 }

@@ -4,13 +4,13 @@ import { DestinationEntity } from '.';
 @Entity({ name: 'receiver' })
 export class ReceiverEntity {
   @PrimaryColumn()
-  id!: number;
+  id: number;
 
   @Column()
-  name!: string;
+  name: string;
 
   @Column()
-  phone!: string;
+  phone: string;
 
   @OneToOne(() => DestinationEntity, (destination) => destination.receiver, {
     cascade: ['insert'],
@@ -18,5 +18,5 @@ export class ReceiverEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id' })
-  destination!: DestinationEntity;
+  destination: DestinationEntity;
 }
