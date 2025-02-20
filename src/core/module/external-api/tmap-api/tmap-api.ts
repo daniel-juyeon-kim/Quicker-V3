@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { tmapApiConfig } from '@src/core/config/configs';
-import { isNull, validateResponse } from '@src/core/util';
+import { isFulfilled, isNull, isZero, validateResponse } from '@src/core/util';
 import fetch from 'node-fetch';
 import { TmapApiException } from '../../exception/tmap-api.exception';
 import { Distance } from './distance';
@@ -35,13 +35,24 @@ export class TmapApi {
 
       const distance = await this.requestRouteDistance(requestBody);
 
-      if (isNull(distance)) {
-        return null;
-      }
-      return new Distance(id, distance);
+      return isNull(distance) ? null : new Distance(id, distance);
     });
 
-    return await Promise.allSettled(promises);
+    const promiseAllSettledDistances = await Promise.allSettled(promises);
+
+    const distances = promiseAllSettledDistances
+      .filter((distance) => isFulfilled(distance))
+      .map((distance) => distance.value);
+
+    const errors = promiseAllSettledDistances
+      .filter((distance) => distance.status === 'rejected')
+      .map((rejectedPromise) => rejectedPromise.reason);
+
+    if (!isZero(errors.length)) {
+      throw errors;
+    }
+
+    return distances;
   }
 
   private async requestRouteDistance(body: RequestBody) {
@@ -56,13 +67,13 @@ export class TmapApi {
       const responseBody = (await response.json()) as ResponseBody;
       const { totalDistance } = responseBody.features[0].properties;
 
-      return this.floorByKM(totalDistance);
+      return this.toKilometers(totalDistance);
     } catch (e) {
       throw new TmapApiException(e);
     }
   }
 
-  private floorByKM(totalDistance: number) {
+  private toKilometers(totalDistance: number) {
     return totalDistance / this.KM;
   }
 }

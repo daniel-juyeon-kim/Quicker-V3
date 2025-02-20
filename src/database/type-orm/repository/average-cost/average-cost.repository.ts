@@ -48,7 +48,7 @@ export class AverageCostRepository
   }
 
   @Transactional()
-  async createAverage(
+  async createAverageCost(
     averageCost: Omit<AverageCostEntity, 'date'>,
     date: Date,
   ) {

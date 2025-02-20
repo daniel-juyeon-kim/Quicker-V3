@@ -1,37 +1,48 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { OrderCountTable } from '@src/batch/table/order-count-table/order-count-table';
+import { OrderPriceSumTable } from '@src/batch/table/order-price-sum-table/order-price-sum-table';
+import { isZero } from '@src/core/util';
+import { Entity, PrimaryColumn } from 'typeorm';
+import { DistanceTableEntity } from './distance-table.entity';
 
 @Entity({ name: 'averageCost' })
-export class AverageCostEntity {
+export class AverageCostEntity extends DistanceTableEntity {
   @PrimaryColumn({ type: 'datetime' })
   'date': Date;
 
-  @Column({ nullable: true })
-  '5KM': number;
+  constructor();
 
-  @Column({ nullable: true })
-  '10KM': number;
+  constructor(params: {
+    sumTable: OrderPriceSumTable;
+    countTable: OrderCountTable;
+  });
 
-  @Column({ nullable: true })
-  '15KM': number;
+  constructor(params?: {
+    sumTable: OrderPriceSumTable;
+    countTable: OrderCountTable;
+  }) {
+    super();
 
-  @Column({ nullable: true })
-  '20KM': number;
+    if (params) {
+      this.setAverageCost(params);
+    }
+  }
 
-  @Column({ nullable: true })
-  '25KM': number;
+  private setAverageCost({
+    sumTable,
+    countTable,
+  }: {
+    sumTable: OrderPriceSumTable;
+    countTable: OrderCountTable;
+  }) {
+    for (const key in sumTable) {
+      const sum = sumTable[key];
+      const count = countTable[key];
 
-  @Column({ nullable: true })
-  '30KM': number;
+      if (isZero(sum) || isZero(count)) {
+        continue;
+      }
 
-  @Column({ nullable: true })
-  '40KM': number;
-
-  @Column({ nullable: true })
-  '50KM': number;
-
-  @Column({ nullable: true })
-  '60KM': number;
-
-  @Column({ nullable: true })
-  '60+KM': number;
+      this[key] = Math.floor(sum / count);
+    }
+  }
 }

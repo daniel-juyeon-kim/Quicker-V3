@@ -12,11 +12,11 @@ import { CoreToken } from '../constant';
 import { Klaytn } from './blockchain';
 import { DeliveryUrlCreator } from './delivery-url-creator';
 import { NaverSmsApi, SlackBot, TmapApi } from './external-api';
-import { KeyCreator } from './key-creator';
 import { FilterLoggersModule } from './filter-loggers/filter-loggers.module';
+import { KeyCreator } from './key-creator';
 
 const coreServices: Provider[] = [
-  Klaytn,
+  { provide: CoreToken.BLOCKCHAIN, useClass: Klaytn },
   {
     provide: CoreToken.ERROR_MESSAGE_BOT,
     useClass: SlackBot,

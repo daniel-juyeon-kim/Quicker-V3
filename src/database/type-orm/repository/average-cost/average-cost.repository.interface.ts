@@ -7,7 +7,7 @@ export interface IAverageCostRepository {
     lastMonth: Date;
   }): Promise<number>;
 
-  createAverage(
+  createAverageCost(
     averageCost: Record<AverageCostDistanceUnion, number>,
     date: Date,
   ): Promise<void>;

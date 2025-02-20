@@ -76,7 +76,7 @@ export const validateNotZero = (value: number) => {
   }
 };
 
-const isZero = (value: number) => {
+export const isZero = (value: number) => {
   return value === ZERO;
 };
 

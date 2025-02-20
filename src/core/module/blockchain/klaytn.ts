@@ -20,7 +20,7 @@ export class Klaytn implements Blockchain {
     ).contract.create(QUICKER_DLVR_PROXY_ABI, QUICKER_DLVR_PROXY_ADDRESS);
   }
 
-  public async findOrderPrices(orderIds: number[]) {
+  public async findAllOrderPriceByOrderIds(orderIds: number[]) {
     const blockChainOrders = orderIds.map(async (orderId) => {
       const { orderNumber, orderPrice } = await this.findOrderPrice(orderId);
 

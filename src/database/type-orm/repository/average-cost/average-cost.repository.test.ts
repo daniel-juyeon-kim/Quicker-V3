@@ -49,7 +49,7 @@ describe('AverageCostRepository', () => {
     test('통과하는 테스트', async () => {
       const createDate = new Date(1990, 0, 1);
 
-      await repository.createAverage(average, createDate);
+      await repository.createAverageCost(average, createDate);
 
       await expect(ormRepository.existsBy({ date: createDate })).resolves.toBe(
         true,
@@ -65,12 +65,12 @@ describe('AverageCostRepository', () => {
 
         // 초기 저장
         await expect(
-          repository.createAverage(average, createDate),
+          repository.createAverageCost(average, createDate),
         ).resolves.not.toThrow();
 
         // 중복 데이터 저장
         await expect(
-          repository.createAverage(average, createDate),
+          repository.createAverageCost(average, createDate),
         ).rejects.toStrictEqual(error);
       });
     });

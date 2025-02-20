@@ -8,6 +8,7 @@ import {
   isPositiveNumber,
   isString,
   isUndefined,
+  isZero,
   validateNotZero,
   validateNumeric,
   validateResponse,
@@ -67,6 +68,20 @@ describe('isString 테스트', () => {
   test('실패하는 테스트', () => {
     [1, NaN, {}].forEach((value) => {
       const result = isString(value);
+
+      expect(result).toBe(false);
+    });
+  });
+});
+
+describe('isZero 테스트', () => {
+  test('통과', () => {
+    expect(isZero(0)).toBe(true);
+  });
+
+  test('실패하는 테스트', () => {
+    [Infinity, NaN, -Infinity].forEach((value) => {
+      const result = isZero(value);
 
       expect(result).toBe(false);
     });
