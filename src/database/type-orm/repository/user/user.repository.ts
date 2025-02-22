@@ -1,3 +1,5 @@
+import { Transactional, TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseException } from '@src/core/module';
@@ -9,7 +11,6 @@ import {
   UserEntity,
 } from '../../entity';
 import { DuplicatedDataException, NotExistDataException } from '../../util';
-import { Transactional } from '../../util/transactional.decorator';
 import { AbstractRepository } from '../abstract-repository';
 import { IUserRepository } from './user.repository.interface';
 
@@ -19,6 +20,7 @@ export class UserRepository
   implements IUserRepository
 {
   constructor(
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
     @InjectRepository(UserEntity)
     private readonly repository: Repository<UserEntity>,
   ) {
@@ -36,7 +38,9 @@ export class UserRepository
     id: string;
   }) {
     try {
-      const userExists = await this.manager.existsBy(UserEntity, { id });
+      const userExists = await this.txHost.tx
+        .getRepository(UserEntity)
+        .existsBy({ id });
 
       if (userExists) {
         throw new DuplicatedDataException(
@@ -44,21 +48,21 @@ export class UserRepository
         );
       }
 
-      await this.manager.insert(UserEntity, {
+      await this.txHost.tx.getRepository(UserEntity).insert({
         id,
         ...user,
       });
 
-      await this.manager.insert(BirthDateEntity, {
+      await this.txHost.tx.getRepository(BirthDateEntity).insert({
         id,
         date: birthDate,
       });
 
-      await this.manager.insert(ProfileImageEntity, {
+      await this.txHost.tx.getRepository(ProfileImageEntity).insert({
         id,
       });
 
-      await this.manager.insert(JoinDateEntity, {
+      await this.txHost.tx.getRepository(JoinDateEntity).insert({
         id,
       });
     } catch (error) {
@@ -67,6 +71,38 @@ export class UserRepository
       }
       throw new UnknownDataBaseException(error);
     }
+
+    //   const userExists = await this.manager.existsBy(UserEntity, { id });
+
+    //   if (userExists) {
+    //     throw new DuplicatedDataException(
+    //       `${id}에 해당하는 데이터가 이미 존재합니다.`,
+    //     );
+    //   }
+
+    //   await this.manager.insert(UserEntity, {
+    //     id,
+    //     ...user,
+    //   });
+
+    //   await this.manager.insert(BirthDateEntity, {
+    //     id,
+    //     date: birthDate,
+    //   });
+
+    //   await this.manager.insert(ProfileImageEntity, {
+    //     id,
+    //   });
+
+    //   await this.manager.insert(JoinDateEntity, {
+    //     id,
+    //   });
+    // } catch (error) {
+    //   if (error instanceof DuplicatedDataException) {
+    //     throw error;
+    //   }
+    //   throw new UnknownDataBaseException(error);
+    // }
   }
 
   async findNameByWalletAddress(walletAddress: string) {
@@ -119,15 +155,15 @@ export class UserRepository
     imageId: string;
   }) {
     try {
-      const user = await this.manager.findOneBy(UserEntity, { walletAddress });
+      const user = await this.txHost.tx
+        .getRepository(UserEntity)
+        .findOneBy({ walletAddress });
 
       this.validateNotNull(walletAddress, user);
 
-      await this.manager.update(
-        ProfileImageEntity,
-        { id: user.id },
-        { imageId },
-      );
+      await this.txHost.tx
+        .getRepository(ProfileImageEntity)
+        .update({ id: user.id }, { imageId });
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw new NotExistDataException(

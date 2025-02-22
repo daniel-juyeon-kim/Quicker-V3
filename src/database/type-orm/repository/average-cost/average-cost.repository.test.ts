@@ -1,10 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import { AverageCostEntity } from '../../entity';
 import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { AverageCostRepository } from './average-cost.repository';
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
+import { ClsModule } from 'nestjs-cls';
 
 describe('AverageCostRepository', () => {
   let testModule: TestingModule;
@@ -14,6 +17,20 @@ describe('AverageCostRepository', () => {
   beforeAll(async () => {
     testModule = await Test.createTestingModule({
       imports: [
+        ClsModule.forRoot({
+          plugins: [
+            new ClsPluginTransactional({
+              imports: [
+                // module in which the database instance is provided
+                TypeOrmModule,
+              ],
+              adapter: new TransactionalAdapterTypeOrm({
+                // the injection token of the database instance
+                dataSourceToken: DataSource,
+              }),
+            }),
+          ],
+        }),
         TestTypeormModule,
         TypeOrmModule.forFeature([AverageCostEntity]),
       ],

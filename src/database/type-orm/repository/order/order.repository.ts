@@ -1,8 +1,10 @@
+import { Transactional, TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseException } from '@src/core/module';
 import { isNull } from '@src/core/util';
-import { EntityManager, In, IsNull, Not, Repository } from 'typeorm';
+import { In, IsNull, Not, Repository } from 'typeorm';
 import {
   BusinessRuleConflictDataException,
   DepartureEntity,
@@ -15,7 +17,6 @@ import {
   TransportationEntity,
   UserEntity,
 } from '../..';
-import { Transactional } from '../../util/transactional.decorator';
 import { AbstractRepository } from '../abstract-repository';
 import { IOrderRepository } from './order.repository.interface';
 
@@ -25,20 +26,26 @@ export class OrderRepository
   implements IOrderRepository
 {
   constructor(
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
     @InjectRepository(OrderEntity)
     private readonly repository: Repository<OrderEntity>,
   ) {
     super();
   }
 
-  async updateDeliveryPersonAtOrder(
-    manager: EntityManager,
-    { orderId, walletAddress }: { orderId: number; walletAddress: string },
-  ) {
+  async updateDeliveryPersonAtOrder({
+    orderId,
+    walletAddress,
+  }: {
+    orderId: number;
+    walletAddress: string;
+  }) {
     try {
-      const deliverPerson = await manager.findOneBy(UserEntity, {
-        walletAddress,
-      });
+      const deliverPerson = await this.txHost.tx
+        .getRepository(UserEntity)
+        .findOneBy({
+          walletAddress,
+        });
 
       if (isNull(deliverPerson)) {
         throw new NotExistDataException(
@@ -46,7 +53,7 @@ export class OrderRepository
         );
       }
 
-      const order = await manager.findOne(OrderEntity, {
+      const order = await this.txHost.tx.getRepository(OrderEntity).findOne({
         relations: { requester: true },
         select: {
           requester: { walletAddress: true },
@@ -66,11 +73,9 @@ export class OrderRepository
         );
       }
 
-      await manager.update(
-        OrderEntity,
-        { id: orderId },
-        { deliveryPerson: deliverPerson },
-      );
+      await this.txHost.tx
+        .getRepository(OrderEntity)
+        .update({ id: orderId }, { deliveryPerson: deliverPerson });
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw error;

@@ -1,5 +1,7 @@
-import { Between, EntityManager, Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseException } from '@src/core/module';
@@ -14,18 +16,18 @@ export class DeliveryPersonMatchedDateRepository
   implements IDeliveryPersonMatchedDateRepository
 {
   constructor(
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
     @InjectRepository(DeliveryPersonMatchedDateEntity)
     private readonly repository: Repository<DeliveryPersonMatchedDateEntity>,
   ) {
     super();
   }
 
-  async create(manager: EntityManager, orderId: number) {
+  async create(orderId: number) {
     try {
-      const matchedDateExists = await manager.existsBy(
-        DeliveryPersonMatchedDateEntity,
-        { id: orderId },
-      );
+      const matchedDateExists = await this.txHost.tx
+        .getRepository(DeliveryPersonMatchedDateEntity)
+        .existsBy({ id: orderId });
 
       if (matchedDateExists) {
         throw new DuplicatedDataException(
@@ -36,7 +38,9 @@ export class DeliveryPersonMatchedDateRepository
       const matchedDate = new DeliveryPersonMatchedDateEntity();
       matchedDate.id = orderId;
 
-      await manager.insert(DeliveryPersonMatchedDateEntity, matchedDate);
+      await this.txHost.tx
+        .getRepository(DeliveryPersonMatchedDateEntity)
+        .insert(matchedDate);
     } catch (error) {
       if (error instanceof DuplicatedDataException) {
         throw error;

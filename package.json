@@ -20,6 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs-cls/transactional": "^2.4.12",
+    "@nestjs-cls/transactional-adapter-typeorm": "^1.2.14",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^10.0.0",
@@ -39,6 +41,7 @@
     "mongoose": "^8.9.5",
     "mysql2": "^3.12.0",
     "nest-winston": "^1.10.2",
+    "nestjs-cls": "^5.4.0",
     "node-fetch": "^2.7.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

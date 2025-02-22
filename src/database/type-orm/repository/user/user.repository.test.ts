@@ -1,6 +1,12 @@
+import {
+  ClsPluginTransactional,
+  TransactionHost,
+} from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { ClsModule } from 'nestjs-cls';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import { OrderEntity, ProfileImageEntity, UserEntity } from '../../entity';
 import { DuplicatedDataException, NotExistDataException } from '../../util';
@@ -37,9 +43,29 @@ describe('UserRepository', () => {
 
   beforeAll(async () => {
     testModule = await Test.createTestingModule({
-      imports: [TestTypeormModule, TypeOrmModule.forFeature([UserEntity])],
+      imports: [
+        TestTypeormModule,
+        ClsModule.forRoot({
+          plugins: [
+            new ClsPluginTransactional({
+              imports: [
+                // module in which the database instance is provided
+                TypeOrmModule,
+              ],
+              adapter: new TransactionalAdapterTypeOrm({
+                // the injection token of the database instance
+                dataSourceToken: DataSource,
+              }),
+            }),
+          ],
+        }),
+        TypeOrmModule.forFeature([UserEntity]),
+      ],
       providers: [UserRepository],
     }).compile();
+
+    const t = testModule.get(TransactionHost);
+    console.log('여기', t);
 
     repository = testModule.get(UserRepository);
     ormRepository = testModule.get(getRepositoryToken(UserEntity));

@@ -1,6 +1,10 @@
+import {
+  ClsPluginTransactional,
+  TransactionHost,
+} from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '@slack/web-api/dist/types/response/AdminAppsRequestsListResponse';
 import { RepositoryToken } from '@src/core/constant';
 import {
   DeliveryUrlCreator,
@@ -28,6 +32,7 @@ import { ICurrentDeliveryLocationRepository } from '@src/database/mongoose/repos
 import { IDeliveryPersonMatchedDateRepository } from '@src/database/type-orm/repository/delivery-person-matched-date/delivery-person-matched-date.repository.interface';
 import { IReceiverRepository } from '@src/database/type-orm/repository/receiver/receiver.repository.interface';
 import { mock, mockClear } from 'jest-mock-extended';
+import { ClsModule } from 'nestjs-cls';
 import { DataSource, EntityManager } from 'typeorm';
 import { TestTypeormModule } from '../../../test/config/typeorm.module';
 import { OrderDeliveryPersonService } from './order-delivery-person.service';
@@ -35,6 +40,7 @@ import { OrderDeliveryPersonService } from './order-delivery-person.service';
 describe('OrderDeliveryPersonService', () => {
   let service: OrderDeliveryPersonService;
 
+  const transactionHost = mock<TransactionHost>();
   const testDataSource = mock<IOrderRepository>();
   const orderRepository = mock<IOrderRepository>();
   const receiverRepository = mock<IReceiverRepository>();
@@ -71,6 +77,7 @@ describe('OrderDeliveryPersonService', () => {
         },
         { provide: DeliveryUrlCreator, useValue: deliveryUrlCreator },
         { provide: NaverSmsApi, useValue: smsApi },
+        { provide: TransactionHost, useValue: transactionHost },
       ],
     }).compile();
 
@@ -187,9 +194,29 @@ describe('OrderDeliveryPersonService', () => {
         DeliveryPersonMatchedDateEntity,
       ];
       const module: TestingModule = await Test.createTestingModule({
-        imports: [TestTypeormModule, TypeOrmModule.forFeature(entities)],
-        providers: [OrderDeliveryPersonService, ...dependencies],
+        imports: [
+          ClsModule.forRoot({
+            plugins: [
+              new ClsPluginTransactional({
+                imports: [
+                  // module in which the database instance is provided
+                  TypeOrmModule,
+                ],
+                adapter: new TransactionalAdapterTypeOrm({
+                  // the injection token of the database instance
+                  dataSourceToken: DataSource,
+                }),
+              }),
+            ],
+          }),
+          TestTypeormModule,
+          TypeOrmModule.forFeature(entities),
+        ],
+        providers: [...dependencies, OrderDeliveryPersonService],
       }).compile();
+
+      const th = module.get(TransactionHost);
+      console.log(th);
 
       service = module.get<OrderDeliveryPersonService>(
         OrderDeliveryPersonService,
@@ -231,7 +258,7 @@ describe('OrderDeliveryPersonService', () => {
       return await manager.save(UserEntity, user);
     };
 
-    const createOrder = async (requester: User) => {
+    const createOrder = async (requester: UserEntity) => {
       const detail = '디테일';
       const product = {
         width: 0,

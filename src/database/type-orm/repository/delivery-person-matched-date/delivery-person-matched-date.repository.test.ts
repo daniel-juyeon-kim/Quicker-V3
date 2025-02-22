@@ -1,6 +1,9 @@
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { ClsModule } from 'nestjs-cls';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import {
   DeliveryPersonMatchedDateEntity,
@@ -134,6 +137,20 @@ describe('DeliveryPersonMatchedDateRepository', () => {
   beforeAll(async () => {
     testModule = await Test.createTestingModule({
       imports: [
+        ClsModule.forRoot({
+          plugins: [
+            new ClsPluginTransactional({
+              imports: [
+                // module in which the database instance is provided
+                TypeOrmModule,
+              ],
+              adapter: new TransactionalAdapterTypeOrm({
+                // the injection token of the database instance
+                dataSourceToken: DataSource,
+              }),
+            }),
+          ],
+        }),
         TestTypeormModule,
         TypeOrmModule.forFeature([DeliveryPersonMatchedDateEntity]),
       ],
@@ -170,7 +187,7 @@ describe('DeliveryPersonMatchedDateRepository', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
 
-      await repository.create(manager, orderId);
+      await repository.create(orderId);
 
       await expect(
         manager.findOneBy(DeliveryPersonMatchedDateEntity, {
@@ -186,11 +203,9 @@ describe('DeliveryPersonMatchedDateRepository', () => {
           '1에 대해 중복된 데이터가 존재합니다.',
         );
 
-        await repository.create(manager, orderId);
+        await repository.create(orderId);
 
-        await expect(repository.create(manager, orderId)).rejects.toStrictEqual(
-          error,
-        );
+        await expect(repository.create(orderId)).rejects.toStrictEqual(error);
       });
     });
   });

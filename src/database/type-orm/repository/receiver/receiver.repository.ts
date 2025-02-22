@@ -1,6 +1,7 @@
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Injectable } from '@nestjs/common';
 import { UnknownDataBaseException } from '@src/core/module';
-import { EntityManager } from 'typeorm';
 import { AbstractRepository } from '..';
 import { ReceiverEntity } from '../../entity';
 import { NotExistDataException } from '../../util';
@@ -11,15 +12,23 @@ export class ReceiverRepository
   extends AbstractRepository
   implements IReceiverRepository
 {
-  async findPhoneNumberByOrderId(manager: EntityManager, orderId: number) {
+  constructor(
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
+  ) {
+    super();
+  }
+
+  async findPhoneNumberByOrderId(orderId: number) {
     try {
-      const receiver = await manager.findOne(ReceiverEntity, {
-        select: {
-          id: true,
-          phone: true,
-        },
-        where: { id: orderId },
-      });
+      const receiver = await this.txHost.tx
+        .getRepository(ReceiverEntity)
+        .findOne({
+          select: {
+            id: true,
+            phone: true,
+          },
+          where: { id: orderId },
+        });
 
       this.validateNotNull(orderId, receiver);
 

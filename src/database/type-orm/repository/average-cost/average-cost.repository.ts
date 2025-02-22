@@ -1,10 +1,11 @@
+import { Transactional, TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseException } from '@src/core/module';
 import { Repository } from 'typeorm';
 import { AverageCostEntity } from '../../entity/average-cost.entity';
 import { DuplicatedDataException, NotExistDataException } from '../../util';
-import { Transactional } from '../../util/transactional.decorator';
 import { AbstractRepository } from '../abstract-repository';
 import {
   AverageCostDistanceUnion,
@@ -19,6 +20,7 @@ export class AverageCostRepository
   constructor(
     @InjectRepository(AverageCostEntity)
     private readonly repository: Repository<AverageCostEntity>,
+    private readonly txHost: TransactionHost<TransactionalAdapterTypeOrm>,
   ) {
     super();
   }
@@ -53,13 +55,17 @@ export class AverageCostRepository
     date: Date,
   ) {
     try {
-      if (await this.manager.existsBy(AverageCostEntity, { date })) {
+      if (
+        await this.txHost.tx.getRepository(AverageCostEntity).existsBy({ date })
+      ) {
         throw new DuplicatedDataException(
           `${date}에 해당되는 데이터가 이미 존재합니다.`,
         );
       }
 
-      await this.manager.insert(AverageCostEntity, { date, ...averageCost });
+      await this.txHost.tx
+        .getRepository(AverageCostEntity)
+        .insert({ date, ...averageCost });
     } catch (error) {
       if (error instanceof DuplicatedDataException) {
         throw error;

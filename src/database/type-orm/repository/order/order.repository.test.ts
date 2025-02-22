@@ -1,6 +1,9 @@
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { TransactionalAdapterTypeOrm } from '@nestjs-cls/transactional-adapter-typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { ClsModule } from 'nestjs-cls';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import {
   DepartureEntity,
@@ -136,6 +139,20 @@ describe('orderRepository 테스트', () => {
   beforeAll(async () => {
     testModule = await Test.createTestingModule({
       imports: [
+        ClsModule.forRoot({
+          plugins: [
+            new ClsPluginTransactional({
+              imports: [
+                // module in which the database instance is provided
+                TypeOrmModule,
+              ],
+              adapter: new TransactionalAdapterTypeOrm({
+                // the injection token of the database instance
+                dataSourceToken: DataSource,
+              }),
+            }),
+          ],
+        }),
         TestTypeormModule,
         TypeOrmModule.forFeature([
           OrderEntity,
@@ -590,7 +607,7 @@ describe('orderRepository 테스트', () => {
           },
         };
 
-        await repository.updateDeliveryPersonAtOrder(manager, dto);
+        await repository.updateDeliveryPersonAtOrder(dto);
 
         await expect(
           manager.findOne(OrderEntity, {
@@ -614,7 +631,7 @@ describe('orderRepository 테스트', () => {
           );
 
           await expect(
-            repository.updateDeliveryPersonAtOrder(manager, dto),
+            repository.updateDeliveryPersonAtOrder(dto),
           ).rejects.toStrictEqual(error);
         });
 
@@ -628,7 +645,7 @@ describe('orderRepository 테스트', () => {
           );
 
           await expect(
-            repository.updateDeliveryPersonAtOrder(manager, dto),
+            repository.updateDeliveryPersonAtOrder(dto),
           ).rejects.toStrictEqual(error);
         });
 
@@ -644,7 +661,7 @@ describe('orderRepository 테스트', () => {
           );
 
           await expect(
-            repository.updateDeliveryPersonAtOrder(manager, dto),
+            repository.updateDeliveryPersonAtOrder(dto),
           ).rejects.toStrictEqual(error);
         });
       });
