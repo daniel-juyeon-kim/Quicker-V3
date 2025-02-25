@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '@slack/web-api/dist/types/response/AdminAppsRequestsListResponse';
-import { RepositoryToken } from '@src/core/constant';
+import { ENTITY_MANAGER_KEY, RepositoryToken } from '@src/core/constant';
 import {
   DeliveryUrlCreator,
   NaverSmsApi,
@@ -27,15 +27,16 @@ import {
 import { ICurrentDeliveryLocationRepository } from '@src/database/mongoose/repository/current-delivery-location/current-delivery-location.repository.interface';
 import { IDeliveryPersonMatchedDateRepository } from '@src/database/type-orm/repository/delivery-person-matched-date/delivery-person-matched-date.repository.interface';
 import { IReceiverRepository } from '@src/database/type-orm/repository/receiver/receiver.repository.interface';
+import { TransactionManager } from '@src/database/type-orm/util/transaction/transaction-manager/transaction-manager';
 import { mock, mockClear } from 'jest-mock-extended';
-import { DataSource, EntityManager } from 'typeorm';
+import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
+import { EntityManager } from 'typeorm';
 import { TestTypeormModule } from '../../../test/config/typeorm.module';
 import { OrderDeliveryPersonService } from './order-delivery-person.service';
 
 describe('OrderDeliveryPersonService', () => {
   let service: OrderDeliveryPersonService;
 
-  const testDataSource = mock<IOrderRepository>();
   const orderRepository = mock<IOrderRepository>();
   const receiverRepository = mock<IReceiverRepository>();
   const currentDeliveryLocationRepository =
@@ -49,10 +50,6 @@ describe('OrderDeliveryPersonService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrderDeliveryPersonService,
-        {
-          provide: DataSource,
-          useValue: testDataSource,
-        },
         {
           provide: RepositoryToken.ORDER_REPOSITORY,
           useValue: orderRepository,
@@ -78,7 +75,6 @@ describe('OrderDeliveryPersonService', () => {
       OrderDeliveryPersonService,
     );
 
-    mockClear(testDataSource);
     mockClear(orderRepository);
     mockClear(receiverRepository);
     mockClear(deliveryPersonMatchedDateRepository);
@@ -152,8 +148,8 @@ describe('OrderDeliveryPersonService', () => {
 
   describe('matchDeliveryPersonAtOrder 테스트', () => {
     let service: OrderDeliveryPersonService;
-    let testDataSource: DataSource;
     let manager: EntityManager;
+    let cls: ClsService<{ [ENTITY_MANAGER_KEY]: EntityManager }>;
 
     const currentDeliveryLocationRepository =
       mock<CurrentDeliveryLocationRepository>();
@@ -187,15 +183,23 @@ describe('OrderDeliveryPersonService', () => {
         DeliveryPersonMatchedDateEntity,
       ];
       const module: TestingModule = await Test.createTestingModule({
-        imports: [TestTypeormModule, TypeOrmModule.forFeature(entities)],
-        providers: [OrderDeliveryPersonService, ...dependencies],
+        imports: [
+          TestTypeormModule,
+          TypeOrmModule.forFeature(entities),
+          ClsModule,
+        ],
+        providers: [
+          OrderDeliveryPersonService,
+          ...dependencies,
+          TransactionManager,
+        ],
       }).compile();
 
       service = module.get<OrderDeliveryPersonService>(
         OrderDeliveryPersonService,
       );
-      testDataSource = module.get(DataSource);
-      manager = testDataSource.manager;
+      manager = module.get(EntityManager);
+      cls = ClsServiceManager.getClsService();
 
       mockClear(deliveryUrlCreator);
       mockClear(smsApi);
@@ -262,7 +266,7 @@ describe('OrderDeliveryPersonService', () => {
         phone: '01012345678',
       };
 
-      await testDataSource.transaction(async (manager) => {
+      await manager.transaction(async (manager) => {
         const id = 1;
         const order = manager.create(OrderEntity, {
           id,
@@ -336,7 +340,11 @@ describe('OrderDeliveryPersonService', () => {
           phone: '01012345678',
         });
 
-        await service.matchDeliveryPersonAtOrder({ orderId, walletAddress });
+        await cls.run(async () => {
+          cls.set(ENTITY_MANAGER_KEY, manager);
+
+          await service.matchDeliveryPersonAtOrder({ orderId, walletAddress });
+        });
 
         await expect(
           manager.findOne(OrderEntity, {
@@ -373,9 +381,13 @@ describe('OrderDeliveryPersonService', () => {
           `${orderId} 에 대응되는 주문이 존재하지 않습니다.`,
         );
 
-        await expect(
-          service.matchDeliveryPersonAtOrder({ orderId, walletAddress }),
-        ).rejects.toStrictEqual(error);
+        await cls.run(async () => {
+          cls.set(ENTITY_MANAGER_KEY, manager);
+
+          await expect(
+            service.matchDeliveryPersonAtOrder({ orderId, walletAddress }),
+          ).rejects.toStrictEqual(error);
+        });
 
         await expect(
           manager.findOne(OrderEntity, {
@@ -389,11 +401,27 @@ describe('OrderDeliveryPersonService', () => {
 
       test('실패하는 테스트, 외부 api 에러 SmsApiError를 던짐', async () => {
         const error = new SmsApiException('에러');
+        const walletAddress = '배송원 지갑주소';
+        const orderId = 1;
+
+        await createUser(manager, {
+          userId: '0xjf823uh98h',
+          walletAddress,
+          contact: '01046631513',
+        });
 
         smsApi.sendDeliveryTrackingMessage.mockRejectedValueOnce(error);
 
+        await cls.run(async () => {
+          cls.set(ENTITY_MANAGER_KEY, manager);
+
+          await expect(
+            service.matchDeliveryPersonAtOrder({ orderId, walletAddress }),
+          ).rejects.toStrictEqual(error);
+        });
+
         await expect(
-          testDataSource.manager.findOne(OrderEntity, {
+          manager.findOne(OrderEntity, {
             relations: {
               deliveryPerson: true,
             },

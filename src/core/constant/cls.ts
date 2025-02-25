@@ -1,0 +1,1 @@
+export const ENTITY_MANAGER_KEY = Symbol('ENTITY_MANAGER_KEY');

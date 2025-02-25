@@ -1,27 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseException } from '@src/core/module';
 import { OrderEntity } from '@src/database/type-orm/entity';
 import { NotExistDataException } from '@src/database/type-orm/util';
-import { In, Repository } from 'typeorm';
+import { In } from 'typeorm';
 import { ILocationRepository } from '.';
+import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AbstractRepository } from '../abstract-repository';
 
 @Injectable()
 export class LocationRepository
-  extends AbstractRepository
+  extends AbstractRepository<OrderEntity>
   implements ILocationRepository
 {
-  constructor(
-    @InjectRepository(OrderEntity)
-    private readonly repository: Repository<OrderEntity>,
-  ) {
-    super();
+  constructor(protected readonly transactionManager: TransactionManager) {
+    super(OrderEntity);
   }
 
   async findDestinationDepartureByOrderId(orderId: number) {
     try {
-      const destinationDeparture = await this.repository.findOne({
+      const destinationDeparture = await this.getRepository().findOne({
         where: { id: orderId },
         relations: { departure: true, destination: true },
         select: {
@@ -43,7 +40,7 @@ export class LocationRepository
   }
 
   async findAllDestinationDepartureByOrderIds(orderIds: number[]) {
-    const orderLocations = await this.repository.find({
+    const orderLocations = await this.getRepository().find({
       where: { id: In(orderIds) },
       relations: { departure: true, destination: true },
       select: {

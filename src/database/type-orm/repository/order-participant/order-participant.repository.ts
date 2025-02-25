@@ -1,27 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseException } from '@src/core/module';
-import { Repository } from 'typeorm';
 import { OrderEntity } from '../../entity';
 import { NotExistDataException } from '../../util';
+import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AbstractRepository } from '../abstract-repository';
 import { IOrderParticipantRepository } from './order-participant.repository.interface';
 
 @Injectable()
 export class OrderParticipantRepository
-  extends AbstractRepository
+  extends AbstractRepository<OrderEntity>
   implements IOrderParticipantRepository
 {
-  constructor(
-    @InjectRepository(OrderEntity)
-    private readonly repository: Repository<OrderEntity>,
-  ) {
-    super();
+  constructor(protected readonly transactionManager: TransactionManager) {
+    super(OrderEntity);
   }
 
   async findSenderReceiverLocationAndPhoneNumberByOrderId(orderId: number) {
     try {
-      const order = await this.repository.findOne({
+      const order = await this.getRepository().findOne({
         relations: {
           departure: { sender: true },
           destination: { receiver: true },

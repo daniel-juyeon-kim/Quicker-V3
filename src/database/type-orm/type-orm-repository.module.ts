@@ -2,7 +2,10 @@ import { Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from '@src/core/config/configs';
+import { ENTITY_MANAGER_KEY } from '@src/core/constant/cls';
 import { RepositoryToken } from '@src/core/constant/repository';
+import { ClsModule } from 'nestjs-cls';
+import { EntityManager } from 'typeorm';
 import {
   AverageCostEntity,
   BirthDateEntity,
@@ -28,6 +31,7 @@ import {
   UserRepository,
 } from './repository';
 import { TypeOrmOption } from './type-orm-option';
+import { TransactionManager } from './util/transaction/transaction-manager/transaction-manager';
 
 const entities = [
   AverageCostEntity,
@@ -70,6 +74,20 @@ const repositories: Provider[] = [
   { provide: RepositoryToken.USER_REPOSITORY, useClass: UserRepository },
 ];
 
+const clsRootModule = ClsModule.forRootAsync({
+  inject: [EntityManager],
+  useFactory: (em) => {
+    return {
+      middleware: {
+        mount: true,
+        setup: (cls) => {
+          cls.set(ENTITY_MANAGER_KEY, em);
+        },
+      },
+    };
+  },
+});
+
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -77,8 +95,9 @@ const repositories: Provider[] = [
     }),
     TypeOrmModule.forFeature(entities),
     ConfigModule.forFeature(typeOrmConfig),
+    clsRootModule,
   ],
-  providers: [...repositories],
+  providers: [...repositories, TransactionManager],
   exports: [...repositories],
 })
 export class TypeOrmRepositoryModule {}
