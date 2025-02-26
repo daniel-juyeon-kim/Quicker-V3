@@ -1,9 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ENTITY_MANAGER_KEY } from '@src/core/constant';
+import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
+import { EntityManager } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
-import { OrderEntity, ProfileImageEntity, UserEntity } from '../../entity';
+import { ProfileImageEntity, UserEntity } from '../../entity';
 import { DuplicatedDataException, NotExistDataException } from '../../util';
+import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { UserRepository } from './user.repository';
 
 const createUser = async (manager: EntityManager) => {
@@ -33,175 +36,213 @@ const createUser = async (manager: EntityManager) => {
 describe('UserRepository', () => {
   let testModule: TestingModule;
   let repository: UserRepository;
-  let ormRepository: Repository<OrderEntity>;
+  let manager: EntityManager;
+  let cls: ClsService<{ [ENTITY_MANAGER_KEY]: EntityManager }>;
 
   beforeAll(async () => {
     testModule = await Test.createTestingModule({
-      imports: [TestTypeormModule, TypeOrmModule.forFeature([UserEntity])],
-      providers: [UserRepository],
+      imports: [
+        TestTypeormModule,
+        TypeOrmModule.forFeature([UserEntity]),
+        ClsModule,
+      ],
+      providers: [UserRepository, TransactionManager],
     }).compile();
 
     repository = testModule.get(UserRepository);
-    ormRepository = testModule.get(getRepositoryToken(UserEntity));
+    manager = testModule.get(EntityManager);
+    cls = ClsServiceManager.getClsService();
   });
 
   afterEach(async () => {
-    await ormRepository.clear();
+    await manager.clear(UserEntity);
   });
 
   afterAll(async () => {
     await testModule.close();
   });
 
-  describe('UserRepository 테스트', () => {
-    describe('create', () => {
-      describe('createUser', () => {
-        test('통과하는 테스트', async () => {
-          const userId = '아이디';
-          const user = {
-            id: userId,
-            walletAddress: '지갑주소',
-            name: '이름',
-            email: '이메일',
-            contact: '연락처',
-          };
-          const birthDate = new Date(2000, 9, 12);
+  describe('createUser', () => {
+    test('통과하는 테스트', async () => {
+      const userId = '아이디';
+      const user = {
+        id: userId,
+        walletAddress: '지갑주소',
+        name: '이름',
+        email: '이메일',
+        contact: '연락처',
+      };
+      const birthDate = new Date(2000, 9, 12);
 
-          await repository.createUser({ id: userId, user, birthDate });
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
 
-          const userInstance = await ormRepository.manager.findOne(UserEntity, {
-            relations: {
-              profileImage: true,
-              birthDate: true,
-              joinDate: true,
-            },
-            where: { id: userId },
-          });
-          expect(userInstance.profileImage).toBeTruthy();
-          expect(userInstance.birthDate).toBeTruthy();
-          expect(userInstance.joinDate).toBeTruthy();
-        });
+        await repository.createUser({ id: userId, user, birthDate });
+      });
 
-        test('실패하는 테스트, 이미 존재하는 아이디는 DuplicatedDataError를 던짐', async () => {
-          const userId = '아이디';
-          const user = {
-            id: userId,
-            walletAddress: '지갑주소',
-            name: '이름',
-            email: '이메일',
-            contact: '연락처',
-          };
-          const birthDate = new Date(2000, 9, 12);
-          const error = new DuplicatedDataException(
-            `${userId}에 해당하는 데이터가 이미 존재합니다.`,
-          );
+      const userInstance = await manager.findOne(UserEntity, {
+        relations: {
+          profileImage: true,
+          birthDate: true,
+          joinDate: true,
+        },
+        where: { id: userId },
+      });
+      expect(userInstance.profileImage).toBeTruthy();
+      expect(userInstance.birthDate).toBeTruthy();
+      expect(userInstance.joinDate).toBeTruthy();
+    });
 
-          // 사용자 생성
-          await expect(
-            repository.createUser({ user, birthDate, id: userId }),
-          ).resolves.not.toThrow();
+    test('실패하는 테스트, 이미 존재하는 사용자의 아이디를 입력하면 DuplicatedDataException을 던짐', async () => {
+      const userId = '아이디';
+      const user = {
+        id: userId,
+        walletAddress: '지갑주소',
+        name: '이름',
+        email: '이메일',
+        contact: '연락처',
+      };
+      const birthDate = new Date(2000, 9, 12);
+      const error = new DuplicatedDataException(
+        `${userId}에 해당하는 데이터가 이미 존재합니다.`,
+      );
 
-          // 중복 데이터 입력, 에러 던짐
-          await expect(
-            repository.createUser({ user, birthDate, id: userId }),
-          ).rejects.toStrictEqual(error);
-        });
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        // 사용자 생성
+        await expect(
+          repository.createUser({ user, birthDate, id: userId }),
+        ).resolves.not.toThrow();
+
+        // 중복 데이터 입력, 에러 던짐
+        await expect(
+          repository.createUser({ user, birthDate, id: userId }),
+        ).rejects.toStrictEqual(error);
+      });
+    });
+  });
+
+  describe('findNameByWalletAddress', () => {
+    beforeEach(async () => {
+      await createUser(manager);
+    });
+
+    afterEach(async () => {
+      await manager.clear(UserEntity);
+    });
+
+    test('통과하는 테스트', async () => {
+      const walletAddress = '지갑주소';
+      const result = { name: '이름' };
+
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        await expect(
+          repository.findNameByWalletAddress(walletAddress),
+        ).resolves.toEqual(result);
       });
     });
 
-    describe('find', () => {
-      beforeEach(async () => {
-        await createUser(ormRepository.manager);
+    test('실패하는 테스트, 존재하지 않는 지갑주소를 입력하면 NotExistDataException을 던짐', async () => {
+      const walletAddress = '0x23h298fhooweifhoi82938';
+      const error = new NotExistDataException(
+        `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
+      );
+
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        await expect(
+          repository.findNameByWalletAddress(walletAddress),
+        ).rejects.toEqual(error);
       });
+    });
+  });
 
-      afterEach(async () => {
-        await ormRepository.manager.clear(UserEntity);
-      });
+  describe('findUserProfileImageIdByWalletAddress', () => {
+    beforeEach(async () => {
+      await createUser(manager);
+    });
 
-      describe('findNameByWalletAddress', () => {
-        test('통과하는 테스트', async () => {
-          const walletAddress = '지갑주소';
-          const result = { name: '이름' };
+    afterEach(async () => {
+      await manager.clear(UserEntity);
+    });
 
-          await expect(
-            repository.findNameByWalletAddress(walletAddress),
-          ).resolves.toEqual(result);
-        });
+    test('통과하는 테스트', async () => {
+      const walletAddress = '지갑주소';
+      const result = { imageId: '111' };
 
-        test('실패하는 테스트, 존재하지 않는 데이터에 접근하면 NotExistDataError를 던짐', async () => {
-          const walletAddress = '0x23h298fhooweifhoi82938';
-          const error = new NotExistDataException(
-            `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
-          );
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
 
-          await expect(
-            repository.findNameByWalletAddress(walletAddress),
-          ).rejects.toEqual(error);
-        });
-      });
-
-      describe('findUserProfileImageIdByWalletAddress', () => {
-        test('통과하는 테스트', async () => {
-          const walletAddress = '지갑주소';
-          const result = { imageId: '111' };
-
-          await expect(
-            repository.findUserProfileImageIdByWalletAddress(walletAddress),
-          ).resolves.toEqual(result);
-        });
-
-        test('실패하는 테스트, 존재하지 않는 데이터에 접근하면 NotExistDataError를 던짐', async () => {
-          const walletAddress = '0x23h298fhooweifhoi82938';
-          const error = new NotExistDataException(
-            `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
-          );
-
-          await expect(
-            repository.findUserProfileImageIdByWalletAddress(walletAddress),
-          ).rejects.toStrictEqual(error);
-        });
+        await expect(
+          repository.findUserProfileImageIdByWalletAddress(walletAddress),
+        ).resolves.toEqual(result);
       });
     });
 
-    describe('update', () => {
-      beforeEach(async () => {
-        await createUser(ormRepository.manager);
+    test('실패하는 테스트, 존재하지 않는 지갑주소를 입력하면 NotExistDataException을 던짐', async () => {
+      const walletAddress = '0x23h298fhooweifhoi82938';
+      const error = new NotExistDataException(
+        `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
+      );
+
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        await expect(
+          repository.findUserProfileImageIdByWalletAddress(walletAddress),
+        ).rejects.toStrictEqual(error);
+      });
+    });
+  });
+
+  describe('updateUserProfileImageIdByWalletAddress', () => {
+    beforeEach(async () => {
+      await createUser(manager);
+    });
+
+    test('통과하는 테스트', async () => {
+      const walletAddress = '지갑주소';
+      const { id } = await manager.findOne(UserEntity, {
+        where: { walletAddress },
+        select: { id: true },
+      });
+      const updateDto = { walletAddress, imageId: '100' };
+      const result = { imageId: '100' };
+
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        await repository.updateUserProfileImageIdByWalletAddress(updateDto);
       });
 
-      describe('updateUserProfileImageIdByWalletAddress 테스트', () => {
-        test('통과하는 테스트', async () => {
-          const walletAddress = '지갑주소';
-          const { id } = await ormRepository.manager.findOne(UserEntity, {
-            where: { walletAddress },
-            select: { id: true },
-          });
-          const updateDto = { walletAddress, imageId: '100' };
-          const result = { imageId: '100' };
+      await expect(
+        manager.findOne(ProfileImageEntity, {
+          where: { id },
+          select: { imageId: true },
+        }),
+      ).resolves.toEqual(result);
+    });
 
-          await repository.updateUserProfileImageIdByWalletAddress(updateDto);
+    test('실패하는 테스트, 회원으로 등록되지 않은 지갑주소로 이미지 아이디를 업데이트하면 NotExistDataException을 던짐', async () => {
+      const walletAddress = '0x23h298fhooweifhoi82938';
+      const dto = {
+        walletAddress,
+        imageId: '100',
+      };
+      const error = new NotExistDataException(
+        `${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
+      );
 
-          await expect(
-            ormRepository.manager.findOne(ProfileImageEntity, {
-              where: { id },
-              select: { imageId: true },
-            }),
-          ).resolves.toEqual(result);
-        });
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
 
-        test('실패하는 테스트, 회원으로 등록되지 않은 지갑주소로 이미지 아이디를 업데이트하면 NotExistDataError를 던짐', async () => {
-          const walletAddress = '0x23h298fhooweifhoi82938';
-          const dto = {
-            walletAddress,
-            imageId: '100',
-          };
-          const error = new NotExistDataException(
-            `${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
-          );
-
-          await expect(
-            repository.updateUserProfileImageIdByWalletAddress(dto),
-          ).rejects.toStrictEqual(error);
-        });
+        await expect(
+          repository.updateUserProfileImageIdByWalletAddress(dto),
+        ).rejects.toStrictEqual(error);
       });
     });
   });

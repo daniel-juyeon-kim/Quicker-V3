@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ENTITY_MANAGER_KEY } from '@src/core/constant';
+import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
+import { EntityManager } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import {
   DepartureEntity,
@@ -11,6 +13,7 @@ import {
   UserEntity,
 } from '../../entity';
 import { NotExistDataException } from '../../util';
+import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { ReceiverRepository } from './receiver.repository';
 
 const createUser = async (manager: EntityManager) => {
@@ -36,7 +39,7 @@ const createUser = async (manager: EntityManager) => {
     },
   });
 
-  await manager.save(user);
+  return await manager.save(user);
 };
 
 const createOrder = async (manager: EntityManager, requester: UserEntity) => {
@@ -108,8 +111,8 @@ const createOrder = async (manager: EntityManager, requester: UserEntity) => {
 describe('ReceiverRepository', () => {
   let testModule: TestingModule;
   let repository: ReceiverRepository;
-  let ormRepository: Repository<OrderEntity>;
   let manager: EntityManager;
+  let cls: ClsService<{ [ENTITY_MANAGER_KEY]: EntityManager }>;
 
   beforeAll(async () => {
     testModule = await Test.createTestingModule({
@@ -122,21 +125,19 @@ describe('ReceiverRepository', () => {
           TransportationEntity,
           DestinationEntity,
           DepartureEntity,
+          ClsModule,
         ]),
       ],
-      providers: [ReceiverRepository],
+      providers: [ReceiverRepository, TransactionManager],
     }).compile();
 
     repository = testModule.get(ReceiverRepository);
-    ormRepository = testModule.get(getRepositoryToken(OrderEntity));
-    manager = ormRepository.manager;
+    manager = testModule.get(EntityManager);
+    cls = ClsServiceManager.getClsService();
   });
 
   beforeEach(async () => {
-    await createUser(manager);
-    const user = await manager.findOne(UserEntity, {
-      where: { id: '아이디' },
-    });
+    const user = await createUser(manager);
     await createOrder(manager, user);
   });
 
@@ -147,7 +148,7 @@ describe('ReceiverRepository', () => {
     ]);
   });
 
-  describe('findPhoneNumberByOrderId 테스트', () => {
+  describe('findPhoneNumberByOrderId', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const result = {
@@ -155,20 +156,28 @@ describe('ReceiverRepository', () => {
         phone: '01012345678',
       };
 
-      await expect(
-        repository.findPhoneNumberByOrderId(manager, orderId),
-      ).resolves.toEqual(result);
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        await expect(
+          repository.findPhoneNumberByOrderId(orderId),
+        ).resolves.toEqual(result);
+      });
     });
 
-    test('실패하는 테스트, 존재하지 않는 값 입력', async () => {
+    test('실패하는 테스트, 존재하지 않는 주문아이디를 입력하면 NotExistDataException을 던짐', async () => {
       const orderId = 32;
       const error = new NotExistDataException(
         `${orderId}에 해당되는 데이터가 존재하지 않습니다.`,
       );
 
-      await expect(
-        repository.findPhoneNumberByOrderId(manager, orderId),
-      ).rejects.toStrictEqual(error);
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        await expect(
+          repository.findPhoneNumberByOrderId(orderId),
+        ).rejects.toStrictEqual(error);
+      });
     });
   });
 });

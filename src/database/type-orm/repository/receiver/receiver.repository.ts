@@ -1,19 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { UnknownDataBaseException } from '@src/core/module';
-import { EntityManager } from 'typeorm';
 import { AbstractRepository } from '..';
 import { ReceiverEntity } from '../../entity';
 import { NotExistDataException } from '../../util';
+import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { IReceiverRepository } from './receiver.repository.interface';
 
 @Injectable()
 export class ReceiverRepository
-  extends AbstractRepository
+  extends AbstractRepository<ReceiverEntity>
   implements IReceiverRepository
 {
-  async findPhoneNumberByOrderId(manager: EntityManager, orderId: number) {
+  constructor(protected readonly transactionManager: TransactionManager) {
+    super(ReceiverEntity);
+  }
+
+  async findPhoneNumberByOrderId(orderId: number) {
     try {
-      const receiver = await manager.findOne(ReceiverEntity, {
+      const receiver = await this.getRepository().findOne({
         select: {
           id: true,
           phone: true,

@@ -1,38 +1,44 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ENTITY_MANAGER_KEY } from '@src/core/constant';
+import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
+import { EntityManager } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import { AverageCostEntity } from '../../entity';
 import { DuplicatedDataException, NotExistDataException } from '../../util';
+import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AverageCostRepository } from './average-cost.repository';
 
 describe('AverageCostRepository', () => {
-  let testModule: TestingModule;
+  let module: TestingModule;
   let repository: AverageCostRepository;
-  let ormRepository: Repository<AverageCostEntity>;
+  let manager: EntityManager;
+  let cls: ClsService<{ [ENTITY_MANAGER_KEY]: EntityManager }>;
 
   beforeAll(async () => {
-    testModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       imports: [
         TestTypeormModule,
         TypeOrmModule.forFeature([AverageCostEntity]),
+        ClsModule.forRoot(),
       ],
-      providers: [AverageCostRepository],
+      providers: [TransactionManager, AverageCostRepository],
     }).compile();
 
-    ormRepository = testModule.get(getRepositoryToken(AverageCostEntity));
-    repository = testModule.get(AverageCostRepository);
+    manager = module.get(EntityManager);
+    repository = module.get(AverageCostRepository);
+    cls = ClsServiceManager.getClsService();
   });
 
   afterEach(async () => {
-    await ormRepository.clear();
+    await manager.clear(AverageCostEntity);
   });
 
   afterAll(async () => {
-    await testModule.close();
+    await module.close();
   });
 
-  describe('createAverage 테스트', () => {
+  describe('createAverageCost', () => {
     const average = {
       '5KM': 5,
       '10KM': 10,
@@ -49,26 +55,34 @@ describe('AverageCostRepository', () => {
     test('통과하는 테스트', async () => {
       const createDate = new Date(1990, 0, 1);
 
-      await repository.createAverageCost(average, createDate);
+      await cls.run(() => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+        return repository.createAverageCost(average, createDate);
+      });
 
-      await expect(ormRepository.existsBy({ date: createDate })).resolves.toBe(
-        true,
-      );
+      await expect(
+        manager.existsBy(AverageCostEntity, { date: createDate }),
+      ).resolves.toBe(true);
     });
 
-    describe('실패하는 테스트', () => {
-      test('이미 데이터가 존재하는 테스트, DuplicatedDataError를 던짐', async () => {
-        const createDate = new Date(1990, 4, 1);
-        const error = new DuplicatedDataException(
-          `${createDate}에 해당되는 데이터가 이미 존재합니다.`,
-        );
+    test('실패하는 테스트, 이미 데이터가 존재하면 DuplicatedDataException을 던짐', async () => {
+      const createDate = new Date(1990, 4, 1);
+      const error = new DuplicatedDataException(
+        `${createDate}에 해당되는 데이터가 이미 존재합니다.`,
+      );
 
-        // 초기 저장
+      // 초기 저장
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
         await expect(
           repository.createAverageCost(average, createDate),
         ).resolves.not.toThrow();
+      });
 
-        // 중복 데이터 저장
+      // 중복 데이터 저장
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
         await expect(
           repository.createAverageCost(average, createDate),
         ).rejects.toStrictEqual(error);
@@ -76,7 +90,7 @@ describe('AverageCostRepository', () => {
     });
   });
 
-  describe('findLastMonthAverageCost 테스트', () => {
+  describe('findAverageCostByDateAndDistanceUnit', () => {
     beforeEach(async () => {
       const averages = [
         {
@@ -107,11 +121,11 @@ describe('AverageCostRepository', () => {
         },
       ];
 
-      await ormRepository.save(averages);
+      await manager.save(AverageCostEntity, averages);
     });
 
     afterEach(async () => {
-      await ormRepository.clear();
+      await manager.clear(AverageCostEntity);
     });
 
     test('통과하는 테스트', async () => {
@@ -119,21 +133,27 @@ describe('AverageCostRepository', () => {
       const distanceUnit = '40KM';
       const result = 34982;
 
-      await expect(
-        repository.findAverageCostByDateAndDistanceUnit({
-          distanceUnit,
-          lastMonth,
-        }),
-      ).resolves.toEqual(result);
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        await expect(
+          repository.findAverageCostByDateAndDistanceUnit({
+            distanceUnit,
+            lastMonth,
+          }),
+        ).resolves.toEqual(result);
+      });
     });
 
-    describe('실패하는 테스트', () => {
-      test('존재하지 않는 데이터 조회 테스트, NotExistDataError를 던짐', async () => {
-        const lastMonth = new Date(1993, 3, 1);
-        const distanceUnit = '40KM';
-        const error = new NotExistDataException(
-          `${lastMonth}에 대한 데이터가 존재하지 않습니다.`,
-        );
+    test('실패하는 테스트, 존재하지 않는 데이터를 조회하면 NotExistDataException을 던짐', async () => {
+      const lastMonth = new Date(1993, 3, 1);
+      const distanceUnit = '40KM';
+      const error = new NotExistDataException(
+        `${lastMonth}에 대한 데이터가 존재하지 않습니다.`,
+      );
+
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
 
         await expect(
           repository.findAverageCostByDateAndDistanceUnit({

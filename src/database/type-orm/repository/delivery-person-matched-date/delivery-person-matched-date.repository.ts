@@ -1,28 +1,25 @@
-import { Between, EntityManager, Repository } from 'typeorm';
+import { Between } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseException } from '@src/core/module';
 import { DeliveryPersonMatchedDateEntity } from '../../entity';
 import { DuplicatedDataException } from '../../util';
+import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AbstractRepository } from '../abstract-repository';
 import { IDeliveryPersonMatchedDateRepository } from './delivery-person-matched-date.repository.interface';
 
 @Injectable()
 export class DeliveryPersonMatchedDateRepository
-  extends AbstractRepository
+  extends AbstractRepository<DeliveryPersonMatchedDateEntity>
   implements IDeliveryPersonMatchedDateRepository
 {
-  constructor(
-    @InjectRepository(DeliveryPersonMatchedDateEntity)
-    private readonly repository: Repository<DeliveryPersonMatchedDateEntity>,
-  ) {
-    super();
+  constructor(protected readonly transactionManager: TransactionManager) {
+    super(DeliveryPersonMatchedDateEntity);
   }
 
-  async create(manager: EntityManager, orderId: number) {
+  async create(orderId: number) {
     try {
-      const matchedDateExists = await manager.existsBy(
+      const matchedDateExists = await this.getManager().existsBy(
         DeliveryPersonMatchedDateEntity,
         { id: orderId },
       );
@@ -36,7 +33,10 @@ export class DeliveryPersonMatchedDateRepository
       const matchedDate = new DeliveryPersonMatchedDateEntity();
       matchedDate.id = orderId;
 
-      await manager.insert(DeliveryPersonMatchedDateEntity, matchedDate);
+      await this.getManager().insert(
+        DeliveryPersonMatchedDateEntity,
+        matchedDate,
+      );
     } catch (error) {
       if (error instanceof DuplicatedDataException) {
         throw error;
@@ -47,7 +47,7 @@ export class DeliveryPersonMatchedDateRepository
 
   async findAllOrderIdByBetweenDates(startDate: Date, endDate: Date) {
     try {
-      return await this.repository.find({
+      return await this.getRepository().find({
         select: { id: true },
         where: { date: Between(startDate, endDate) },
       });

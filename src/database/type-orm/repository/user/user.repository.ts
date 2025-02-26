@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseException } from '@src/core/module';
-import { Repository } from 'typeorm';
 import {
   BirthDateEntity,
   JoinDateEntity,
@@ -9,20 +7,18 @@ import {
   UserEntity,
 } from '../../entity';
 import { DuplicatedDataException, NotExistDataException } from '../../util';
-import { Transactional } from '../../util/transactional.decorator';
+import { Transactional } from '../../util/transaction/decorator/transactional.decorator';
+import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AbstractRepository } from '../abstract-repository';
 import { IUserRepository } from './user.repository.interface';
 
 @Injectable()
 export class UserRepository
-  extends AbstractRepository
+  extends AbstractRepository<UserEntity>
   implements IUserRepository
 {
-  constructor(
-    @InjectRepository(UserEntity)
-    private readonly repository: Repository<UserEntity>,
-  ) {
-    super();
+  constructor(protected readonly transactionManager: TransactionManager) {
+    super(UserEntity);
   }
 
   @Transactional()
@@ -36,7 +32,7 @@ export class UserRepository
     id: string;
   }) {
     try {
-      const userExists = await this.manager.existsBy(UserEntity, { id });
+      const userExists = await this.getManager().existsBy(UserEntity, { id });
 
       if (userExists) {
         throw new DuplicatedDataException(
@@ -44,21 +40,21 @@ export class UserRepository
         );
       }
 
-      await this.manager.insert(UserEntity, {
+      await this.getManager().insert(UserEntity, {
         id,
         ...user,
       });
 
-      await this.manager.insert(BirthDateEntity, {
+      await this.getManager().insert(BirthDateEntity, {
         id,
         date: birthDate,
       });
 
-      await this.manager.insert(ProfileImageEntity, {
+      await this.getManager().insert(ProfileImageEntity, {
         id,
       });
 
-      await this.manager.insert(JoinDateEntity, {
+      await this.getManager().insert(JoinDateEntity, {
         id,
       });
     } catch (error) {
@@ -71,7 +67,7 @@ export class UserRepository
 
   async findNameByWalletAddress(walletAddress: string) {
     try {
-      const name = await this.repository.findOne({
+      const name = await this.getRepository().findOne({
         where: { walletAddress },
         select: { name: true },
       });
@@ -91,7 +87,7 @@ export class UserRepository
 
   async findUserProfileImageIdByWalletAddress(walletAddress: string) {
     try {
-      const user = await this.repository.findOne({
+      const user = await this.getRepository().findOne({
         relations: { profileImage: true },
         where: { walletAddress },
         select: { profileImage: { imageId: true } },
@@ -119,11 +115,13 @@ export class UserRepository
     imageId: string;
   }) {
     try {
-      const user = await this.manager.findOneBy(UserEntity, { walletAddress });
+      const user = await this.getManager().findOneBy(UserEntity, {
+        walletAddress,
+      });
 
       this.validateNotNull(walletAddress, user);
 
-      await this.manager.update(
+      await this.getManager().update(
         ProfileImageEntity,
         { id: user.id },
         { imageId },

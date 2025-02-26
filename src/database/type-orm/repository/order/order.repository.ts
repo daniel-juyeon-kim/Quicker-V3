@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { UnknownDataBaseException } from '@src/core/module';
 import { isNull } from '@src/core/util';
-import { EntityManager, In, IsNull, Not, Repository } from 'typeorm';
+import { In, IsNull, Not } from 'typeorm';
 import {
   BusinessRuleConflictDataException,
   DepartureEntity,
@@ -15,28 +14,29 @@ import {
   TransportationEntity,
   UserEntity,
 } from '../..';
-import { Transactional } from '../../util/transactional.decorator';
+import { Transactional } from '../../util/transaction/decorator/transactional.decorator';
+import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AbstractRepository } from '../abstract-repository';
 import { IOrderRepository } from './order.repository.interface';
 
 @Injectable()
 export class OrderRepository
-  extends AbstractRepository
+  extends AbstractRepository<OrderEntity>
   implements IOrderRepository
 {
-  constructor(
-    @InjectRepository(OrderEntity)
-    private readonly repository: Repository<OrderEntity>,
-  ) {
-    super();
+  constructor(protected readonly transactionManager: TransactionManager) {
+    super(OrderEntity);
   }
 
-  async updateDeliveryPersonAtOrder(
-    manager: EntityManager,
-    { orderId, walletAddress }: { orderId: number; walletAddress: string },
-  ) {
+  async updateDeliveryPersonAtOrder({
+    orderId,
+    walletAddress,
+  }: {
+    orderId: number;
+    walletAddress: string;
+  }) {
     try {
-      const deliverPerson = await manager.findOneBy(UserEntity, {
+      const deliverPerson = await this.getManager().findOneBy(UserEntity, {
         walletAddress,
       });
 
@@ -46,7 +46,7 @@ export class OrderRepository
         );
       }
 
-      const order = await manager.findOne(OrderEntity, {
+      const order = await this.getManager().findOne(OrderEntity, {
         relations: { requester: true },
         select: {
           requester: { walletAddress: true },
@@ -66,7 +66,7 @@ export class OrderRepository
         );
       }
 
-      await manager.update(
+      await this.getManager().update(
         OrderEntity,
         { id: orderId },
         { deliveryPerson: deliverPerson },
@@ -93,42 +93,42 @@ export class OrderRepository
     transportation,
   }: Parameters<IOrderRepository['createOrder']>[0]) {
     try {
-      const requester = await this.manager.findOneBy(UserEntity, {
+      const requester = await this.getManager().findOneBy(UserEntity, {
         walletAddress,
       });
 
       this.validateNotNull(walletAddress, requester);
 
-      const order = this.manager.create(OrderEntity, {
+      const order = this.getManager().create(OrderEntity, {
         detail,
         requester,
       });
 
-      await this.manager.insert(OrderEntity, order);
+      await this.getManager().insert(OrderEntity, order);
 
       const id = order.id;
 
-      await this.manager.insert(ProductEntity, {
+      await this.getManager().insert(ProductEntity, {
         id,
         ...product,
       });
-      await this.manager.insert(TransportationEntity, {
+      await this.getManager().insert(TransportationEntity, {
         id,
         ...transportation,
       });
-      await this.manager.insert(DestinationEntity, {
+      await this.getManager().insert(DestinationEntity, {
         id,
         ...destination,
       });
-      await this.manager.insert(ReceiverEntity, {
+      await this.getManager().insert(ReceiverEntity, {
         id,
         ...receiver,
       });
-      await this.manager.insert(DepartureEntity, {
+      await this.getManager().insert(DepartureEntity, {
         id,
         ...departure,
       });
-      await this.manager.insert(SenderEntity, {
+      await this.getManager().insert(SenderEntity, {
         id,
         ...sender,
       });
@@ -144,7 +144,7 @@ export class OrderRepository
 
   async findRequesterIdByOrderId(orderId: number) {
     try {
-      const requester = await this.repository.findOne({
+      const requester = await this.getRepository().findOne({
         relations: {
           requester: true,
           deliveryPerson: true,
@@ -172,7 +172,7 @@ export class OrderRepository
     deliverPersonWalletAddress: string,
   ) {
     try {
-      return await this.repository.manager.transaction(async (manager) => {
+      return await this.getManager().transaction(async (manager) => {
         const isExistUser = await manager.exists(UserEntity, {
           where: { walletAddress: deliverPersonWalletAddress },
         });
@@ -236,7 +236,7 @@ export class OrderRepository
 
   async findAllCreatedOrDeliveredOrderDetailByOrderIds(orderIds: number[]) {
     try {
-      const order = await this.repository.find({
+      const order = await this.getRepository().find({
         relations: {
           product: true,
           departure: {
@@ -285,7 +285,7 @@ export class OrderRepository
 
   async deleteByOrderId(orderId: number) {
     try {
-      await this.repository.delete(orderId);
+      await this.getRepository().delete(orderId);
     } catch (error) {
       throw new UnknownDataBaseException(error);
     }
