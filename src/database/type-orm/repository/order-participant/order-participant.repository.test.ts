@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ENTITY_MANAGER_KEY } from '@src/core/constant';
+import { OrderSenderReceiverDto } from '@src/router/order-sender-receiver/dto/order-sender-receiver.dto';
+import { plainToInstance } from 'class-transformer';
 import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
 import { EntityManager } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
@@ -156,21 +158,19 @@ describe('OrderParticipantRepository', () => {
   describe('findSenderReceiverLocationAndPhoneNumberByOrderId', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
-      const result = {
+      const result = plainToInstance(OrderSenderReceiverDto, {
         id: orderId,
         departure: {
-          id: orderId,
           x: 0,
           y: 0,
           sender: { phone: '01012345678' },
         },
         destination: {
-          id: orderId,
           x: 37.5,
           y: 112,
           receiver: { phone: '01012345678' },
         },
-      };
+      });
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);

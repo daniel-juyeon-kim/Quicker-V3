@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UnknownDataBaseException } from '@src/core/module';
+import { OrderSenderReceiverDto } from '@src/router/order-sender-receiver/dto/order-sender-receiver.dto';
+import { plainToInstance } from 'class-transformer';
 import { OrderEntity } from '../../entity';
 import { NotExistDataException } from '../../util';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
@@ -28,13 +30,11 @@ export class OrderParticipantRepository
         select: {
           id: true,
           departure: {
-            id: true,
             x: true,
             y: true,
             sender: { phone: true },
           },
           destination: {
-            id: true,
             x: true,
             y: true,
             receiver: { phone: true },
@@ -44,7 +44,7 @@ export class OrderParticipantRepository
 
       this.validateNotNull(orderId, order);
 
-      return order;
+      return plainToInstance(OrderSenderReceiverDto, order);
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw new NotExistDataException(

@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UnknownDataBaseException } from '@src/core/module';
+import { FailDeliveryImageDto } from '@src/router/order-image/dto/order-fail-image.dto';
+import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
 import {
   DuplicatedDataException,
@@ -51,11 +53,15 @@ export class FailDeliveryImageRepository
 
   async findFailDeliveryImageByOrderId(orderId: number) {
     try {
-      const image = await this.model.findById(orderId);
+      const failImage = await this.model.findById(orderId);
 
-      this.validateNull(image);
+      this.validateNull(failImage);
 
-      return image;
+      const convertedFailImage = failImage.toJSON();
+
+      return plainToInstance(FailDeliveryImageDto, convertedFailImage, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw new NotExistDataException(

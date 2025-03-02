@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UnknownDataBaseException } from '@src/core/module';
+import { OrderCompleteImageDto } from '@src/router/order-image/dto/order-complete-image.dto';
+import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
 import {
   DuplicatedDataException,
@@ -51,7 +53,11 @@ export class CompleteDeliveryImageRepository
 
       this.validateNull(image);
 
-      return image.toJSON().bufferImage;
+      const { bufferImage } = image.toJSON();
+
+      return plainToInstance(OrderCompleteImageDto, bufferImage, {
+        excludeExtraneousValues: true,
+      });
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw new NotExistDataException(

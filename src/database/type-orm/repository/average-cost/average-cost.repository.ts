@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UnknownDataBaseException } from '@src/core/module';
+import { plainToInstance } from 'class-transformer';
 import { AverageCostEntity } from '../../entity/average-cost.entity';
 import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { Transactional } from '../../util/transaction/decorator/transactional.decorator';
@@ -9,6 +10,7 @@ import {
   AverageCostDistanceUnion,
   IAverageCostRepository,
 } from './average-cost.repository.interface';
+import { OrderAverageCostDto } from '@src/router/order-average/dto/order-average-cost.dto';
 
 @Injectable()
 export class AverageCostRepository
@@ -34,7 +36,7 @@ export class AverageCostRepository
 
       this.validateNotNull(lastMonth, average);
 
-      return average[distanceUnit];
+      return plainToInstance(OrderAverageCostDto, average[distanceUnit]);
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw error;

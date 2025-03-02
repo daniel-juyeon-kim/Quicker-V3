@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ENTITY_MANAGER_KEY } from '@src/core/constant';
+import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
+import { plainToInstance } from 'class-transformer';
 import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
 import { afterEach } from 'node:test';
 import { EntityManager } from 'typeorm';
@@ -86,11 +88,11 @@ const createOrder = async (
     const transportation = manager.create(TransportationEntity, {
       id,
       walking: 0,
-      bicycle: 0,
+      bicycle: 1,
       scooter: 0,
-      bike: 0,
+      bike: 1,
       car: 0,
-      truck: 0,
+      truck: 1,
       order,
     });
 
@@ -446,7 +448,7 @@ describe('OrderRepository', () => {
     });
 
     test('통과하는 테스트, 배송원이 수락한 주문과 생성한 주문은 조회되지 않음', async () => {
-      const result = [
+      const result = plainToInstance(MatchableOrderDto, [
         {
           id: 1,
           detail: '디테일',
@@ -454,12 +456,9 @@ describe('OrderRepository', () => {
           destination: { detail: '디테일', x: 37.5, y: 112 },
           product: { height: 0, length: 0, weight: 0, width: 0 },
           transportation: {
-            bicycle: 0,
-            bike: 0,
-            car: 0,
-            scooter: 0,
-            truck: 0,
-            walking: 0,
+            bicycle: 1,
+            bike: 1,
+            truck: 1,
           },
         },
         {
@@ -469,15 +468,12 @@ describe('OrderRepository', () => {
           destination: { detail: '디테일', x: 37.5, y: 112 },
           product: { height: 0, length: 0, weight: 0, width: 0 },
           transportation: {
-            bicycle: 0,
-            bike: 0,
-            car: 0,
-            scooter: 0,
-            truck: 0,
-            walking: 0,
+            bicycle: 1,
+            bike: 1,
+            truck: 1,
           },
         },
-      ];
+      ]);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);

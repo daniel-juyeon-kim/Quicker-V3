@@ -60,15 +60,17 @@ describe('FailDeliveryImageRepository', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const result = {
-        __v: 0,
-        _id: orderId,
         image: { data: [49], type: 'Buffer' },
         reason: '이유',
       };
 
-      expect(
-        (await repository.findFailDeliveryImageByOrderId(orderId))?.toJSON(),
-      ).toEqual(result);
+      await expect(
+        repository.findFailDeliveryImageByOrderId(orderId),
+      ).resolves.toEqual(result);
+
+      expect(await repository.findFailDeliveryImageByOrderId(orderId)).toEqual(
+        result,
+      );
     });
 
     test('실패하는 테스트, 존재하지 않는 값 입력', async () => {

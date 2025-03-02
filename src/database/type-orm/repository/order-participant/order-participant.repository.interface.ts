@@ -1,17 +1,7 @@
+import { OrderSenderReceiverDto } from '@src/router/order-sender-receiver/dto/order-sender-receiver.dto';
+
 export interface IOrderParticipantRepository {
-  findSenderReceiverLocationAndPhoneNumberByOrderId(orderId: number): Promise<{
-    id: number;
-    departure: {
-      id: number;
-      x: number;
-      y: number;
-      sender: { phone: string };
-    };
-    destination: {
-      id: number;
-      x: number;
-      y: number;
-      receiver: { phone: string };
-    };
-  }>;
+  findSenderReceiverLocationAndPhoneNumberByOrderId(
+    orderId: number,
+  ): Promise<OrderSenderReceiverDto>;
 }

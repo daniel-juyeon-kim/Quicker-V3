@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { RepositoryToken } from '@src/core/constant';
-import { MessageInfo } from '@src/database';
 import { IChatMessageRepository } from '@src/database/mongoose/repository/chat-message/chat-message.repository.interface';
 import { IChatService } from './chat.service.interface';
+import { ChatMessageDto } from './dto/chat-message.dto';
 
 @Injectable()
 export class ChatService implements IChatService {
@@ -11,7 +11,7 @@ export class ChatService implements IChatService {
     private readonly chatMessageRepository: IChatMessageRepository,
   ) {}
 
-  async findRecentMessageByOrderId(orderId: number): Promise<MessageInfo> {
+  async findRecentMessageByOrderId(orderId: number): Promise<ChatMessageDto> {
     return await this.chatMessageRepository.findRecentMessageByOrderId(orderId);
   }
 }

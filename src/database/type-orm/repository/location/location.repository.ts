@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { UnknownDataBaseException } from '@src/core/module';
 import { OrderEntity } from '@src/database/type-orm/entity';
 import { NotExistDataException } from '@src/database/type-orm/util';
+import { OrderLocationDto } from '@src/router/order-location/dto/order-location.dto';
+import { plainToInstance } from 'class-transformer';
 import { In } from 'typeorm';
 import { ILocationRepository } from '.';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
@@ -30,7 +32,7 @@ export class LocationRepository
 
       this.validateNotNull(orderId, destinationDeparture);
 
-      return destinationDeparture;
+      return plainToInstance(OrderLocationDto, destinationDeparture);
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw error;
@@ -52,6 +54,6 @@ export class LocationRepository
 
     this.validateNotNull(orderIds, orderLocations);
 
-    return orderLocations;
+    return plainToInstance(OrderLocationDto, orderLocations);
   }
 }

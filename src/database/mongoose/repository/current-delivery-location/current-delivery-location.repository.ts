@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UnknownDataBaseException } from '@src/core/module';
+import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
 import { NotExistDataException } from '../../../type-orm';
 import {
@@ -10,6 +11,7 @@ import {
 import { Transactional } from '../../util/transactional.decorator';
 import { MongoRepository } from '../abstract.repository';
 import { ICurrentDeliveryLocationRepository } from './current-delivery-location.repository.interface';
+import { OrderDeliveryPersonLocationDto } from '@src/router/order-delivery-person/dto/order-delivery-person-location.dto';
 
 @Injectable()
 export class CurrentDeliveryLocationRepository
@@ -39,14 +41,17 @@ export class CurrentDeliveryLocationRepository
 
   async findCurrentLocationByOrderId(orderId: number) {
     try {
-      const document = await this.model
+      const deliveryPerson = await this.model
         .findOne({ _id: orderId })
-        .select(['-_id', 'location.x', 'location.y'])
+        .select(['-_id', '__v', 'location.x', 'location.y'])
         .lean();
 
-      this.validateNull(document);
+      this.validateNull(deliveryPerson);
 
-      return document.location;
+      return plainToInstance(
+        OrderDeliveryPersonLocationDto,
+        deliveryPerson.location,
+      );
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw new NotExistDataException(
