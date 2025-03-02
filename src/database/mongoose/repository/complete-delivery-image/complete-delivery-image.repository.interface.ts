@@ -1,3 +1,5 @@
+import { OrderCompleteImageDto } from '@src/router/order-image/dto/order-complete-image.dto';
+
 export interface ICompleteDeliveryImageRepository {
   create({
     orderId,
@@ -7,5 +9,7 @@ export interface ICompleteDeliveryImageRepository {
     bufferImage: Buffer;
   }): Promise<void>;
 
-  findCompleteImageBufferByOrderId(orderId: number): Promise<Buffer>;
+  findCompleteImageBufferByOrderId(
+    orderId: number,
+  ): Promise<OrderCompleteImageDto>;
 }

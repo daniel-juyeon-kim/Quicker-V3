@@ -1,7 +1,5 @@
+import { OrderLocationDto } from './dto/order-location.dto';
+
 export interface IOrderLocationService {
-  findDepartureDestinationByOrderId(orderId: number): Promise<{
-    id: number;
-    departure: { x: number; y: number };
-    destination: { x: number; y: number };
-  }>;
+  findDepartureDestinationByOrderId(orderId: number): Promise<OrderLocationDto>;
 }

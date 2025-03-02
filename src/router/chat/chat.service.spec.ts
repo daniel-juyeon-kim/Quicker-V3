@@ -2,8 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken } from '@src/core/constant';
 import { NotExistDataException } from '@src/database';
 import { IChatMessageRepository } from '@src/database/mongoose/repository/chat-message/chat-message.repository.interface';
+import { plainToInstance } from 'class-transformer';
 import { mock, mockClear } from 'jest-mock-extended';
 import { ChatService } from './chat.service';
+import { ChatMessageDto } from './dto/chat-message.dto';
 
 describe('ChatService', () => {
   let service: ChatService;
@@ -28,11 +30,11 @@ describe('ChatService', () => {
   describe('findRecentMessageByOrderId', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
-      const resolvedValue = {
+      const resolvedValue = plainToInstance(ChatMessageDto, {
         walletAddress: '지갑 주소 1',
         message: '메세지3',
         date: new Date(2000, 1, 1),
-      };
+      });
       repository.findRecentMessageByOrderId.mockResolvedValueOnce(
         resolvedValue,
       );

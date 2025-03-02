@@ -1,17 +1,15 @@
-import { Location } from '@src/database';
+import { OrderDeliveryPersonLocationDto } from './dto/order-delivery-person-location.dto';
 
 export interface IOrderDeliveryPersonService {
-  findCurrentLocationByOrderId(orderId: number): Promise<Location>;
+  findCurrentLocationByOrderId(
+    orderId: number,
+  ): Promise<OrderDeliveryPersonLocationDto>;
 
   createCurrentLocation({
     orderId,
     x,
     y,
-  }: {
-    x: number;
-    y: number;
-    orderId: number;
-  }): Promise<void>;
+  }: OrderDeliveryPersonLocationDto & { orderId: number }): Promise<void>;
 
   matchDeliveryPersonAtOrder({
     orderId,

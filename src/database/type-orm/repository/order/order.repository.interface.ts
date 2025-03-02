@@ -1,13 +1,13 @@
-import { DeepPartial } from 'typeorm';
-import { OrderEntity } from '../../entity';
+import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
+import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
 
 export interface IOrderRepository {
   findAllCreatedOrDeliveredOrderDetailByOrderIds(
     orderIds: number[],
-  ): Promise<DeepPartial<OrderEntity>[]>;
+  ): Promise<OrderDetailDto[]>;
   findAllMatchableOrderByWalletAddress(
     walletAddress: string,
-  ): Promise<Partial<OrderEntity[]>>;
+  ): Promise<MatchableOrderDto[]>;
   updateDeliveryPersonAtOrder(deliveryPerson: {
     orderId: number;
     walletAddress: string;

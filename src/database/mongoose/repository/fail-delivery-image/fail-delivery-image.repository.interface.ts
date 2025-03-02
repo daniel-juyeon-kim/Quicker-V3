@@ -1,4 +1,4 @@
-import { FailDeliveryImage } from '../../models';
+import { FailDeliveryImageDto } from '@src/router/order-image/dto/order-fail-image.dto';
 
 export interface IFailDeliveryImageRepository {
   createFailDeliveryImage({
@@ -11,5 +11,7 @@ export interface IFailDeliveryImageRepository {
     reason: string;
   }): Promise<void>;
 
-  findFailDeliveryImageByOrderId(orderId: number): Promise<FailDeliveryImage>;
+  findFailDeliveryImageByOrderId(
+    orderId: number,
+  ): Promise<FailDeliveryImageDto>;
 }

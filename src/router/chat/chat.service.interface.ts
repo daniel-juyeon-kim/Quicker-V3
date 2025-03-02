@@ -1,5 +1,5 @@
-import { MessageInfo } from '@src/database';
+import { ChatMessageDto } from './dto/chat-message.dto';
 
 export interface IChatService {
-  findRecentMessageByOrderId(orderId: number): Promise<MessageInfo>;
+  findRecentMessageByOrderId(orderId: number): Promise<ChatMessageDto>;
 }

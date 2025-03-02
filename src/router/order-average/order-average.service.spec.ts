@@ -3,7 +3,9 @@ import { RepositoryToken } from '@src/core/constant';
 import { createLastMonth, UnknownDataBaseException } from '@src/core/module';
 import { NotExistDataException } from '@src/database';
 import { IAverageCostRepository } from '@src/database/type-orm/repository/average-cost/average-cost.repository.interface';
+import { plainToInstance } from 'class-transformer';
 import { mock, mockClear } from 'jest-mock-extended';
+import { OrderAverageCostDto } from './dto/order-average-cost.dto';
 import { OrderAverageService } from './order-average.service';
 
 describe('OrderAverageService', () => {
@@ -28,15 +30,18 @@ describe('OrderAverageService', () => {
   describe('findLatestOrderAverageCostByDistance', () => {
     test('통과하는 테스트', async () => {
       const distance = 50;
-      const resolvedValue = 100;
+      const resolvedValue = plainToInstance(OrderAverageCostDto, {
+        averageCost: 100,
+      });
       const lastMonth = createLastMonth(new Date());
+
       repository.findAverageCostByDateAndDistanceUnit.mockResolvedValue(
         resolvedValue,
       );
 
       await expect(
         service.findLatestOrderAverageCostByDistance(distance),
-      ).resolves.toEqual({ averageCost: resolvedValue });
+      ).resolves.toEqual(resolvedValue);
       expect(
         repository.findAverageCostByDateAndDistanceUnit,
       ).toHaveBeenCalledWith({

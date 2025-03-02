@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UnknownDataBaseException } from '@src/core/module';
 import { isNull, isUndefined } from '@src/core/util';
 import { NotExistDataException } from '@src/database/type-orm';
+import { ChatMessageDto } from '@src/router/chat/dto/chat-message.dto';
+import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
 import { ChatMessages, MessageInfo } from '../../models';
 import { Transactional } from '../../util/transactional.decorator';
@@ -81,7 +83,7 @@ export class ChatMessageRepository
         throw new NotExistDataException('데이터가 존재하지 않습니다.');
       }
 
-      return recentMessage;
+      return plainToInstance(ChatMessageDto, recentMessage);
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw new NotExistDataException(

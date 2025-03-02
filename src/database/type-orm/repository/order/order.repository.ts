@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { UnknownDataBaseException } from '@src/core/module';
 import { isNull } from '@src/core/util';
+import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
+import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
+import { plainToInstance } from 'class-transformer';
 import { In, IsNull, Not } from 'typeorm';
 import {
   BusinessRuleConflictDataException,
@@ -168,62 +171,63 @@ export class OrderRepository
     }
   }
 
+  @Transactional()
   async findAllMatchableOrderByWalletAddress(
     deliverPersonWalletAddress: string,
   ) {
     try {
-      return await this.getManager().transaction(async (manager) => {
-        const isExistUser = await manager.exists(UserEntity, {
-          where: { walletAddress: deliverPersonWalletAddress },
-        });
-
-        if (!isExistUser) {
-          throw new NotExistDataException(
-            `${deliverPersonWalletAddress}에 해당하는 사용자가 존재하지 않습니다.`,
-          );
-        }
-
-        return await manager.find(OrderEntity, {
-          relations: {
-            product: true,
-            transportation: true,
-            destination: true,
-            departure: true,
-          },
-          where: {
-            requester: { walletAddress: Not(deliverPersonWalletAddress) },
-            deliveryPerson: { walletAddress: IsNull() },
-          },
-          select: {
-            id: true,
-            detail: true,
-            product: {
-              width: true,
-              length: true,
-              height: true,
-              weight: true,
-            },
-            transportation: {
-              walking: true,
-              bicycle: true,
-              scooter: true,
-              bike: true,
-              car: true,
-              truck: true,
-            },
-            destination: {
-              x: true,
-              y: true,
-              detail: true,
-            },
-            departure: {
-              x: true,
-              y: true,
-              detail: true,
-            },
-          },
-        });
+      const isExistUser = await this.getManager().exists(UserEntity, {
+        where: { walletAddress: deliverPersonWalletAddress },
       });
+
+      if (!isExistUser) {
+        throw new NotExistDataException(
+          `${deliverPersonWalletAddress}에 해당하는 사용자가 존재하지 않습니다.`,
+        );
+      }
+
+      const matchableOrders = await this.getManager().find(OrderEntity, {
+        relations: {
+          product: true,
+          transportation: true,
+          destination: true,
+          departure: true,
+        },
+        where: {
+          requester: { walletAddress: Not(deliverPersonWalletAddress) },
+          deliveryPerson: { walletAddress: IsNull() },
+        },
+        select: {
+          id: true,
+          detail: true,
+          product: {
+            width: true,
+            length: true,
+            height: true,
+            weight: true,
+          },
+          transportation: {
+            walking: true,
+            bicycle: true,
+            scooter: true,
+            bike: true,
+            car: true,
+            truck: true,
+          },
+          destination: {
+            x: true,
+            y: true,
+            detail: true,
+          },
+          departure: {
+            x: true,
+            y: true,
+            detail: true,
+          },
+        },
+      });
+
+      return plainToInstance(MatchableOrderDto, matchableOrders);
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw new NotExistDataException(
@@ -277,7 +281,7 @@ export class OrderRepository
         },
       });
 
-      return order;
+      return plainToInstance(OrderDetailDto, order);
     } catch (error) {
       throw new UnknownDataBaseException(error);
     }

@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { UnknownDataBaseException } from '@src/core/module';
+import { UserNameDto } from '@src/router/user/dto/user-name.dto';
+import { UserProfileImageIdDto } from '@src/router/user/dto/user-profile-image-id.dto';
+import { plainToInstance } from 'class-transformer';
 import {
   BirthDateEntity,
   JoinDateEntity,
@@ -74,7 +77,7 @@ export class UserRepository
 
       this.validateNotNull(walletAddress, name);
 
-      return name;
+      return plainToInstance(UserNameDto, name);
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw new NotExistDataException(
@@ -95,7 +98,7 @@ export class UserRepository
 
       this.validateNotNull(walletAddress, user);
 
-      return user.profileImage;
+      return plainToInstance(UserProfileImageIdDto, user.profileImage);
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw new NotExistDataException(

@@ -1,3 +1,4 @@
+import { OrderDeliveryPersonLocationDto } from '@src/router/order-delivery-person/dto/order-delivery-person-location.dto';
 import { Location } from '../../models/current-deliver-location';
 
 export interface ICurrentDeliveryLocationRepository {
@@ -6,5 +7,7 @@ export interface ICurrentDeliveryLocationRepository {
     location: Location,
   ): Promise<void>;
 
-  findCurrentLocationByOrderId(orderId: number): Promise<Location>;
+  findCurrentLocationByOrderId(
+    orderId: number,
+  ): Promise<OrderDeliveryPersonLocationDto>;
 }

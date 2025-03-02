@@ -1,5 +1,7 @@
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ChatMessageDto } from '@src/router/chat/dto/chat-message.dto';
+import { plainToInstance } from 'class-transformer';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
 import {
@@ -111,11 +113,11 @@ describe('ChatMessageRepository 테스트', () => {
 
     describe('findRecentMessageByOrderId', () => {
       test('통과하는 테스트', async () => {
-        const result = {
+        const result = plainToInstance(ChatMessageDto, {
           walletAddress: '지갑 주소 1',
           message: '메세지3',
           date: CREATED_DATE,
-        };
+        });
 
         await expect(
           repository.findRecentMessageByOrderId(ORDER_ID),
