@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { UnknownDataBaseException } from '@src/core/module';
+import { NotExistDataException } from '@src/core/exception';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
 import { OrderEntity } from '@src/database/type-orm/entity';
-import { NotExistDataException } from '@src/database/type-orm/util';
 import { OrderLocationDto } from '@src/router/order-location/dto/order-location.dto';
 import { plainToInstance } from 'class-transformer';
 import { In } from 'typeorm';
@@ -30,30 +30,34 @@ export class LocationRepository
         },
       });
 
-      this.validateNotNull(orderId, destinationDeparture);
+      this.validateNotNull(destinationDeparture);
 
       return plainToInstance(OrderLocationDto, destinationDeparture);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw error;
+        throw new NotExistDataException('orderId', orderId);
       }
       throw new UnknownDataBaseException(error);
     }
   }
 
   async findAllDestinationDepartureByOrderIds(orderIds: number[]) {
-    const orderLocations = await this.getRepository().find({
-      where: { id: In(orderIds) },
-      relations: { departure: true, destination: true },
-      select: {
-        id: true,
-        departure: { x: true, y: true },
-        destination: { x: true, y: true },
-      },
-    });
+    try {
+      const orderLocations = await this.getRepository().find({
+        where: { id: In(orderIds) },
+        relations: { departure: true, destination: true },
+        select: {
+          id: true,
+          departure: { x: true, y: true },
+          destination: { x: true, y: true },
+        },
+      });
 
-    this.validateNotNull(orderIds, orderLocations);
+      this.validateNotNull(orderLocations);
 
-    return plainToInstance(OrderLocationDto, orderLocations);
+      return plainToInstance(OrderLocationDto, orderLocations);
+    } catch (error) {
+      throw new UnknownDataBaseException(error);
+    }
   }
 }

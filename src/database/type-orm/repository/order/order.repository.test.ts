@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ENTITY_MANAGER_KEY } from '@src/core/constant';
+import {
+  BusinessRuleConflictDataException,
+  NotExistDataException,
+} from '@src/core/exception';
 import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
 import { plainToInstance } from 'class-transformer';
 import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
@@ -15,10 +19,6 @@ import {
   TransportationEntity,
   UserEntity,
 } from '../../entity';
-import {
-  BusinessRuleConflictDataException,
-  NotExistDataException,
-} from '../../util';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { OrderRepository } from './order.repository';
 
@@ -490,7 +490,8 @@ describe('OrderRepository', () => {
       const anotherDeliveryPersonWalletAddress =
         '존재하지 않는 배송원의 지갑주소';
       const error = new NotExistDataException(
-        `${anotherDeliveryPersonWalletAddress}에 해당하는 사용자가 존재하지 않습니다.`,
+        'deliverPersonWalletAddress',
+        anotherDeliveryPersonWalletAddress,
       );
 
       await cls.run(async () => {
@@ -618,7 +619,8 @@ describe('OrderRepository', () => {
         walletAddress: '존재하지 않는 지갑주소',
       };
       const error = new NotExistDataException(
-        '존재하지 않는 지갑주소 에 대응되는 사용자가 존재하지 않습니다.',
+        'walletAddress',
+        '존재하지 않는 지갑주소',
       );
 
       await cls.run(async () => {
@@ -635,9 +637,7 @@ describe('OrderRepository', () => {
         walletAddress: DELIVERY_PERSON_WALLET_ADDRESS,
         orderId: 2,
       };
-      const error = new NotExistDataException(
-        '2 에 대응되는 주문이 존재하지 않습니다.',
-      );
+      const error = new NotExistDataException('orderId', 2);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -656,7 +656,8 @@ describe('OrderRepository', () => {
         orderId,
       };
       const error = new BusinessRuleConflictDataException(
-        `${walletAddress}가 의뢰인의 지갑주소와 동일합니다.`,
+        'walletAddress',
+        walletAddress,
       );
 
       await cls.run(async () => {

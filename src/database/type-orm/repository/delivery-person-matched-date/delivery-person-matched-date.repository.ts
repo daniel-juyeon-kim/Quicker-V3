@@ -1,9 +1,8 @@
-import { Between } from 'typeorm';
-
 import { Injectable } from '@nestjs/common';
-import { UnknownDataBaseException } from '@src/core/module';
+import { DuplicatedDataException } from '@src/core/exception';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import { Between } from 'typeorm';
 import { DeliveryPersonMatchedDateEntity } from '../../entity';
-import { DuplicatedDataException } from '../../util';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AbstractRepository } from '../abstract-repository';
 import { IDeliveryPersonMatchedDateRepository } from './delivery-person-matched-date.repository.interface';
@@ -25,9 +24,7 @@ export class DeliveryPersonMatchedDateRepository
       );
 
       if (matchedDateExists) {
-        throw new DuplicatedDataException(
-          `${orderId}에 대해 중복된 데이터가 존재합니다.`,
-        );
+        throw new DuplicatedDataException('orderId', orderId);
       }
 
       const matchedDate = new DeliveryPersonMatchedDateEntity();

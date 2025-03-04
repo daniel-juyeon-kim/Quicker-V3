@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
-import { NotExistDataException } from '@src/database';
+import { NotExistDataException } from '@src/core/exception';
 import { mock, mockClear } from 'jest-mock-extended';
 import { OrderDeliveryPersonController } from './order-delivery-person.controller';
 import { IOrderDeliveryPersonService } from './order-delivery-person.service.interface';
@@ -43,7 +43,7 @@ describe('OrderDeliveryPersonController', () => {
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('데이터가 존재하지 않습니다.');
+      const error = new NotExistDataException();
       service.findCurrentLocationByOrderId.mockRejectedValueOnce(error);
 
       await expect(
@@ -75,7 +75,7 @@ describe('OrderDeliveryPersonController', () => {
         y: 37.71,
         orderId: 1,
       };
-      const error = new NotExistDataException('데이터가 존재하지 않습니다.');
+      const error = new NotExistDataException();
       service.createCurrentLocation.mockRejectedValueOnce(error);
 
       await expect(
@@ -100,7 +100,7 @@ describe('OrderDeliveryPersonController', () => {
     });
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
-      const error = new NotExistDataException('존제하지 않는 데이터');
+      const error = new NotExistDataException();
       service.matchDeliveryPersonAtOrder.mockRejectedValueOnce(error);
 
       await expect(

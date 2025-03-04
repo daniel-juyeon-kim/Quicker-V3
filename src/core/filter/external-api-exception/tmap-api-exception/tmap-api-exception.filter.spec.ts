@@ -1,11 +1,10 @@
 import { TestBed } from '@automock/jest';
 import { ArgumentsHost, Logger } from '@nestjs/common';
 import { CoreToken, LoggerToken } from '@src/core/constant';
-import {
-  ErrorMessageBot,
-  SmsApiException,
-  TmapApiException,
-} from '@src/core/module';
+
+import { SmsApiException, TmapApiException } from '@src/core/exception';
+import { ErrorMessageBot, ErrorResponseBody } from '@src/core/module';
+import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
 import { mock } from 'jest-mock-extended';
 import { TmapApiExceptionFilter } from './tmap-api-exception.filter';
 
@@ -29,7 +28,8 @@ describe('TmapApiExceptionFilter', () => {
 
   describe('catch', () => {
     test('통과하는 테스트', async () => {
-      const exception = new TmapApiException('에러');
+      const response = {} as ErrorResponseBody;
+      const exception = new TmapApiException(response);
 
       await filter.catch(exception, mockHost);
 
@@ -41,7 +41,8 @@ describe('TmapApiExceptionFilter', () => {
     });
 
     test('실패하는 테스트, 해당 헨들러가 담당하지 않는 에러', async () => {
-      const exception = new SmsApiException('에러');
+      const response = {} as NaverSmsApiResponse;
+      const exception = new SmsApiException(response);
 
       await filter.catch(exception, mockHost);
 

@@ -5,8 +5,8 @@ import {
   LoggerService,
 } from '@nestjs/common';
 import { CoreToken } from '@src/core/constant';
+import { CustomException } from '@src/core/exception/custom.exception';
 import { ErrorMessage, ErrorMessageBot } from '@src/core/module';
-import { CustomException } from '../../module/exception/custom.exception';
 
 export abstract class ErrorReportExceptionFilter<T>
   implements ExceptionFilter<T>

@@ -4,11 +4,11 @@ import {
   Catch,
   ExceptionFilter,
 } from '@nestjs/common';
-import { ExternalApiException } from '@src/core/module';
-import { CustomException } from '@src/core/module/exception/custom.exception';
 import { ErrorMessageBotExceptionFilter } from './error-message-bot-exception/error-message-bot-exception.filter';
 import { SmsApiExceptionFilter } from './sms-api-exception/sms-api-exception.filter';
 import { TmapApiExceptionFilter } from './tmap-api-exception/tmap-api-exception.filter';
+import { ExternalApiException } from '@src/core/exception';
+import { CustomException } from '@src/core/exception/custom.exception';
 
 @Catch()
 export class ExternalApiExceptionFilter

@@ -1,11 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ENTITY_MANAGER_KEY } from '@src/core/constant';
+import {
+  DuplicatedDataException,
+  NotExistDataException,
+} from '@src/core/exception';
 import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
 import { EntityManager } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import { AverageCostEntity } from '../../entity';
-import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AverageCostRepository } from './average-cost.repository';
 
@@ -67,9 +70,7 @@ describe('AverageCostRepository', () => {
 
     test('실패하는 테스트, 이미 데이터가 존재하면 DuplicatedDataException을 던짐', async () => {
       const createDate = new Date(1990, 4, 1);
-      const error = new DuplicatedDataException(
-        `${createDate}에 해당되는 데이터가 이미 존재합니다.`,
-      );
+      const error = new DuplicatedDataException('date', createDate.toString());
 
       // 초기 저장
       await cls.run(async () => {
@@ -149,7 +150,8 @@ describe('AverageCostRepository', () => {
       const lastMonth = new Date(1993, 3, 1);
       const distanceUnit = '40KM';
       const error = new NotExistDataException(
-        `${lastMonth}에 대한 데이터가 존재하지 않습니다.`,
+        'lastMonth',
+        lastMonth.toString(),
       );
 
       await cls.run(async () => {

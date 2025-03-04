@@ -1,9 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken } from '@src/core/constant';
-import { DuplicatedDataException, NotExistDataException } from '@src/database';
+import {
+  DuplicatedDataException,
+  NotExistDataException,
+} from '@src/core/exception';
 import { IFailDeliveryImageRepository } from '@src/database/mongoose/repository/fail-delivery-image/fail-delivery-image.repository.interface';
 import { mock, mockClear } from 'jest-mock-extended';
 import { Readable } from 'stream';
+import { FailDeliveryImageDto } from '../../dto/order-fail-image.dto';
 import { OrderFailImageService } from './order-fail-image.service';
 
 describe('OrderFailImageService', () => {
@@ -66,9 +70,7 @@ describe('OrderFailImageService', () => {
         buffer: Buffer.from('file content'),
       };
       const reason = '이유';
-      const error = new DuplicatedDataException(
-        `${orderId}에 해당되는 데이터가 이미 존재합니다.`,
-      );
+      const error = new DuplicatedDataException('orderId', orderId);
       repository.createFailDeliveryImage.mockRejectedValueOnce(error);
 
       await expect(
@@ -80,10 +82,9 @@ describe('OrderFailImageService', () => {
   describe('findOrderFailImageByOrderId', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
-      const resolvedValue = {
-        _id: orderId,
+      const resolvedValue: FailDeliveryImageDto = {
         reason: '이유',
-        image: Buffer.from('file content'),
+        image: { data: Buffer.from('file content'), type: 'Buffer' },
       };
       repository.findFailDeliveryImageByOrderId.mockResolvedValueOnce(
         resolvedValue,
@@ -100,9 +101,7 @@ describe('OrderFailImageService', () => {
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataException(
-        `${orderId}에 해당되는 실패 이미지가 존재하지 않습니다.`,
-      );
+      const error = new NotExistDataException('orderId', orderId);
       repository.findFailDeliveryImageByOrderId.mockRejectedValueOnce(error);
 
       await expect(

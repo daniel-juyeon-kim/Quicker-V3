@@ -4,14 +4,16 @@ import {
   LoggerService,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { ChatPostMessageResponse } from '@slack/web-api';
 import { CoreToken, LoggerToken } from '@src/core/constant';
 import {
-  ErrorMessageBot,
+  DuplicatedDataException,
   ErrorMessageBotException,
   SmsApiException,
   TmapApiException,
-} from '@src/core/module';
-import { DuplicatedDataException } from '@src/database';
+} from '@src/core/exception';
+import { ErrorMessageBot, ErrorResponseBody } from '@src/core/module';
+import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
 import { mock } from 'jest-mock-extended';
 import { ErrorMessageBotExceptionFilter } from './error-message-bot-exception/error-message-bot-exception.filter';
 import { ExternalApiExceptionFilter } from './external-api-exception.filter';
@@ -43,7 +45,7 @@ describe('ExternalApiExceptionFilter', () => {
           useValue: mock<LoggerService>(),
         },
         {
-          provide: LoggerToken.UNKNOWN_EXCEPTION_LOGGER,
+          provide: LoggerToken.UNKNOWN_DATABASE_EXCEPTION_LOGGER,
           useValue: mock<LoggerService>(),
         },
         {
@@ -58,7 +60,8 @@ describe('ExternalApiExceptionFilter', () => {
 
   describe('catch', () => {
     test('통과하는 테스트, ErrorMessageBotError', async () => {
-      const exception = new ErrorMessageBotException('오류');
+      const error = {} as ChatPostMessageResponse;
+      const exception = new ErrorMessageBotException(error);
 
       await expect(filter.catch(exception, mockHost)).rejects.toEqual(
         new BadGatewayException(exception.message),
@@ -66,7 +69,8 @@ describe('ExternalApiExceptionFilter', () => {
     });
 
     test('통과하는 테스트, TmapApiError', async () => {
-      const exception = new TmapApiException('오류');
+      const response = {} as ErrorResponseBody;
+      const exception = new TmapApiException(response);
 
       await expect(filter.catch(exception, mockHost)).rejects.toEqual(
         new BadGatewayException(exception.message),
@@ -74,7 +78,8 @@ describe('ExternalApiExceptionFilter', () => {
     });
 
     test('통과하는 테스트, SmsApiError', async () => {
-      const exception = new SmsApiException('오류');
+      const response = {} as NaverSmsApiResponse;
+      const exception = new SmsApiException(response);
 
       await expect(filter.catch(exception, mockHost)).rejects.toEqual(
         new BadGatewayException(exception.message),
@@ -82,7 +87,7 @@ describe('ExternalApiExceptionFilter', () => {
     });
 
     test('실패하는 테스트, 담당이 아닌 에러', async () => {
-      const exception = new DuplicatedDataException('오류');
+      const exception = new DuplicatedDataException();
 
       await expect(filter.catch(exception, mockHost)).resolves.toEqual(
         undefined,

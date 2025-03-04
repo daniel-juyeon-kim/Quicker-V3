@@ -2,12 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '@slack/web-api/dist/types/response/AdminAppsRequestsListResponse';
 import { ENTITY_MANAGER_KEY, RepositoryToken } from '@src/core/constant';
-import {
-  DeliveryUrlCreator,
-  NaverSmsApi,
-  SmsApiException,
-  UnknownDataBaseException,
-} from '@src/core/module';
+import { NotExistDataException, SmsApiException } from '@src/core/exception';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import { DeliveryUrlCreator, NaverSmsApi } from '@src/core/module';
+import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
 import {
   CurrentDeliveryLocationRepository,
   DeliveryPersonMatchedDateEntity,
@@ -15,7 +13,6 @@ import {
   DepartureEntity,
   DestinationEntity,
   IOrderRepository,
-  NotExistDataException,
   OrderEntity,
   OrderRepository,
   ProductEntity,
@@ -96,9 +93,7 @@ describe('OrderDeliveryPersonService', () => {
 
     test('실패하는 테스트, NotExistDataError를 던짐 ', async () => {
       const orderId = 1;
-      const error = new NotExistDataException(
-        `${orderId}에 대한 데이터가 존재하지 않습니다.`,
-      );
+      const error = new NotExistDataException('orderId', orderId);
       currentDeliveryLocationRepository.findCurrentLocationByOrderId.mockRejectedValueOnce(
         error,
       );
@@ -135,7 +130,7 @@ describe('OrderDeliveryPersonService', () => {
         x: 128.25424,
         y: 35.95234,
       };
-      const error = new UnknownDataBaseException('알 수 없는 에러');
+      const error = new UnknownDataBaseException(new Error('알 수 없는 에러'));
       currentDeliveryLocationRepository.saveDeliveryPersonLocation.mockRejectedValueOnce(
         error,
       );
@@ -377,9 +372,7 @@ describe('OrderDeliveryPersonService', () => {
       test('실패하는 테스트, db 계층에서 에러 NotExistDataError를 던짐', async () => {
         const orderId = 2;
         const walletAddress = '배송원 지갑주소';
-        const error = new NotExistDataException(
-          `${orderId} 에 대응되는 주문이 존재하지 않습니다.`,
-        );
+        const error = new NotExistDataException('orderId', orderId);
 
         await cls.run(async () => {
           cls.set(ENTITY_MANAGER_KEY, manager);
@@ -400,7 +393,13 @@ describe('OrderDeliveryPersonService', () => {
       });
 
       test('실패하는 테스트, 외부 api 에러 SmsApiError를 던짐', async () => {
-        const error = new SmsApiException('에러');
+        const response: NaverSmsApiResponse = {
+          requestId: 'requestId',
+          requestTime: 'requestTime',
+          statusCode: 'statusCode',
+          statusName: 'statusName',
+        };
+        const error = new SmsApiException(response);
         const walletAddress = '배송원 지갑주소';
         const orderId = 1;
 

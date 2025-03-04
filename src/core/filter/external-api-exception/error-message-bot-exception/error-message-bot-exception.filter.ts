@@ -3,7 +3,7 @@ import { LoggerToken } from '@src/core/constant';
 import {
   ErrorMessageBotException,
   ExternalApiException,
-} from '@src/core/module';
+} from '@src/core/exception';
 import { ErrorReportExceptionFilter } from '../../abstract/abstract-exception.filter';
 
 @Catch()

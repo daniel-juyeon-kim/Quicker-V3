@@ -1,7 +1,13 @@
-import { UnknownException } from '../unknown/unknown.exception';
+import { DataBaseExceptionMessage } from '@src/core/constant/exception-message/database.enum';
+import { DataBaseException } from './database.exception';
 
-export class UnknownDataBaseException<T> extends UnknownException {
-  constructor(private readonly error: T) {
-    super();
+export class UnknownDataBaseException extends DataBaseException {
+  constructor(
+    public readonly error: Error,
+    target?: string,
+    value?: string | number,
+    cause: string = DataBaseExceptionMessage.UnknownDataBaseException,
+  ) {
+    super(target, value, cause);
   }
 }

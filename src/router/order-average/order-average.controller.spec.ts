@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
-import { UnknownDataBaseException } from '@src/core/module';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
 import { mock, mockClear } from 'jest-mock-extended';
 import { OrderAverageController } from './order-average.controller';
 import { IOrderAverageService } from './order-average.service.interface';
@@ -43,7 +43,9 @@ describe('OrderAverageController', () => {
     describe('실패하는 테스트', () => {
       test('예상하지 못한 에러 발생', async () => {
         const distance = 50;
-        const error = new UnknownDataBaseException('알 수 없는 에러');
+        const error = new UnknownDataBaseException(
+          new Error('알 수 없는 에러'),
+        );
         service.findLatestOrderAverageCostByDistance.mockRejectedValueOnce(
           error,
         );

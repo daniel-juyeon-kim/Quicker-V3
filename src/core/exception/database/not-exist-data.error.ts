@@ -1,10 +1,12 @@
-import { DataBaseExceptionMessage } from '@src/database/type-orm/util/exception/constant/exception-messages.enum';
+import { DataBaseExceptionMessage } from '@src/core/constant/exception-message/database.enum';
 import { DataBaseException } from './database.exception';
 
 export class NotExistDataException extends DataBaseException {
   constructor(
-    message: string = DataBaseExceptionMessage.NotExistDataException,
+    target?: string,
+    value?: string | number,
+    cause: string = DataBaseExceptionMessage.NotExistDataException,
   ) {
-    super(message);
+    super(target, value, cause);
   }
 }

@@ -1,8 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
-import { DuplicatedDataException, NotExistDataException } from '@src/database';
+import {
+  DuplicatedDataException,
+  NotExistDataException,
+} from '@src/core/exception';
 import { mock } from 'jest-mock-extended';
 import { Readable } from 'stream';
+import { FailDeliveryImageDto } from './dto/order-fail-image.dto';
 import { OrderImageController } from './order-image.controller';
 import { IOrderCompleteImageService } from './service/order-complete-image/order-complete-image.service.interface';
 import { IOrderFailImageService } from './service/order-fail-image/order-fail-image.service.interface';
@@ -34,9 +38,11 @@ describe('OrderImageController', () => {
   describe('findFailImage', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
-      const resolvedValue = {
-        _id: 1,
-        image: Buffer.from([102, 97, 107, 101, 66, 117]),
+      const resolvedValue: FailDeliveryImageDto = {
+        image: {
+          data: Buffer.from([102, 97, 107, 101, 66, 117]),
+          type: 'Buffer',
+        },
         reason: '이유',
       };
       orderFailImageService.findOrderFailImageByOrderId.mockResolvedValueOnce(
@@ -54,7 +60,7 @@ describe('OrderImageController', () => {
 
     test('실패하는 테스트, 존재하지 않는 데이터 접근', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('존재하지 않는 데이터');
+      const error = new NotExistDataException();
       orderFailImageService.findOrderFailImageByOrderId.mockRejectedValueOnce(
         error,
       );
@@ -101,7 +107,7 @@ describe('OrderImageController', () => {
         orderId,
         reason,
       };
-      const error = new DuplicatedDataException('데이터 중복');
+      const error = new DuplicatedDataException();
       orderFailImageService.createFailImage.mockRejectedValueOnce(error);
 
       await expect(controller.postFailImage(file, dto)).rejects.toStrictEqual(
@@ -132,7 +138,7 @@ describe('OrderImageController', () => {
 
     test('실패하는 테스트, 존재하지 않는 데이터 접근', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('존재하지 않는 데이터');
+      const error = new NotExistDataException();
 
       orderCompleteImageService.findCompleteImageBufferByOrderId.mockRejectedValueOnce(
         error,
@@ -173,7 +179,7 @@ describe('OrderImageController', () => {
 
     test('실패하는 테스트, 중복 데이터 저장', async () => {
       const dto = { orderId: 1 };
-      const error = new DuplicatedDataException('중복 데이터');
+      const error = new DuplicatedDataException();
 
       orderCompleteImageService.createCompleteImageBuffer.mockRejectedValueOnce(
         error,

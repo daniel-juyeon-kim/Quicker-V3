@@ -1,7 +1,3 @@
-import { ExternalApiException, UnknownException } from '@src/core/module';
-import { DataBaseException } from '@src/database';
+import { DataBaseException, ExternalApiException } from '@src/core/exception';
 
-export type ExceptionTypes =
-  | DataBaseException
-  | ExternalApiException
-  | UnknownException;
+export type ExceptionTypes = DataBaseException | ExternalApiException;

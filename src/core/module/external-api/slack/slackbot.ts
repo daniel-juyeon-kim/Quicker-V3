@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChatPostMessageResponse, WebClient } from '@slack/web-api';
 import { slackbotConfig } from '@src/core/config/configs';
-import { ErrorMessageBotException } from '../../exception/error-message-bot.exception';
+import { ErrorMessageBotException } from '@src/core/exception';
 import { ErrorMessage } from './error-message';
 import { ErrorMessageBot } from './error-message-bot.interface';
 
@@ -26,7 +26,8 @@ export class SlackBot implements ErrorMessageBot {
 
       this.validateResponse(response);
     } catch (e) {
-      throw new ErrorMessageBotException(e);
+      const error: ChatPostMessageResponse = e;
+      throw new ErrorMessageBotException(error);
     }
   }
 

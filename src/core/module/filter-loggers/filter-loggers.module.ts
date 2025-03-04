@@ -35,7 +35,7 @@ const loggers: Provider[] = [
     }),
   },
   {
-    provide: LoggerToken.UNKNOWN_EXCEPTION_LOGGER,
+    provide: LoggerToken.UNKNOWN_DATABASE_EXCEPTION_LOGGER,
     useValue: WinstonModule.createLogger({
       transports: new DailyRotateFile({
         filename: '%DATE%.error.log',

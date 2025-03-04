@@ -1,7 +1,7 @@
 import { ArgumentsHost, Catch, Inject, LoggerService } from '@nestjs/common';
 import { LoggerToken } from '@src/core/constant';
-import { ExternalApiException, SmsApiException } from '@src/core/module';
 import { ErrorReportExceptionFilter } from '../../abstract/abstract-exception.filter';
+import { ExternalApiException, SmsApiException } from '@src/core/exception';
 
 @Catch()
 export class SmsApiExceptionFilter extends ErrorReportExceptionFilter<ExternalApiException> {

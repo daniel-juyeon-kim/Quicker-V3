@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { UnknownDataBaseException } from '@src/core/module';
+import {
+  BusinessRuleConflictDataException,
+  NotExistDataException,
+} from '@src/core/exception';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
 import { isNull } from '@src/core/util';
 import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
 import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
 import { plainToInstance } from 'class-transformer';
 import { In, IsNull, Not } from 'typeorm';
 import {
-  BusinessRuleConflictDataException,
   DepartureEntity,
   DestinationEntity,
-  NotExistDataException,
   OrderEntity,
   ProductEntity,
   ReceiverEntity,
@@ -44,9 +46,7 @@ export class OrderRepository
       });
 
       if (isNull(deliverPerson)) {
-        throw new NotExistDataException(
-          `${walletAddress} 에 대응되는 사용자가 존재하지 않습니다.`,
-        );
+        throw new NotExistDataException('walletAddress', walletAddress);
       }
 
       const order = await this.getManager().findOne(OrderEntity, {
@@ -58,14 +58,13 @@ export class OrderRepository
       });
 
       if (isNull(order)) {
-        throw new NotExistDataException(
-          `${orderId} 에 대응되는 주문이 존재하지 않습니다.`,
-        );
+        throw new NotExistDataException('orderId', orderId);
       }
 
       if (deliverPerson.walletAddress === order.requester.walletAddress) {
         throw new BusinessRuleConflictDataException(
-          `${walletAddress}가 의뢰인의 지갑주소와 동일합니다.`,
+          'walletAddress',
+          walletAddress,
         );
       }
 
@@ -100,7 +99,7 @@ export class OrderRepository
         walletAddress,
       });
 
-      this.validateNotNull(walletAddress, requester);
+      this.validateNotNull(requester);
 
       const order = this.getManager().create(OrderEntity, {
         detail,
@@ -137,9 +136,7 @@ export class OrderRepository
       });
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException(
-          `${walletAddress}에 해당되는 사용자를 찾지 못했습니다.`,
-        );
+        throw new NotExistDataException('walletAddress', walletAddress);
       }
       throw new UnknownDataBaseException(error);
     }
@@ -160,12 +157,12 @@ export class OrderRepository
         },
       });
 
-      this.validateNotNull(orderId, requester);
+      this.validateNotNull(requester);
 
       return requester;
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw error;
+        throw new NotExistDataException('orderId', orderId);
       }
       throw new UnknownDataBaseException(error);
     }
@@ -181,9 +178,7 @@ export class OrderRepository
       });
 
       if (!isExistUser) {
-        throw new NotExistDataException(
-          `${deliverPersonWalletAddress}에 해당하는 사용자가 존재하지 않습니다.`,
-        );
+        throw new NotExistDataException();
       }
 
       const matchableOrders = await this.getManager().find(OrderEntity, {
@@ -231,7 +226,8 @@ export class OrderRepository
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw new NotExistDataException(
-          `${deliverPersonWalletAddress}에 해당하는 사용자가 존재하지 않습니다.`,
+          'deliverPersonWalletAddress',
+          deliverPersonWalletAddress,
         );
       }
       throw new UnknownDataBaseException(error);
