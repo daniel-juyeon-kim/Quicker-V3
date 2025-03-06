@@ -1,9 +1,11 @@
-import { WebClient } from '@slack/web-api';
+import { ChatPostMessageResponse, WebClient } from '@slack/web-api';
 
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
+import { ErrorMessageBotException } from '@src/core/exception';
 import { mock } from 'jest-mock-extended';
-import { ErrorMessage, ErrorMessageBotException, SlackBot } from '../..';
+import { ErrorMessage } from './error-message';
+import { SlackBot } from './slackbot';
 
 const webClient = {
   provide: WebClient,
@@ -19,7 +21,7 @@ const configService = {
   },
 };
 
-let slackBot;
+let slackBot: SlackBot;
 
 beforeEach(async () => {
   const testModule = await Test.createTestingModule({
@@ -37,7 +39,7 @@ describe('SlackBot 테스트', () => {
         .mockResolvedValueOnce({ ok: false });
 
       const date = new Date(2000, 1, 1);
-      const error = new Error('에러 메시지');
+      const error = {} as ChatPostMessageResponse;
 
       await expect(
         slackBot.sendMessage(new ErrorMessage({ date, exception: error })),

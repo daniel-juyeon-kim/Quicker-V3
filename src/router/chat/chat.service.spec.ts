@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken } from '@src/core/constant';
-import { NotExistDataException } from '@src/database';
+import { NotExistDataException } from '@src/core/exception';
 import { IChatMessageRepository } from '@src/database/mongoose/repository/chat-message/chat-message.repository.interface';
 import { plainToInstance } from 'class-transformer';
 import { mock, mockClear } from 'jest-mock-extended';
@@ -50,7 +50,7 @@ describe('ChatService', () => {
 
     test('실패하는 테스트, orderId에 해당되는 데이터가 존재하지 않으면 NotExistDataError를 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('데이터가 존재하지 않습니다.');
+      const error = new NotExistDataException('orderId', orderId);
       repository.findRecentMessageByOrderId.mockRejectedValueOnce(error);
 
       await expect(

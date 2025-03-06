@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
-import { DuplicatedDataException, NotExistDataException } from '@src/database';
+import {
+  DuplicatedDataException,
+  NotExistDataException,
+} from '@src/core/exception';
 import { mock } from 'jest-mock-extended';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -27,7 +30,7 @@ describe('UsersController', () => {
         name: '문자열',
         email: 'temp@gmail.com',
         contact: '01012341234',
-        birthDate: '1999/01/01',
+        birthDate: new Date('1999/01/01'),
       };
       service.createUser.mockResolvedValue(undefined);
 
@@ -42,9 +45,9 @@ describe('UsersController', () => {
         name: '문자열',
         email: 'temp@gmail.com',
         contact: '01012341234',
-        birthDate: '1999/01/01',
+        birthDate: new Date('1999/01/01'),
       };
-      const error = new DuplicatedDataException('이미 존재하는 데이터입니다.');
+      const error = new DuplicatedDataException();
       service.createUser.mockRejectedValueOnce(error);
 
       await expect(controller.createUser(dto)).rejects.toStrictEqual(error);
@@ -69,7 +72,7 @@ describe('UsersController', () => {
 
     test('실패하는 테스트, 존재하지 않는 지갑주소로 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '0x123';
-      const error = new NotExistDataException('데이터가 존재하지 않습니다.');
+      const error = new NotExistDataException();
       service.findUserNameByWalletAddress.mockRejectedValueOnce(error);
 
       await expect(
@@ -104,7 +107,7 @@ describe('UsersController', () => {
       const dto: UpdateUserDto = {
         imageId: 'image123',
       };
-      const error = new NotExistDataException('유저가 존재하지 않습니다.');
+      const error = new NotExistDataException();
       service.updateUserProfileImageId.mockRejectedValueOnce(error);
 
       await expect(
@@ -135,9 +138,7 @@ describe('UsersController', () => {
 
     test('실패하는 테스트, 존재하지 않는 지갑주소는 NotExistDataError를 던짐', async () => {
       const walletAddress = '0x123';
-      const error = new NotExistDataException(
-        '이미지 데이터가 존재하지 않습니다.',
-      );
+      const error = new NotExistDataException();
       service.findUserProfileImageIdByWalletAddress.mockRejectedValueOnce(
         error,
       );

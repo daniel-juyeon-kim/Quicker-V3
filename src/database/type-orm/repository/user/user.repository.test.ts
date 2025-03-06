@@ -1,11 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ENTITY_MANAGER_KEY } from '@src/core/constant';
+import {
+  DuplicatedDataException,
+  NotExistDataException,
+} from '@src/core/exception';
 import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
 import { EntityManager } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import { ProfileImageEntity, UserEntity } from '../../entity';
-import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { UserRepository } from './user.repository';
 
@@ -103,9 +106,7 @@ describe('UserRepository', () => {
         contact: '연락처',
       };
       const birthDate = new Date(2000, 9, 12);
-      const error = new DuplicatedDataException(
-        `${userId}에 해당하는 데이터가 이미 존재합니다.`,
-      );
+      const error = new DuplicatedDataException('userId', userId);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -147,9 +148,7 @@ describe('UserRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 지갑주소를 입력하면 NotExistDataException을 던짐', async () => {
       const walletAddress = '0x23h298fhooweifhoi82938';
-      const error = new NotExistDataException(
-        `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
-      );
+      const error = new NotExistDataException('walletAddress', walletAddress);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -185,9 +184,7 @@ describe('UserRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 지갑주소를 입력하면 NotExistDataException을 던짐', async () => {
       const walletAddress = '0x23h298fhooweifhoi82938';
-      const error = new NotExistDataException(
-        `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
-      );
+      const error = new NotExistDataException('walletAddress', walletAddress);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -233,9 +230,7 @@ describe('UserRepository', () => {
         walletAddress,
         imageId: '100',
       };
-      const error = new NotExistDataException(
-        `${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
-      );
+      const error = new NotExistDataException('walletAddress', walletAddress);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);

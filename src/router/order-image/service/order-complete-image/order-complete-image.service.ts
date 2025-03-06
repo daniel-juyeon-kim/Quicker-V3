@@ -11,11 +11,9 @@ export class OrderCompleteImageService implements IOrderCompleteImageService {
   ) {}
 
   async findCompleteImageBufferByOrderId(orderId: number) {
-    const buffer =
-      await this.completeDeliveryImageRepository.findCompleteImageBufferByOrderId(
-        orderId,
-      );
-    return { buffer };
+    return await this.completeDeliveryImageRepository.findCompleteImageBufferByOrderId(
+      orderId,
+    );
   }
 
   async createCompleteImageBuffer({

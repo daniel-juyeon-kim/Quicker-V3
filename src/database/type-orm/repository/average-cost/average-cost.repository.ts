@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { UnknownDataBaseException } from '@src/core/module';
+import {
+  DuplicatedDataException,
+  NotExistDataException,
+} from '@src/core/exception';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import { OrderAverageCostDto } from '@src/router/order-average/dto/order-average-cost.dto';
 import { plainToInstance } from 'class-transformer';
 import { AverageCostEntity } from '../../entity/average-cost.entity';
-import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { Transactional } from '../../util/transaction/decorator/transactional.decorator';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AbstractRepository } from '../abstract-repository';
@@ -10,7 +14,6 @@ import {
   AverageCostDistanceUnion,
   IAverageCostRepository,
 } from './average-cost.repository.interface';
-import { OrderAverageCostDto } from '@src/router/order-average/dto/order-average-cost.dto';
 
 @Injectable()
 export class AverageCostRepository
@@ -34,12 +37,12 @@ export class AverageCostRepository
         select: { [distanceUnit]: true },
       });
 
-      this.validateNotNull(lastMonth, average);
+      this.validateNotNull(average);
 
       return plainToInstance(OrderAverageCostDto, average[distanceUnit]);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw error;
+        throw new NotExistDataException('lastMonth', lastMonth.toString());
       }
       throw new UnknownDataBaseException(error);
     }
@@ -52,9 +55,7 @@ export class AverageCostRepository
   ) {
     try {
       if (await this.getManager().existsBy(AverageCostEntity, { date })) {
-        throw new DuplicatedDataException(
-          `${date}에 해당되는 데이터가 이미 존재합니다.`,
-        );
+        throw new DuplicatedDataException('date', date.toString());
       }
 
       await this.getManager().insert(AverageCostEntity, {

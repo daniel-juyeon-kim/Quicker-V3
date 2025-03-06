@@ -1,6 +1,6 @@
+import { NotExistDataException } from '@src/core/exception';
 import { isNull } from '@src/core/util';
 import { EntityTarget } from 'typeorm';
-import { NotExistDataException } from '../util';
 import { TransactionManager } from '../util/transaction/transaction-manager/transaction-manager';
 
 export abstract class AbstractRepository<T> {
@@ -24,14 +24,9 @@ export abstract class AbstractRepository<T> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
-  protected validateNotNull<F extends Object, T>(
-    findOption: F,
-    data: T | null,
-  ): asserts data is T {
+  protected validateNotNull<T>(data: T | null): asserts data is T {
     if (isNull(data)) {
-      throw new NotExistDataException(
-        `${findOption.toString()}에 대한 데이터가 존재하지 않습니다.`,
-      );
+      throw new NotExistDataException();
     }
   }
 }

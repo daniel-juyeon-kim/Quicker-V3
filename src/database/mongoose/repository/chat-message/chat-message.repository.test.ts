@@ -1,14 +1,11 @@
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotExistDataException } from '@src/core/exception';
 import { ChatMessageDto } from '@src/router/chat/dto/chat-message.dto';
 import { plainToInstance } from 'class-transformer';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
-import {
-  ChatMessages,
-  ChatMessageSchema,
-  NotExistDataException,
-} from '../../..';
+import { ChatMessages, ChatMessageSchema } from '../../..';
 import { ChatMessageRepository } from './chat-message.repository';
 
 describe('ChatMessageRepository 테스트', () => {
@@ -103,7 +100,7 @@ describe('ChatMessageRepository 테스트', () => {
       });
 
       test('실패하는 테스트, DB에 데이터가 없으면 NotExistDataError를 던짐', async () => {
-        const error = new NotExistDataException('데이터가 존재하지 않습니다.');
+        const error = new NotExistDataException('orderId', NOT_EXIST_ORDER_ID);
 
         await expect(
           repository.findAllMessageByOrderId(NOT_EXIST_ORDER_ID),
@@ -125,9 +122,7 @@ describe('ChatMessageRepository 테스트', () => {
       });
 
       test('실패하는 테스트, DB에 데이터가 없으면 NotExistDataError를 던짐', async () => {
-        const error = new NotExistDataException(
-          `${NOT_EXIST_ORDER_ID}에 대한 데이터가 존재하지 않습니다.`,
-        );
+        const error = new NotExistDataException('orderId', NOT_EXIST_ORDER_ID);
 
         await expect(
           repository.findRecentMessageByOrderId(NOT_EXIST_ORDER_ID),

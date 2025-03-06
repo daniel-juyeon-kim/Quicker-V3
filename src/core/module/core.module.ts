@@ -45,6 +45,6 @@ const webClient = {
     FilterLoggersModule,
   ],
   providers: [...coreServices, webClient],
-  exports: [...coreServices],
+  exports: [...coreServices, FilterLoggersModule],
 })
 export class CoreModule {}

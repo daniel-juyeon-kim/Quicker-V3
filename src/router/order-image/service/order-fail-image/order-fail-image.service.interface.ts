@@ -1,7 +1,7 @@
-import { FailDeliveryImage } from '@src/database';
+import { FailDeliveryImageDto } from '../../dto/order-fail-image.dto';
 
 export interface IOrderFailImageService {
-  findOrderFailImageByOrderId(orderId: number): Promise<FailDeliveryImage>;
+  findOrderFailImageByOrderId(orderId: number): Promise<FailDeliveryImageDto>;
   createFailImage(params: {
     orderId: number;
     reason: string;

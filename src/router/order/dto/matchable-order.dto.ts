@@ -32,32 +32,32 @@ class Transportation {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  walking: true;
+  walking?: true;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  bicycle: true;
+  bicycle?: true;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  scooter: true;
+  scooter?: true;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  bike: true;
+  bike?: true;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  car: true;
+  car?: true;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
-  truck: true;
+  truck?: true;
 
   static parseToTransportationDto(
     transportation: Partial<TransportationEntity>,

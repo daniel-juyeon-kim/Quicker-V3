@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { UnknownDataBaseException } from '@src/core/module';
+import {
+  DuplicatedDataException,
+  NotExistDataException,
+} from '@src/core/exception';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
 import { UserNameDto } from '@src/router/user/dto/user-name.dto';
 import { UserProfileImageIdDto } from '@src/router/user/dto/user-profile-image-id.dto';
 import { plainToInstance } from 'class-transformer';
@@ -9,7 +13,6 @@ import {
   ProfileImageEntity,
   UserEntity,
 } from '../../entity';
-import { DuplicatedDataException, NotExistDataException } from '../../util';
 import { Transactional } from '../../util/transaction/decorator/transactional.decorator';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AbstractRepository } from '../abstract-repository';
@@ -38,9 +41,7 @@ export class UserRepository
       const userExists = await this.getManager().existsBy(UserEntity, { id });
 
       if (userExists) {
-        throw new DuplicatedDataException(
-          `${id}에 해당하는 데이터가 이미 존재합니다.`,
-        );
+        throw new DuplicatedDataException('id', id);
       }
 
       await this.getManager().insert(UserEntity, {
@@ -75,14 +76,12 @@ export class UserRepository
         select: { name: true },
       });
 
-      this.validateNotNull(walletAddress, name);
+      this.validateNotNull(name);
 
       return plainToInstance(UserNameDto, name);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException(
-          `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
-        );
+        throw new NotExistDataException('walletAddress', walletAddress);
       }
       throw new UnknownDataBaseException(error);
     }
@@ -96,14 +95,12 @@ export class UserRepository
         select: { profileImage: { imageId: true } },
       });
 
-      this.validateNotNull(walletAddress, user);
+      this.validateNotNull(user);
 
       return plainToInstance(UserProfileImageIdDto, user.profileImage);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException(
-          `지갑주소 ${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
-        );
+        throw new NotExistDataException('walletAddress', walletAddress);
       }
       throw new UnknownDataBaseException(error);
     }
@@ -122,7 +119,7 @@ export class UserRepository
         walletAddress,
       });
 
-      this.validateNotNull(walletAddress, user);
+      this.validateNotNull(user);
 
       await this.getManager().update(
         ProfileImageEntity,
@@ -131,9 +128,7 @@ export class UserRepository
       );
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException(
-          `${walletAddress}에 대응되는 데이터가 존재하지 않습니다.`,
-        );
+        throw new NotExistDataException('walletAddress', walletAddress);
       }
       throw new UnknownDataBaseException(error);
     }

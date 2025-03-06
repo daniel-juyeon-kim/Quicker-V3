@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ENTITY_MANAGER_KEY } from '@src/core/constant';
+import { DuplicatedDataException } from '@src/core/exception';
 import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
 import { EntityManager } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
@@ -13,7 +14,6 @@ import {
   TransportationEntity,
   UserEntity,
 } from '../../entity';
-import { DuplicatedDataException } from '../../util';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { DeliveryPersonMatchedDateRepository } from './delivery-person-matched-date.repository';
 
@@ -188,9 +188,7 @@ describe('DeliveryPersonMatchedDateRepository', () => {
 
     test('실패하는 테스트, 이미 존재하는 아이디로 생성하면 DuplicatedDataException을 던짐', async () => {
       const orderId = 1;
-      const error = new DuplicatedDataException(
-        '1에 대해 중복된 데이터가 존재합니다.',
-      );
+      const error = new DuplicatedDataException('orderId', orderId);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);

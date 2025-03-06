@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UnknownDataBaseException } from '@src/core/module';
+import { NotExistDataException } from '@src/core/exception';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
 import { isNull, isUndefined } from '@src/core/util';
-import { NotExistDataException } from '@src/database/type-orm';
 import { ChatMessageDto } from '@src/router/chat/dto/chat-message.dto';
 import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
@@ -58,15 +58,22 @@ export class ChatMessageRepository
   }
 
   async findAllMessageByOrderId(orderId: number) {
-    const messages = await this.model
-      .findOne({ id: orderId })
-      .select({ messages: { _id: 0 } })
-      .select({ _id: 0, id: 0, __v: 0 })
-      .lean();
+    try {
+      const messages = await this.model
+        .findOne({ id: orderId })
+        .select({ messages: { _id: 0 } })
+        .select({ _id: 0, id: 0, __v: 0 })
+        .lean();
 
-    this.validateNull(messages);
+      this.validateNull(messages);
 
-    return messages;
+      return messages;
+    } catch (error) {
+      if (error instanceof NotExistDataException) {
+        throw new NotExistDataException('orderId', orderId);
+      }
+      throw new UnknownDataBaseException(error);
+    }
   }
 
   async findRecentMessageByOrderId(orderId: number) {
@@ -80,15 +87,13 @@ export class ChatMessageRepository
       const recentMessage = userMessages.messages.pop();
 
       if (isUndefined(recentMessage)) {
-        throw new NotExistDataException('데이터가 존재하지 않습니다.');
+        throw new NotExistDataException('orderId', orderId);
       }
 
       return plainToInstance(ChatMessageDto, recentMessage);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException(
-          `${orderId}에 대한 데이터가 존재하지 않습니다.`,
-        );
+        throw new NotExistDataException('orderId', orderId);
       }
       throw new UnknownDataBaseException(error);
     }

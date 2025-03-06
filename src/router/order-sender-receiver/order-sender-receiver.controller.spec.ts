@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
-import { NotExistDataException } from '@src/database';
+import { NotExistDataException } from '@src/core/exception';
 import { mock, mockClear } from 'jest-mock-extended';
 import { OrderSenderReceiverController } from './order-sender-receiver.controller';
 import { IOrderSenderReceiverService } from './order-sender-receiver.service.interface';
@@ -61,9 +61,7 @@ describe('OrderSenderReceiverController', () => {
 
     test('실패하는 테스트, NotExistDataException 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataException(
-        `${orderId}에 해당되는 데이터가 존재하지 않습니다.`,
-      );
+      const error = new NotExistDataException('orderId', orderId);
       service.findSenderReceiverLocationAndPhoneNumberByOrderId.mockRejectedValueOnce(
         error,
       );

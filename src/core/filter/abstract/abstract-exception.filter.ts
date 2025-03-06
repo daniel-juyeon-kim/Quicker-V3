@@ -1,19 +1,9 @@
-import {
-  ArgumentsHost,
-  ExceptionFilter,
-  Inject,
-  LoggerService,
-} from '@nestjs/common';
-import { CoreToken } from '@src/core/constant';
+import { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
+import { CustomException } from '@src/core/exception/custom.exception';
 import { ErrorMessage, ErrorMessageBot } from '@src/core/module';
-import { CustomException } from '../../module/exception/custom.exception';
 
-export abstract class ErrorReportExceptionFilter<T>
-  implements ExceptionFilter<T>
-{
-  protected abstract readonly logger: LoggerService;
-  @Inject(CoreToken.ERROR_MESSAGE_BOT)
-  protected readonly errorMessageBot: ErrorMessageBot;
+export abstract class AbstractExceptionFilter<T> implements ExceptionFilter<T> {
+  protected abstract readonly errorMessageBot: ErrorMessageBot;
 
   abstract catch(exception: T, host: ArgumentsHost): any;
 

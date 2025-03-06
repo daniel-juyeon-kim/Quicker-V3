@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { UnknownDataBaseException } from '@src/core/module';
+import { NotExistDataException } from '@src/core/exception';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
 import { OrderSenderReceiverDto } from '@src/router/order-sender-receiver/dto/order-sender-receiver.dto';
 import { plainToInstance } from 'class-transformer';
 import { OrderEntity } from '../../entity';
-import { NotExistDataException } from '../../util';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AbstractRepository } from '../abstract-repository';
 import { IOrderParticipantRepository } from './order-participant.repository.interface';
@@ -42,14 +42,12 @@ export class OrderParticipantRepository
         },
       });
 
-      this.validateNotNull(orderId, order);
+      this.validateNotNull(order);
 
       return plainToInstance(OrderSenderReceiverDto, order);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException(
-          `${orderId}에 해당되는 데이터가 존재하지 않습니다.`,
-        );
+        throw new NotExistDataException('orderId', orderId);
       }
       throw new UnknownDataBaseException(error);
     }

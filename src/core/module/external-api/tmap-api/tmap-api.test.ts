@@ -1,11 +1,10 @@
-import { mock } from 'jest-mock-extended';
-import fetch from 'node-fetch';
-
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TmapApiException } from '../../exception/tmap-api.exception';
+import { TmapApiException } from '@src/core/exception';
+import { mock } from 'jest-mock-extended';
+import fetch from 'node-fetch';
 import { TmapApi } from './tmap-api';
-import { DestinationDepartureLocation } from './types';
+import { DestinationDepartureLocation, ErrorResponseBody } from './types';
 
 jest.mock('node-fetch');
 
@@ -31,7 +30,15 @@ describe('TmapApi', () => {
 
   describe('requestRouteDistances', () => {
     test('실패하는 테스트, 요청 후 에러 발생 시 TmapApiError를 던짐 ', async () => {
-      const error = new Error('Fetch failed');
+      const error: ErrorResponseBody = {
+        error: {
+          id: 'id',
+          category: 'map',
+          code: '500',
+          message: 'internal server error',
+        },
+      };
+
       (fetch as jest.MockedFunction<typeof fetch>).mockRejectedValueOnce(error);
 
       const mockLocation = mock<DestinationDepartureLocation>({

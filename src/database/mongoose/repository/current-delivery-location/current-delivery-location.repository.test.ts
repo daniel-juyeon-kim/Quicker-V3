@@ -1,7 +1,7 @@
 import { expect } from '@jest/globals';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotExistDataException } from '@src/database/type-orm';
+import { NotExistDataException } from '@src/core/exception';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
 import {
@@ -41,7 +41,7 @@ describe('CurrentDeliverLocationRepository', () => {
     await testModule.close();
   });
 
-  describe('saveDeliveryPersonLocation()', () => {
+  describe('saveDeliveryPersonLocation', () => {
     afterEach(async () => {
       await model.deleteMany();
     });
@@ -83,7 +83,7 @@ describe('CurrentDeliverLocationRepository', () => {
     });
   });
 
-  describe('findByWalletAddress()', () => {
+  describe('findByWalletAddress', () => {
     beforeEach(async () => {
       await model.create({
         _id: 1,
@@ -106,9 +106,7 @@ describe('CurrentDeliverLocationRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 값 입력', async () => {
       const orderId = 99;
-      const error = new NotExistDataException(
-        `${orderId}에 대한 데이터가 존재하지 않습니다.`,
-      );
+      const error = new NotExistDataException('orderId', orderId);
 
       await expect(
         repository.findCurrentLocationByOrderId(orderId),

@@ -1,72 +1,114 @@
-import { TestBed } from '@automock/jest';
-import {
-  ArgumentsHost,
-  ConflictException,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
-import { UnknownDataBaseException } from '@src/core/module';
+import { ArgumentsHost, HttpStatus, LoggerService } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { CoreToken, LoggerToken } from '@src/core/constant';
+import { DataBaseExceptionMessage } from '@src/core/constant/exception-message/database.enum';
 import {
   BusinessRuleConflictDataException,
   DuplicatedDataException,
   NotExistDataException,
-} from '@src/database';
-import { mock } from 'jest-mock-extended';
+} from '@src/core/exception';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import { ErrorMessageBot } from '@src/core/module';
+import { Response } from 'express';
+import { mock, mockDeep, mockReset } from 'jest-mock-extended';
+import { DatabaseExceptionHttpStatusMap } from './database-exception-http-status-map';
 import { DatabaseExceptionFilter } from './database-exception.filter';
 
 describe('DatabaseExceptionFilter', () => {
   let filter: DatabaseExceptionFilter;
-  const mockHost = mock<ArgumentsHost>();
+  const mockHost = mockDeep<ArgumentsHost>();
+  const mockResponse = mockDeep<Response>();
 
-  beforeEach(() => {
-    const { unit } = TestBed.create(DatabaseExceptionFilter).compile();
+  const logger = mock<LoggerService>();
+  const errorMessageBot = mock<ErrorMessageBot>();
 
-    filter = unit;
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        DatabaseExceptionFilter,
+        DatabaseExceptionHttpStatusMap,
+        {
+          provide: LoggerToken.UNKNOWN_DATABASE_EXCEPTION_LOGGER,
+          useValue: logger,
+        },
+        {
+          provide: CoreToken.ERROR_MESSAGE_BOT,
+          useValue: errorMessageBot,
+        },
+      ],
+    }).compile();
+
+    filter = module.get<DatabaseExceptionFilter>(DatabaseExceptionFilter);
+
+    mockReset(mockHost);
+    mockReset(mockResponse);
+
+    mockHost.switchToHttp.mockReturnValue({
+      getResponse: () => mockResponse,
+    } as any);
+
+    mockResponse.status.mockReturnThis();
+    mockResponse.json.mockReturnThis();
   });
 
   describe('catch', () => {
     test('DuplicatedDataException 처리', async () => {
-      const exception = new DuplicatedDataException(
-        '중복된 데이터가 존재합니다.',
-      );
+      const exception = new DuplicatedDataException();
 
-      expect(() => filter.catch(exception, mockHost))
-        .toThrow(ConflictException)
-        .toThrow(exception.message)
-        .not.toThrow(NotFoundException);
+      await filter.catch(exception, mockHost);
+
+      const response = mockHost.switchToHttp().getResponse<Response>();
+
+      expect(response.status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+      expect(response.json).toHaveBeenCalledWith({
+        cause: DataBaseExceptionMessage.DuplicatedDataException,
+      });
     });
 
     test('NotExistDataException 처리', async () => {
-      const exception = new NotExistDataException(
-        '데이터가 존재하지 않습니다.',
-      );
+      const exception = new NotExistDataException();
 
-      expect(() => filter.catch(exception, mockHost))
-        .toThrow(NotFoundException)
-        .toThrow(exception.message)
-        .not.toThrow(UnprocessableEntityException);
+      await filter.catch(exception, mockHost);
+
+      const response = mockHost.switchToHttp().getResponse<Response>();
+
+      expect(response.status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
+      expect(response.json).toHaveBeenCalledWith({
+        cause: DataBaseExceptionMessage.NotExistDataException,
+      });
     });
 
     test('BusinessRuleConflictDataException 처리', async () => {
-      const exception = new BusinessRuleConflictDataException(
-        '비지니스 규칙에 어긋나는 요청',
-      );
+      const exception = new BusinessRuleConflictDataException();
 
-      expect(() => filter.catch(exception, mockHost))
-        .toThrow(UnprocessableEntityException)
-        .toThrow(exception.message)
-        .not.toThrow(NotFoundException);
+      await filter.catch(exception, mockHost);
+
+      const response = mockHost.switchToHttp().getResponse<Response>();
+
+      expect(response.status).toHaveBeenCalledWith(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+      expect(response.json).toHaveBeenCalledWith({
+        cause: DataBaseExceptionMessage.BusinessRuleConflictDataException,
+      });
     });
 
     test('UnknownDataBaseException 처리', async () => {
-      const exception = new UnknownDataBaseException(
-        '알 수 없는 데이터 베이스 에러',
-      );
+      const exception = new UnknownDataBaseException(new Error());
 
-      expect(() => filter.catch(exception, mockHost))
-        .not.toThrow(UnprocessableEntityException)
-        .not.toThrow(NotFoundException)
-        .not.toThrow(ConflictException);
+      await filter.catch(exception, mockHost);
+
+      const response = mockHost.switchToHttp().getResponse<Response>();
+
+      expect(response.status).toHaveBeenCalledWith(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+      expect(response.json).toHaveBeenCalledWith({
+        cause: DataBaseExceptionMessage.UnknownDataBaseException,
+      });
+
+      expect(logger.log).toHaveBeenCalledWith(exception);
+      expect(errorMessageBot.sendMessage).toHaveBeenCalledTimes(1);
     });
   });
 });

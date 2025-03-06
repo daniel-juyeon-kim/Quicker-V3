@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { tmapApiConfig } from '@src/core/config/configs';
+import { TmapApiException } from '@src/core/exception';
 import { isFulfilled, isNull, isZero, validateResponse } from '@src/core/util';
 import fetch from 'node-fetch';
-import { TmapApiException } from '../../exception/tmap-api.exception';
 import { Distance } from './distance';
 import {
   DestinationDepartureLocation,
+  ErrorResponseBody,
   RequestBody,
   ResponseBody,
 } from './types';
@@ -69,7 +70,8 @@ export class TmapApi {
 
       return this.toKilometers(totalDistance);
     } catch (e) {
-      throw new TmapApiException(e);
+      const error: ErrorResponseBody = e;
+      throw new TmapApiException(error);
     }
   }
 

@@ -1,23 +1,37 @@
-import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
-import { CustomException } from '@src/core/module/exception/custom.exception';
-import { DatabaseExceptionFilter } from '../database-exception/database-exception.filter';
-import { ExternalApiExceptionFilter } from '../external-api-exception/external-api-exception.filter';
-import { UnknownExceptionFilter } from '../unknown-exception/unknown-exception.filter';
+import {
+  ArgumentsHost,
+  Catch,
+  HttpStatus,
+  Inject,
+  LoggerService,
+} from '@nestjs/common';
+import { CoreToken, LoggerToken } from '@src/core/constant';
+import { CustomException } from '@src/core/exception/custom.exception';
+import { ErrorMessageBot } from '@src/core/module';
+import { Response } from 'express';
+import { AbstractExceptionFilter } from '../abstract/abstract-exception.filter';
 
 @Catch()
-export class GlobalExceptionFilter implements ExceptionFilter<CustomException> {
+export class GlobalExceptionFilter extends AbstractExceptionFilter<CustomException> {
   constructor(
-    private readonly databaseExceptionFilter: DatabaseExceptionFilter,
-    private readonly unknownExceptionFilter: UnknownExceptionFilter,
-    private readonly externalApiExceptionFilter: ExternalApiExceptionFilter,
-  ) {}
+    @Inject(CoreToken.ERROR_MESSAGE_BOT)
+    protected errorMessageBot: ErrorMessageBot,
+    @Inject(LoggerToken.GLOBAL_EXCEPTION_LOGGER)
+    private logger: LoggerService,
+  ) {
+    super();
+  }
 
   async catch(exception: CustomException, host: ArgumentsHost) {
-    // 1. 데이터 베이스 계층 에러
-    this.databaseExceptionFilter.catch(exception, host);
-    // 2. 외부 api 에러 확인
-    await this.externalApiExceptionFilter.catch(exception, host);
-    // 3. 알 수 없는 에러
-    await this.unknownExceptionFilter.catch(exception, host);
+    const ctx = host.switchToHttp();
+    const res = ctx.getResponse<Response>();
+    const responseBody = exception.createResponseBody();
+
+    this.logger.log(exception);
+
+    const date = new Date();
+    await this.sendErrorMessageBySlack({ date, exception });
+
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(responseBody);
   }
 }

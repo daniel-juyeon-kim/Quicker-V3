@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UnknownDataBaseException } from '@src/core/module';
+import { NotExistDataException } from '@src/core/exception';
+import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import { OrderDeliveryPersonLocationDto } from '@src/router/order-delivery-person/dto/order-delivery-person-location.dto';
 import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
-import { NotExistDataException } from '../../../type-orm';
 import {
   CurrentDeliveryLocation,
   Location,
@@ -11,7 +12,6 @@ import {
 import { Transactional } from '../../util/transactional.decorator';
 import { MongoRepository } from '../abstract.repository';
 import { ICurrentDeliveryLocationRepository } from './current-delivery-location.repository.interface';
-import { OrderDeliveryPersonLocationDto } from '@src/router/order-delivery-person/dto/order-delivery-person-location.dto';
 
 @Injectable()
 export class CurrentDeliveryLocationRepository
@@ -54,9 +54,7 @@ export class CurrentDeliveryLocationRepository
       );
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException(
-          `${orderId}에 대한 데이터가 존재하지 않습니다.`,
-        );
+        throw new NotExistDataException('orderId', orderId);
       }
       throw new UnknownDataBaseException(error);
     }
