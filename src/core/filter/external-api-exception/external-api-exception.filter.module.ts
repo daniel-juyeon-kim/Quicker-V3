@@ -1,16 +1,36 @@
-import { Module } from '@nestjs/common';
-import { ErrorMessageBotExceptionFilter } from './error-message-bot-exception/error-message-bot-exception.filter';
-import { ExternalApiExceptionFilter } from './external-api-exception.filter';
-import { SmsApiExceptionFilter } from './sms-api-exception/sms-api-exception.filter';
-import { TmapApiExceptionFilter } from './tmap-api-exception/tmap-api-exception.filter';
+import { LoggerService, Module } from '@nestjs/common';
+import { LoggerToken } from '@src/core/constant';
+import {
+  ErrorMessageBotException,
+  ExternalApiException,
+  SmsApiException,
+  TmapApiException,
+} from '@src/core/exception';
+import { ExternalApiExceptionLoggerMap } from './external-api-exception-logger-map';
 
 @Module({
   providers: [
-    ExternalApiExceptionFilter,
-    ErrorMessageBotExceptionFilter,
-    SmsApiExceptionFilter,
-    TmapApiExceptionFilter,
+    ExternalApiExceptionLoggerMap,
+    {
+      provide: Map,
+      useFactory: (
+        errorMessageBotExceptionLogger: LoggerService,
+        smsApiExceptionLogger: LoggerService,
+        tmapApiExceptionLogger: LoggerService,
+      ) => {
+        return new Map<typeof ExternalApiException, LoggerService>([
+          [ErrorMessageBotException, errorMessageBotExceptionLogger],
+          [SmsApiException, smsApiExceptionLogger],
+          [TmapApiException, tmapApiExceptionLogger],
+        ]);
+      },
+      inject: [
+        LoggerToken.ERROR_MESSAGE_BOT_EXCEPTION_LOGGER,
+        LoggerToken.SMS_API_EXCEPTION_LOGGER,
+        LoggerToken.TMAP_API_EXCEPTION_LOGGER,
+      ],
+    },
   ],
-  exports: [ExternalApiExceptionFilter],
+  exports: [ExternalApiExceptionLoggerMap],
 })
 export class ExternalApiExceptionFilterModule {}

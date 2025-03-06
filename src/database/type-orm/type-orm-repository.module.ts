@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from '@src/core/config/configs';
 import { ENTITY_MANAGER_KEY } from '@src/core/constant/cls';
-import { RepositoryToken } from '@src/core/constant/repository';
+import { RepositoryToken } from '@src/core/constant/token/repository';
 import { ClsModule } from 'nestjs-cls';
 import { EntityManager } from 'typeorm';
 import {

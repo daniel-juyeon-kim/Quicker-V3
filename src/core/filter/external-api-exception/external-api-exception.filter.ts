@@ -1,32 +1,45 @@
+import { ArgumentsHost, Catch, HttpStatus, Inject } from '@nestjs/common';
+import { CoreToken } from '@src/core/constant';
 import {
-  ArgumentsHost,
-  BadGatewayException,
-  Catch,
-  ExceptionFilter,
-} from '@nestjs/common';
-import { ErrorMessageBotExceptionFilter } from './error-message-bot-exception/error-message-bot-exception.filter';
-import { SmsApiExceptionFilter } from './sms-api-exception/sms-api-exception.filter';
-import { TmapApiExceptionFilter } from './tmap-api-exception/tmap-api-exception.filter';
-import { ExternalApiException } from '@src/core/exception';
-import { CustomException } from '@src/core/exception/custom.exception';
+  ErrorMessageBotException,
+  ExternalApiException,
+} from '@src/core/exception';
+import { ErrorMessageBot } from '@src/core/module';
+import { Response } from 'express';
+import { AbstractExceptionFilter } from '../abstract/abstract-exception.filter';
+import { ExternalApiExceptionLoggerMap } from './external-api-exception-logger-map';
 
-@Catch()
-export class ExternalApiExceptionFilter
-  implements ExceptionFilter<CustomException>
-{
+@Catch(ExternalApiException)
+export class ExternalApiExceptionFilter extends AbstractExceptionFilter<ExternalApiException> {
   constructor(
-    private readonly errorMessageBotExceptionFilter: ErrorMessageBotExceptionFilter,
-    private readonly smsApiExceptionFilter: SmsApiExceptionFilter,
-    private readonly tmapApiExceptionFilter: TmapApiExceptionFilter,
-  ) {}
+    @Inject(CoreToken.ERROR_MESSAGE_BOT)
+    protected readonly errorMessageBot: ErrorMessageBot,
+    private readonly loggerMap: ExternalApiExceptionLoggerMap,
+  ) {
+    super();
+  }
 
-  async catch(exception: CustomException, host: ArgumentsHost) {
-    if (exception instanceof ExternalApiException) {
-      this.errorMessageBotExceptionFilter.catch(exception, host);
-      await this.smsApiExceptionFilter.catch(exception, host);
-      await this.tmapApiExceptionFilter.catch(exception, host);
+  async catch(exception: ExternalApiException, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const res = ctx.getResponse<Response>();
+    const responseBody = exception.createResponseBody();
 
-      throw new BadGatewayException(exception.message);
+    await this.handleExternalApiException(exception);
+
+    res.status(HttpStatus.BAD_GATEWAY).json(responseBody);
+  }
+
+  private async handleExternalApiException(exception: ExternalApiException) {
+    const logger = this.loggerMap.getLogger(exception);
+    logger.log(exception);
+
+    if (!this.isErrorMessageBotException(exception)) {
+      const date = new Date();
+      await this.sendErrorMessageBySlack({ exception, date });
     }
+  }
+
+  private isErrorMessageBotException(exception: ExternalApiException) {
+    return exception instanceof ErrorMessageBotException;
   }
 }
