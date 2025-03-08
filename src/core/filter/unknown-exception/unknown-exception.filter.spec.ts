@@ -5,58 +5,58 @@ import { CoreToken } from '@src/core/constant';
 import { ExternalApiExceptionMessage } from '@src/core/constant/exception-message/external-api.enum';
 import {
   ErrorMessageBotException,
-  ExternalApiException,
   SmsApiException,
   TmapApiException,
+  UnknownException,
 } from '@src/core/exception';
 import { ErrorMessageBot, ErrorResponseBody } from '@src/core/module';
 import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
 import { Response } from 'express';
 import { mock, mockDeep, mockReset } from 'jest-mock-extended';
-import { ExternalApiExceptionLoggerMap } from './external-api-exception-logger-map';
-import { ExternalApiExceptionFilter } from './external-api-exception.filter';
+import { UnknownExceptionLoggerMap } from './unknown-exception-logger-map';
+import { UnknownExceptionFilter } from './unknown-exception.filter';
 
-describe('ExternalApiExceptionFilter', () => {
-  let filter: ExternalApiExceptionFilter;
+describe('UnknownExceptionFilter', () => {
+  let filter: UnknownExceptionFilter;
   const mockHost = mock<ArgumentsHost>();
   const mockResponse = mockDeep<Response>();
 
   const errorMessageBot = mock<ErrorMessageBot>();
-  const externalApiExceptionLoggerMap = mock<ExternalApiExceptionLoggerMap>();
+  const unknownExceptionLoggerMap = mock<UnknownExceptionLoggerMap>();
   const mockLogger = mock<LoggerService>();
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
-        ExternalApiExceptionFilter,
+        UnknownExceptionFilter,
         { provide: CoreToken.ERROR_MESSAGE_BOT, useValue: errorMessageBot },
         {
-          provide: ExternalApiExceptionLoggerMap,
-          useValue: externalApiExceptionLoggerMap,
+          provide: UnknownExceptionLoggerMap,
+          useValue: unknownExceptionLoggerMap,
         },
       ],
     }).compile();
 
-    filter = module.get(ExternalApiExceptionFilter);
+    filter = module.get(UnknownExceptionFilter);
 
     mockReset(mockHost);
     mockReset(mockResponse);
     mockReset(errorMessageBot);
-    mockReset(externalApiExceptionLoggerMap);
+    mockReset(unknownExceptionLoggerMap);
     mockReset(mockLogger);
 
     mockHost.switchToHttp.mockReturnValue({
       getResponse: () => mockResponse,
     } as any);
 
-    externalApiExceptionLoggerMap.getLogger.mockReturnValue(mockLogger);
+    unknownExceptionLoggerMap.getLogger.mockReturnValue(mockLogger);
 
     mockResponse.status.mockReturnThis();
     mockResponse.json.mockReturnThis();
   });
 
   describe('catch', () => {
-    test('통과하는 테스트, ErrorMessageBotError', async () => {
+    test('통과: ErrorMessageBotError', async () => {
       const error = {} as ChatPostMessageResponse;
       const exception = new ErrorMessageBotException(error);
 
@@ -64,11 +64,12 @@ describe('ExternalApiExceptionFilter', () => {
 
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockResponse.json).toHaveBeenCalledWith({
-        cause: ExternalApiExceptionMessage.ErrorMessageBotException,
+        message: ExternalApiExceptionMessage.ErrorMessageBotException,
+        statusCode: HttpStatus.BAD_GATEWAY,
       });
     });
 
-    test('통과하는 테스트, TmapApiError', async () => {
+    test('통과: TmapApiError', async () => {
       const response = {} as ErrorResponseBody;
       const exception = new TmapApiException(response);
 
@@ -76,11 +77,12 @@ describe('ExternalApiExceptionFilter', () => {
 
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockResponse.json).toHaveBeenCalledWith({
-        cause: ExternalApiExceptionMessage.TmapApiException,
+        message: ExternalApiExceptionMessage.TmapApiException,
+        statusCode: HttpStatus.BAD_GATEWAY,
       });
     });
 
-    test('통과하는 테스트, SmsApiError', async () => {
+    test('통과: SmsApiError', async () => {
       const response = {} as NaverSmsApiResponse;
       const exception = new SmsApiException(response);
 
@@ -88,20 +90,24 @@ describe('ExternalApiExceptionFilter', () => {
 
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockResponse.json).toHaveBeenCalledWith({
-        cause: ExternalApiExceptionMessage.SmsApiException,
+        message: ExternalApiExceptionMessage.SmsApiException,
+        statusCode: HttpStatus.BAD_GATEWAY,
       });
     });
-    test('실패하는 테스트, 처리되지 않은 예외', async () => {
-      class UnhandledException extends ExternalApiException {}
+    test('실패: 모르는 예외', async () => {
+      class UnhandledException extends UnknownException {}
 
       const response = {} as ErrorResponseBody;
-      const exception = new UnhandledException(response);
+      const message = 'error message';
+      const statusCode = HttpStatus.BAD_GATEWAY;
+      const exception = new UnhandledException(response, message, statusCode);
 
       await filter.catch(exception, mockHost);
 
-      expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
+      expect(mockResponse.status).toHaveBeenCalledWith(statusCode);
       expect(mockResponse.json).toHaveBeenCalledWith({
-        cause: ExternalApiExceptionMessage.ExternalApiException,
+        message,
+        statusCode,
       });
     });
   });

@@ -2,35 +2,39 @@ import { LoggerService, Module } from '@nestjs/common';
 import { LoggerToken } from '@src/core/constant';
 import {
   ErrorMessageBotException,
-  ExternalApiException,
   SmsApiException,
   TmapApiException,
+  UnknownDataBaseException,
+  UnknownException,
 } from '@src/core/exception';
-import { ExternalApiExceptionLoggerMap } from './external-api-exception-logger-map';
+import { UnknownExceptionLoggerMap } from './unknown-exception-logger-map';
 
 @Module({
   providers: [
-    ExternalApiExceptionLoggerMap,
+    UnknownExceptionLoggerMap,
     {
       provide: Map,
       useFactory: (
         errorMessageBotExceptionLogger: LoggerService,
         smsApiExceptionLogger: LoggerService,
         tmapApiExceptionLogger: LoggerService,
+        unknownDataBaseExceptionLogger: LoggerService,
       ) => {
-        return new Map<typeof ExternalApiException, LoggerService>([
+        return new Map<typeof UnknownException, LoggerService>([
           [ErrorMessageBotException, errorMessageBotExceptionLogger],
           [SmsApiException, smsApiExceptionLogger],
           [TmapApiException, tmapApiExceptionLogger],
+          [UnknownDataBaseException, unknownDataBaseExceptionLogger],
         ]);
       },
       inject: [
         LoggerToken.ERROR_MESSAGE_BOT_EXCEPTION_LOGGER,
         LoggerToken.SMS_API_EXCEPTION_LOGGER,
         LoggerToken.TMAP_API_EXCEPTION_LOGGER,
+        LoggerToken.UNKNOWN_DATABASE_EXCEPTION_LOGGER,
       ],
     },
   ],
-  exports: [ExternalApiExceptionLoggerMap],
+  exports: [UnknownExceptionLoggerMap],
 })
-export class ExternalApiExceptionFilterModule {}
+export class UnknownExceptionFilterModule {}

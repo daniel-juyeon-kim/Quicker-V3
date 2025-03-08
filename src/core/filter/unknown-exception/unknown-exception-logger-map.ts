@@ -1,19 +1,19 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { LoggerToken } from '@src/core/constant';
-import { ExternalApiException } from '@src/core/exception';
+import { UnknownException } from '@src/core/exception';
 import { isUndefined } from '@src/core/util';
 
 @Injectable()
-export class ExternalApiExceptionLoggerMap {
+export class UnknownExceptionLoggerMap {
   constructor(
     @Inject(LoggerToken.EXTERNAL_API_EXCEPTION_LOGGER)
     private readonly defaultLogger: LoggerService,
-    private readonly loggerMap: Map<typeof ExternalApiException, LoggerService>,
+    private readonly loggerMap: Map<typeof UnknownException, LoggerService>,
   ) {}
 
-  getLogger(exception: ExternalApiException) {
+  getLogger(exception: UnknownException) {
     const logger = this.loggerMap.get(
-      exception.constructor as typeof ExternalApiException,
+      exception.constructor as typeof UnknownException,
     );
 
     if (isUndefined(logger)) {

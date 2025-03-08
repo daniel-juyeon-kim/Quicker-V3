@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { NotExistDataException } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import {
+  NotExistDataException,
+  UnknownDataBaseException,
+} from '@src/core/exception';
 import { AbstractRepository } from '..';
 import { ReceiverEntity } from '../../entity';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
@@ -25,12 +27,12 @@ export class ReceiverRepository
         where: { id: orderId },
       });
 
-      this.validateNotNull(receiver);
+      this.validateNotNull(orderId, receiver);
 
       return receiver;
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('orderId', orderId);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }

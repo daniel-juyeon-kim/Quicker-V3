@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { NotExistDataException } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import {
+  NotExistDataException,
+  UnknownDataBaseException,
+} from '@src/core/exception';
 import { OrderEntity } from '@src/database/type-orm/entity';
 import { OrderLocationDto } from '@src/router/order-location/dto/order-location.dto';
 import { plainToInstance } from 'class-transformer';
@@ -30,12 +32,12 @@ export class LocationRepository
         },
       });
 
-      this.validateNotNull(destinationDeparture);
+      this.validateNotNull(orderId, destinationDeparture);
 
       return plainToInstance(OrderLocationDto, destinationDeparture);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('orderId', orderId);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }
@@ -53,10 +55,13 @@ export class LocationRepository
         },
       });
 
-      this.validateNotNull(orderLocations);
+      this.validateNotNull(orderIds, orderLocations);
 
       return plainToInstance(OrderLocationDto, orderLocations);
     } catch (error) {
+      if (error instanceof NotExistDataException) {
+        throw error;
+      }
       throw new UnknownDataBaseException(error);
     }
   }

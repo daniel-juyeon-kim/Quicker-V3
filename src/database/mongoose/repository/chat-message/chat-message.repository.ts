@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { NotExistDataException } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import {
+  NotExistDataException,
+  UnknownDataBaseException,
+} from '@src/core/exception';
 import { isNull, isUndefined } from '@src/core/util';
 import { ChatMessageDto } from '@src/router/chat/dto/chat-message.dto';
 import { plainToInstance } from 'class-transformer';
@@ -65,12 +67,12 @@ export class ChatMessageRepository
         .select({ _id: 0, id: 0, __v: 0 })
         .lean();
 
-      this.validateNull(messages);
+      this.validateNull(orderId, messages);
 
       return messages;
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('orderId', orderId);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }
@@ -82,18 +84,18 @@ export class ChatMessageRepository
         .findOne({ id: orderId }, '-messages._id')
         .lean();
 
-      this.validateNull(userMessages);
+      this.validateNull(orderId, userMessages);
 
       const recentMessage = userMessages.messages.pop();
 
       if (isUndefined(recentMessage)) {
-        throw new NotExistDataException('orderId', orderId);
+        throw new NotExistDataException(orderId);
       }
 
       return plainToInstance(ChatMessageDto, recentMessage);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('orderId', orderId);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }

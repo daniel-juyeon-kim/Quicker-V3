@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import {
   BusinessRuleConflictDataException,
   NotExistDataException,
+  UnknownDataBaseException,
 } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
-import { isNull } from '@src/core/util';
 import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
 import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
 import { plainToInstance } from 'class-transformer';
@@ -45,9 +44,7 @@ export class OrderRepository
         walletAddress,
       });
 
-      if (isNull(deliverPerson)) {
-        throw new NotExistDataException('walletAddress', walletAddress);
-      }
+      this.validateNotNull(walletAddress, deliverPerson);
 
       const order = await this.getManager().findOne(OrderEntity, {
         relations: { requester: true },
@@ -57,15 +54,10 @@ export class OrderRepository
         where: { id: orderId },
       });
 
-      if (isNull(order)) {
-        throw new NotExistDataException('orderId', orderId);
-      }
+      this.validateNotNull(walletAddress, order);
 
       if (deliverPerson.walletAddress === order.requester.walletAddress) {
-        throw new BusinessRuleConflictDataException(
-          'walletAddress',
-          walletAddress,
-        );
+        throw new BusinessRuleConflictDataException(walletAddress);
       }
 
       await this.getManager().update(
@@ -99,7 +91,7 @@ export class OrderRepository
         walletAddress,
       });
 
-      this.validateNotNull(requester);
+      this.validateNotNull(walletAddress, requester);
 
       const order = this.getManager().create(OrderEntity, {
         detail,
@@ -136,7 +128,7 @@ export class OrderRepository
       });
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('walletAddress', walletAddress);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }
@@ -157,12 +149,12 @@ export class OrderRepository
         },
       });
 
-      this.validateNotNull(requester);
+      this.validateNotNull(orderId, requester);
 
       return requester;
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('orderId', orderId);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }
@@ -178,7 +170,7 @@ export class OrderRepository
       });
 
       if (!isExistUser) {
-        throw new NotExistDataException();
+        throw new NotExistDataException(deliverPersonWalletAddress);
       }
 
       const matchableOrders = await this.getManager().find(OrderEntity, {
@@ -225,10 +217,7 @@ export class OrderRepository
       return plainToInstance(MatchableOrderDto, matchableOrders);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException(
-          'deliverPersonWalletAddress',
-          deliverPersonWalletAddress,
-        );
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }

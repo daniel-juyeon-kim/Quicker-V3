@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import {
   DuplicatedDataException,
   NotExistDataException,
+  UnknownDataBaseException,
 } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
 import { UserNameDto } from '@src/router/user/dto/user-name.dto';
 import { UserProfileImageIdDto } from '@src/router/user/dto/user-profile-image-id.dto';
 import { plainToInstance } from 'class-transformer';
@@ -41,7 +41,7 @@ export class UserRepository
       const userExists = await this.getManager().existsBy(UserEntity, { id });
 
       if (userExists) {
-        throw new DuplicatedDataException('id', id);
+        throw new DuplicatedDataException(id);
       }
 
       await this.getManager().insert(UserEntity, {
@@ -76,12 +76,12 @@ export class UserRepository
         select: { name: true },
       });
 
-      this.validateNotNull(name);
+      this.validateNotNull(walletAddress, name);
 
       return plainToInstance(UserNameDto, name);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('walletAddress', walletAddress);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }
@@ -95,12 +95,12 @@ export class UserRepository
         select: { profileImage: { imageId: true } },
       });
 
-      this.validateNotNull(user);
+      this.validateNotNull(walletAddress, user);
 
       return plainToInstance(UserProfileImageIdDto, user.profileImage);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('walletAddress', walletAddress);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }
@@ -119,7 +119,7 @@ export class UserRepository
         walletAddress,
       });
 
-      this.validateNotNull(user);
+      this.validateNotNull(walletAddress, user);
 
       await this.getManager().update(
         ProfileImageEntity,
@@ -128,7 +128,7 @@ export class UserRepository
       );
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('walletAddress', walletAddress);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }

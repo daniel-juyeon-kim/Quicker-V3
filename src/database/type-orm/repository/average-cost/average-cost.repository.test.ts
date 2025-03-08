@@ -70,7 +70,7 @@ describe('AverageCostRepository', () => {
 
     test('실패하는 테스트, 이미 데이터가 존재하면 DuplicatedDataException을 던짐', async () => {
       const createDate = new Date(1990, 4, 1);
-      const error = new DuplicatedDataException('date', createDate.toString());
+      const error = new DuplicatedDataException(createDate);
 
       // 초기 저장
       await cls.run(async () => {
@@ -149,10 +149,7 @@ describe('AverageCostRepository', () => {
     test('실패하는 테스트, 존재하지 않는 데이터를 조회하면 NotExistDataException을 던짐', async () => {
       const lastMonth = new Date(1993, 3, 1);
       const distanceUnit = '40KM';
-      const error = new NotExistDataException(
-        'lastMonth',
-        lastMonth.toString(),
-      );
+      const error = new NotExistDataException(lastMonth);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);

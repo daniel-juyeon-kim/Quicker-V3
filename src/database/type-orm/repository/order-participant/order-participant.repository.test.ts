@@ -183,7 +183,7 @@ describe('OrderParticipantRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 주문 아이디를 입력하면 NotExistDataException을 던짐', async () => {
       const orderId = 32;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);

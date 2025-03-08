@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   DuplicatedDataException,
   NotExistDataException,
+  UnknownDataBaseException,
 } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
 import { OrderCompleteImageDto } from '@src/router/order-image/dto/order-complete-image.dto';
 import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
@@ -37,7 +37,7 @@ export class CompleteDeliveryImageRepository
       await image.save();
     } catch (error) {
       if (this.isDuplicatedDataError(error)) {
-        throw new DuplicatedDataException('orderId', orderId);
+        throw new DuplicatedDataException(orderId);
       }
       throw new UnknownDataBaseException(error);
     }
@@ -49,7 +49,7 @@ export class CompleteDeliveryImageRepository
         .findById(orderId)
         .select(['bufferImage', '-_id']);
 
-      this.validateNull(image);
+      this.validateNull(orderId, image);
 
       const { bufferImage } = image.toJSON();
 
@@ -58,7 +58,7 @@ export class CompleteDeliveryImageRepository
       });
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('orderId', orderId);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }

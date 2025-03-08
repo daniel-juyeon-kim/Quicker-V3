@@ -1,20 +1,20 @@
-import { LoggerService } from '@nestjs/common';
+import { HttpStatus, LoggerService } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatPostMessageResponse } from '@slack/web-api';
 import { LoggerToken } from '@src/core/constant';
 import {
   ErrorMessageBotException,
-  ExternalApiException,
   SmsApiException,
   TmapApiException,
+  UnknownException,
 } from '@src/core/exception';
 import { ErrorResponseBody } from '@src/core/module';
 import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
 import { mock } from 'jest-mock-extended';
-import { ExternalApiExceptionLoggerMap } from './external-api-exception-logger-map';
+import { UnknownExceptionLoggerMap } from './unknown-exception-logger-map';
 
-describe('ExternalApiExceptionLoggerMap', () => {
-  let loggerMap: ExternalApiExceptionLoggerMap;
+describe('UnknownExceptionLoggerMap', () => {
+  let loggerMap: UnknownExceptionLoggerMap;
 
   const defaultLogger = mock<LoggerService>();
   const errorMessageBotExceptionLogger = mock<LoggerService>();
@@ -24,7 +24,7 @@ describe('ExternalApiExceptionLoggerMap', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ExternalApiExceptionLoggerMap,
+        UnknownExceptionLoggerMap,
         {
           provide: Map,
           useFactory: (
@@ -32,7 +32,7 @@ describe('ExternalApiExceptionLoggerMap', () => {
             smsApiExceptionLogger: LoggerService,
             tmapApiExceptionLogger: LoggerService,
           ) => {
-            return new Map<typeof ExternalApiException, LoggerService>([
+            return new Map<typeof UnknownException, LoggerService>([
               [ErrorMessageBotException, errorMessageBotExceptionLogger],
               [SmsApiException, smsApiExceptionLogger],
               [TmapApiException, tmapApiExceptionLogger],
@@ -63,17 +63,21 @@ describe('ExternalApiExceptionLoggerMap', () => {
       ],
     }).compile();
 
-    loggerMap = module.get<ExternalApiExceptionLoggerMap>(
-      ExternalApiExceptionLoggerMap,
+    loggerMap = module.get<UnknownExceptionLoggerMap>(
+      UnknownExceptionLoggerMap,
     );
   });
 
   describe('getLogger', () => {
     it('정의되지 않은 예외에 대해 기본 로거를 반환해야 한다', () => {
-      class UndefinedException extends ExternalApiException {}
+      class UndefinedException extends UnknownException {}
 
       const error = {} as ErrorResponseBody;
-      const exception = new UndefinedException(error);
+      const exception = new UndefinedException(
+        error,
+        '에러메시지',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
 
       const logger = loggerMap.getLogger(exception);
 

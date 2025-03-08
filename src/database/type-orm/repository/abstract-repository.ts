@@ -24,9 +24,12 @@ export abstract class AbstractRepository<T> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
-  protected validateNotNull<T>(data: T | null): asserts data is T {
+  protected validateNotNull<T>(
+    findOption: any,
+    data: T | null,
+  ): asserts data is T {
     if (isNull(data)) {
-      throw new NotExistDataException();
+      throw new NotExistDataException(findOption);
     }
   }
 }

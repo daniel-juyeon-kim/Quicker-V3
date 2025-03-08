@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { DuplicatedDataException } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import {
+  DuplicatedDataException,
+  UnknownDataBaseException,
+} from '@src/core/exception';
 import { Between } from 'typeorm';
 import { DeliveryPersonMatchedDateEntity } from '../../entity';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
@@ -24,7 +26,7 @@ export class DeliveryPersonMatchedDateRepository
       );
 
       if (matchedDateExists) {
-        throw new DuplicatedDataException('orderId', orderId);
+        throw new DuplicatedDataException(orderId);
       }
 
       const matchedDate = new DeliveryPersonMatchedDateEntity();

@@ -100,7 +100,7 @@ describe('ChatMessageRepository 테스트', () => {
       });
 
       test('실패하는 테스트, DB에 데이터가 없으면 NotExistDataError를 던짐', async () => {
-        const error = new NotExistDataException('orderId', NOT_EXIST_ORDER_ID);
+        const error = new NotExistDataException(NOT_EXIST_ORDER_ID);
 
         await expect(
           repository.findAllMessageByOrderId(NOT_EXIST_ORDER_ID),
@@ -122,7 +122,7 @@ describe('ChatMessageRepository 테스트', () => {
       });
 
       test('실패하는 테스트, DB에 데이터가 없으면 NotExistDataError를 던짐', async () => {
-        const error = new NotExistDataException('orderId', NOT_EXIST_ORDER_ID);
+        const error = new NotExistDataException(NOT_EXIST_ORDER_ID);
 
         await expect(
           repository.findRecentMessageByOrderId(NOT_EXIST_ORDER_ID),

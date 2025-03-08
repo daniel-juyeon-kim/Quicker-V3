@@ -1,10 +1,11 @@
+import { HttpStatus } from '@nestjs/common';
 import { Expose } from 'class-transformer';
 
 export class ResponseBody {
   @Expose()
-  public readonly target?: string;
+  readonly statusCode: HttpStatus;
   @Expose()
-  public readonly value?: string | number;
+  readonly message: string;
   @Expose()
-  public readonly cause: string;
+  readonly value?: string | number | Record<string, any> | Date;
 }

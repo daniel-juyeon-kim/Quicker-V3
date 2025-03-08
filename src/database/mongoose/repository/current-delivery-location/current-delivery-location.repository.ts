@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { NotExistDataException } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import {
+  NotExistDataException,
+  UnknownDataBaseException,
+} from '@src/core/exception';
 import { OrderDeliveryPersonLocationDto } from '@src/router/order-delivery-person/dto/order-delivery-person-location.dto';
 import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
@@ -46,7 +48,7 @@ export class CurrentDeliveryLocationRepository
         .select(['-_id', '__v', 'location.x', 'location.y'])
         .lean();
 
-      this.validateNull(deliveryPerson);
+      this.validateNull(orderId, deliveryPerson);
 
       return plainToInstance(
         OrderDeliveryPersonLocationDto,
@@ -54,7 +56,7 @@ export class CurrentDeliveryLocationRepository
       );
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('orderId', orderId);
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }

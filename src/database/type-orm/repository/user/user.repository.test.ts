@@ -106,7 +106,7 @@ describe('UserRepository', () => {
         contact: '연락처',
       };
       const birthDate = new Date(2000, 9, 12);
-      const error = new DuplicatedDataException('userId', userId);
+      const error = new DuplicatedDataException(userId);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -148,7 +148,7 @@ describe('UserRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 지갑주소를 입력하면 NotExistDataException을 던짐', async () => {
       const walletAddress = '0x23h298fhooweifhoi82938';
-      const error = new NotExistDataException('walletAddress', walletAddress);
+      const error = new NotExistDataException(walletAddress);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -184,7 +184,7 @@ describe('UserRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 지갑주소를 입력하면 NotExistDataException을 던짐', async () => {
       const walletAddress = '0x23h298fhooweifhoi82938';
-      const error = new NotExistDataException('walletAddress', walletAddress);
+      const error = new NotExistDataException(walletAddress);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -230,7 +230,7 @@ describe('UserRepository', () => {
         walletAddress,
         imageId: '100',
       };
-      const error = new NotExistDataException('walletAddress', walletAddress);
+      const error = new NotExistDataException(walletAddress);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);

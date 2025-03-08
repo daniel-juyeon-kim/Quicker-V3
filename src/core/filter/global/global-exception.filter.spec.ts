@@ -1,20 +1,27 @@
-import { ArgumentsHost, HttpStatus, LoggerService } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  LoggerService,
+} from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CoreToken, LoggerToken } from '@src/core/constant';
-import { CustomException } from '@src/core/exception/custom.exception';
 import { ErrorMessageBot } from '@src/core/module';
 import { Response } from 'express';
-import { mock, mockDeep, mockReset } from 'jest-mock-extended';
+import { mock, mockReset } from 'jest-mock-extended';
 import { GlobalExceptionFilter } from './global-exception.filter';
 
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
+
   const mockHost = mock<ArgumentsHost>();
-  const mockResponse = mockDeep<Response>();
+  const mockResponse = mock<Response>();
+  const mockHttpAdapterHost = mock<HttpAdapterHost>();
+  const mockHttpAdapterReply = jest.fn();
 
   const errorMessageBot = mock<ErrorMessageBot>();
   const mockLogger = mock<LoggerService>();
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -26,6 +33,10 @@ describe('GlobalExceptionFilter', () => {
         {
           provide: LoggerToken.GLOBAL_EXCEPTION_LOGGER,
           useValue: mockLogger,
+        },
+        {
+          provide: HttpAdapterHost,
+          useValue: mockHttpAdapterHost,
         },
       ],
     }).compile();
@@ -41,26 +52,30 @@ describe('GlobalExceptionFilter', () => {
       getResponse: () => mockResponse,
     } as any);
 
-    mockResponse.status.mockReturnThis();
-    mockResponse.json.mockReturnThis();
+    mockHttpAdapterHost.httpAdapter.isHeadersSent = () => false;
+    mockHttpAdapterHost.httpAdapter.reply = mockHttpAdapterReply;
   });
 
   describe('catch', () => {
-    test('공통 예외 필터 테스트', async () => {
-      class ExampleException extends CustomException {
-        public target?: string;
-        public value?: string | number;
-        public cause: string;
-      }
+    test('전역 예외 필터 테스트, HttpException를 상속한 예외를 잡으면 BaseExceptionFilter에서 처리된다.', async () => {
+      class ExampleException extends HttpException {}
 
-      const exception = new ExampleException();
+      const response = '응답 본문';
+      const statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+
+      const exception = new ExampleException(response, statusCode);
 
       await filter.catch(exception, mockHost);
 
-      expect(mockResponse.status).toHaveBeenCalledWith(
-        HttpStatus.INTERNAL_SERVER_ERROR,
+      expect(mockResponse.status).toHaveBeenCalledTimes(0);
+      expect(mockResponse.json).toHaveBeenCalledTimes(0);
+
+      // BaseExceptionFilter에서 처리
+      expect(mockHttpAdapterReply).toHaveBeenCalledWith(
+        undefined,
+        { message: '응답 본문', statusCode: 500 },
+        500,
       );
-      expect(mockResponse.json).toHaveBeenCalled();
     });
   });
 });

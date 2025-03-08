@@ -1,13 +1,18 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DebugResponseBody } from './debug-response-body';
 import { ResponseBody } from './response-body';
 
-export abstract class CustomException extends Error {
-  public abstract readonly target?: string;
-  public abstract readonly value?: string | number;
-  public abstract readonly cause: string;
+export abstract class CustomException extends HttpException {
+  constructor(
+    readonly value: string | number | Record<string, any> | Date,
+    readonly message: string,
+    readonly statusCode: HttpStatus,
+  ) {
+    super(message, statusCode);
+  }
 
-  createResponseBody(): ResponseBody {
+  getResponse(): ResponseBody {
     return plainToInstance(ResponseBody, this, {
       excludeExtraneousValues: true,
       exposeUnsetFields: false,
