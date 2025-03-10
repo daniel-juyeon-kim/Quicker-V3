@@ -7,7 +7,7 @@ export abstract class AbstractExceptionFilter<
 > extends BaseExceptionFilter<T> {
   protected abstract readonly errorMessageBot: ErrorMessageBot;
 
-  protected async sendErrorMessageBySlack(exception: CustomException) {
+  protected async sendErrorMessageBySlack(exception: CustomException<unknown>) {
     const date = new Date();
 
     const errorMessage = new ErrorMessage({ date, exception });

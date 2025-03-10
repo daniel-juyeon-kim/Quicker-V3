@@ -17,8 +17,8 @@ import {
   SmsApiException,
   TmapApiException,
   UnknownDataBaseException,
-  UnknownException,
 } from '../exception';
+import { UnknownExceptionConstructor } from '../exception/unknown/unknown-exception-constructor.interface';
 import { ErrorMessageBot } from '../module';
 import { NaverSmsApiResponse } from '../module/external-api/sms-api/naver-sms-api.response';
 import { GlobalExceptionFilter } from './global/global-exception.filter';
@@ -69,7 +69,7 @@ describe('Filter E2E, 여러개의 전역 필터가 등록되어 있다면 뒤�
         tmapApiExceptionLogger: LoggerService,
         unknownDataBaseExceptionLogger: LoggerService,
       ) => {
-        return new Map<typeof UnknownException, LoggerService>([
+        return new Map<UnknownExceptionConstructor, LoggerService>([
           [ErrorMessageBotException, errorMessageBotExceptionLogger],
           [SmsApiException, smsApiExceptionLogger],
           [TmapApiException, tmapApiExceptionLogger],

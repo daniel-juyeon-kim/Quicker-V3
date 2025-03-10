@@ -1,12 +1,7 @@
-import {
-  ArgumentMetadata,
-  BadRequestException,
-  Injectable,
-  PipeTransform,
-} from '@nestjs/common';
+import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
-import { RequestDataValidationError } from './request-data-validation-error';
+import { RequestDataValidationException } from '../../exception/request-data-validation-exception/request-data-validation-exception';
 
 @Injectable()
 export class RequestDataValidationPipe implements PipeTransform {
@@ -19,11 +14,10 @@ export class RequestDataValidationPipe implements PipeTransform {
     const errors: ValidationError[] = await validate(object);
 
     if (errors.length > 0) {
-      const customError = new RequestDataValidationError({
+      throw new RequestDataValidationException({
         validationErrors: errors,
         paramType: type,
       });
-      throw new BadRequestException(customError);
     }
 
     return object;

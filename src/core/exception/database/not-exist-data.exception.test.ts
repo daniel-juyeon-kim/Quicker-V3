@@ -9,9 +9,11 @@ describe('NotExistDataException', () => {
       const exception = new NotExistDataException(value);
 
       expect(exception.getResponse()).toEqual({
-        statusCode: HttpStatus.NOT_FOUND,
+        code: HttpStatus.NOT_FOUND,
         message: DataBaseExceptionMessage.NotExistDataException,
-        value: value,
+        error: {
+          value,
+        },
       });
     });
   });

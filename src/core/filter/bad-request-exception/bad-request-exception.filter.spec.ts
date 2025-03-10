@@ -1,7 +1,6 @@
-import { ArgumentsHost, BadRequestException, HttpStatus } from '@nestjs/common';
+import { ArgumentsHost, HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { RequestDataValidationError } from '@src/core/pipe/request-data-validation/request-data-validation-error';
-import { ValidationErrorElement } from '@src/core/pipe/request-data-validation/validation-error-element';
+import { RequestDataValidationException } from '@src/core/exception/request-data-validation-exception/request-data-validation-exception';
 import { Response } from 'express';
 import { mock, mockReset } from 'jest-mock-extended';
 import { BadRequestExceptionFilter } from './bad-request-exception.filter';
@@ -31,14 +30,14 @@ describe('BadRequestExceptionFilter', () => {
   });
 
   it('BadRequestException을 처리하고 유효성 검사 오류 응답을 반환해야 한다', async () => {
-    const validationErrorElement = new ValidationErrorElement({
+    const expectValidationError = {
       property: 'property',
       value: 'value',
       message: ['testMessage'],
       paramType: 'body',
-    });
+    };
 
-    const requestDataValidationError = new RequestDataValidationError({
+    const requestDataValidationError = new RequestDataValidationException({
       validationErrors: [
         {
           property: 'property',
@@ -51,13 +50,13 @@ describe('BadRequestExceptionFilter', () => {
       paramType: 'body',
     });
 
-    const badRequestException = new BadRequestException(
-      requestDataValidationError,
-    );
-
-    filter.catch(badRequestException, mockHost);
+    filter.catch(requestDataValidationError, mockHost);
 
     expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
-    expect(mockResponse.json).toHaveBeenCalledWith([validationErrorElement]);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      code: HttpStatus.BAD_REQUEST,
+      message: HttpStatus[HttpStatus.BAD_REQUEST],
+      error: [expectValidationError],
+    });
   });
 });

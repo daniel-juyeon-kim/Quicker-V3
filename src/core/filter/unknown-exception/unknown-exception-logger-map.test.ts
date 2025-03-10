@@ -3,10 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ChatPostMessageResponse } from '@slack/web-api';
 import { LoggerToken } from '@src/core/constant';
 import {
+  AbstractUnknownException,
   ErrorMessageBotException,
   SmsApiException,
   TmapApiException,
-  UnknownException,
 } from '@src/core/exception';
 import { ErrorResponseBody } from '@src/core/module';
 import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
@@ -32,7 +32,7 @@ describe('UnknownExceptionLoggerMap', () => {
             smsApiExceptionLogger: LoggerService,
             tmapApiExceptionLogger: LoggerService,
           ) => {
-            return new Map<typeof UnknownException, LoggerService>([
+            return new Map<typeof AbstractUnknownException, LoggerService>([
               [ErrorMessageBotException, errorMessageBotExceptionLogger],
               [SmsApiException, smsApiExceptionLogger],
               [TmapApiException, tmapApiExceptionLogger],
@@ -70,7 +70,7 @@ describe('UnknownExceptionLoggerMap', () => {
 
   describe('getLogger', () => {
     it('정의되지 않은 예외에 대해 기본 로거를 반환해야 한다', () => {
-      class UndefinedException extends UnknownException {}
+      class UndefinedException extends AbstractUnknownException {}
 
       const error = {} as ErrorResponseBody;
       const exception = new UndefinedException(

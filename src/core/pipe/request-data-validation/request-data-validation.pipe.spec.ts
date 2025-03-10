@@ -1,9 +1,12 @@
-import { ArgumentMetadata, BadRequestException } from '@nestjs/common';
+import {
+  ArgumentMetadata,
+  BadRequestException,
+  HttpStatus,
+} from '@nestjs/common';
 import { Type } from 'class-transformer';
 import { IsDate, IsString } from 'class-validator';
-import { RequestDataValidationError } from './request-data-validation-error';
+import { RequestDataValidationException } from '../../exception/request-data-validation-exception/request-data-validation-exception';
 import { RequestDataValidationPipe } from './request-data-validation.pipe';
-import { ValidationErrorElement } from './validation-error-element';
 
 class TestDto {
   @IsString()
@@ -60,29 +63,31 @@ describe('RequestDataValidationPipe', () => {
         metatype: TestDto,
       };
 
-      const expectResponse = [
-        new ValidationErrorElement({
-          property: 'date',
-          value: new Date(NaN),
-          message: ['date must be a Date instance'],
-          paramType: 'body',
-        }),
-      ];
+      const expectResponse = {
+        code: HttpStatus.BAD_REQUEST,
+        message: HttpStatus[HttpStatus.BAD_REQUEST],
+        error: [
+          {
+            paramType: 'body',
+            property: 'date',
+            value: null,
+            message: ['date must be a Date instance'],
+          },
+        ],
+      };
 
       try {
         await pipe.transform(value, metadata);
-      } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.getResponse()).toBeInstanceOf(RequestDataValidationError);
+      } catch (e) {
+        const error = e as RequestDataValidationException;
 
-        const requestDataValidationError =
-          error.getResponse() as RequestDataValidationError;
+        expect(error)
+          .toBeInstanceOf(BadRequestException)
+          .toBeInstanceOf(RequestDataValidationException);
 
-        expect(
-          JSON.stringify(
-            requestDataValidationError.createValidationErrorResponseBody(),
-          ),
-        ).toEqual(JSON.stringify(expectResponse));
+        const response = JSON.parse(JSON.stringify(error.getResponse()));
+
+        expect(response).toMatchObject(expectResponse);
       }
     });
   });

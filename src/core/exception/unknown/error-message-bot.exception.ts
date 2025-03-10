@@ -1,15 +1,17 @@
 import { HttpStatus } from '@nestjs/common';
 import { ChatPostMessageResponse } from '@slack/web-api';
 import { ExternalApiExceptionMessage } from '@src/core/constant/exception-message/external-api.enum';
-import { UnknownException } from './unknown.exception';
+import { AbstractUnknownException } from './unknown.exception';
 
-export class ErrorMessageBotException extends UnknownException {
-  private static readonly statusCode: HttpStatus = HttpStatus.BAD_GATEWAY;
+export class ErrorMessageBotException extends AbstractUnknownException<ChatPostMessageResponse> {
+  private static readonly code: HttpStatus = HttpStatus.BAD_GATEWAY;
+  protected readonly error: ChatPostMessageResponse;
 
   constructor(
     error: ChatPostMessageResponse,
     message: string = ExternalApiExceptionMessage.ErrorMessageBotException,
   ) {
-    super(error, message, ErrorMessageBotException.statusCode);
+    super(message, ErrorMessageBotException.code);
+    this.error = error;
   }
 }

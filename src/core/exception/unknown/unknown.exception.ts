@@ -1,31 +1,10 @@
-import { HttpStatus } from '@nestjs/common';
-import { ChatPostMessageResponse } from '@slack/web-api';
-import { ErrorResponseBody } from '@src/core/module';
-import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
-import { plainToInstance } from 'class-transformer';
+import { ErrorResponseBody } from '@src/core/response';
 import { CustomException } from '../custom.exception';
-import { UnknownExceptionResponseBody } from './unknown-exception-response-body';
 
-export abstract class UnknownException extends CustomException {
-  private static readonly value: string =
-    HttpStatus[HttpStatus.INTERNAL_SERVER_ERROR];
+export abstract class AbstractUnknownException<T> extends CustomException<T> {
+  protected abstract readonly error: T;
 
-  constructor(
-    private readonly error:
-      | ChatPostMessageResponse
-      | NaverSmsApiResponse
-      | ErrorResponseBody
-      | Error,
-    message: string,
-    statusCode: HttpStatus,
-  ) {
-    super(UnknownException.value, message, statusCode);
-  }
-
-  getResponse(): UnknownExceptionResponseBody {
-    return plainToInstance(UnknownExceptionResponseBody, this, {
-      excludeExtraneousValues: true,
-      exposeUnsetFields: false,
-    });
+  getResponse(): ErrorResponseBody<undefined> {
+    return new ErrorResponseBody(this.getStatus(), this.message);
   }
 }

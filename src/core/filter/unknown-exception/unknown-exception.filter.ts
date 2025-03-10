@@ -1,16 +1,18 @@
 import { ArgumentsHost, Catch, Inject } from '@nestjs/common';
 import { CoreToken } from '@src/core/constant';
 import {
+  AbstractUnknownException,
   ErrorMessageBotException,
-  UnknownException,
 } from '@src/core/exception';
 import { ErrorMessageBot } from '@src/core/module';
 import { Response } from 'express';
 import { AbstractExceptionFilter } from '../abstract/abstract-exception.filter';
 import { UnknownExceptionLoggerMap } from './unknown-exception-logger-map';
 
-@Catch(UnknownException)
-export class UnknownExceptionFilter extends AbstractExceptionFilter<UnknownException> {
+@Catch(AbstractUnknownException)
+export class UnknownExceptionFilter extends AbstractExceptionFilter<
+  AbstractUnknownException<unknown>
+> {
   constructor(
     @Inject(CoreToken.ERROR_MESSAGE_BOT)
     protected readonly errorMessageBot: ErrorMessageBot,
@@ -19,7 +21,10 @@ export class UnknownExceptionFilter extends AbstractExceptionFilter<UnknownExcep
     super();
   }
 
-  async catch(exception: UnknownException, host: ArgumentsHost) {
+  async catch(
+    exception: AbstractUnknownException<unknown>,
+    host: ArgumentsHost,
+  ) {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
 
@@ -28,18 +33,29 @@ export class UnknownExceptionFilter extends AbstractExceptionFilter<UnknownExcep
     res.status(exception.getStatus()).json(exception.getResponse());
   }
 
-  private async handleExternalApiException(exception: UnknownException) {
-    const logger = this.loggerMap.getLogger(exception);
-    logger.log(exception);
+  private async handleExternalApiException(
+    exception: AbstractUnknownException<unknown>,
+  ) {
+    try {
+      const logger = this.loggerMap.getLogger(exception);
+      logger.log(exception);
 
-    if (this.isErrorMessageBotException(exception)) {
-      return;
+      if (this.isErrorMessageBotException(exception)) {
+        return;
+      }
+
+      await this.sendErrorMessageBySlack(exception);
+    } catch (e) {
+      const error = e as ErrorMessageBotException;
+
+      const logger = this.loggerMap.getLogger(error);
+      logger.log(exception);
     }
-
-    await this.sendErrorMessageBySlack(exception);
   }
 
-  private isErrorMessageBotException(exception: UnknownException) {
+  private isErrorMessageBotException(
+    exception: AbstractUnknownException<unknown>,
+  ) {
     return exception instanceof ErrorMessageBotException;
   }
 }

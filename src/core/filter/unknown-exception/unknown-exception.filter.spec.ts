@@ -4,10 +4,10 @@ import { ChatPostMessageResponse } from '@slack/web-api';
 import { CoreToken } from '@src/core/constant';
 import { ExternalApiExceptionMessage } from '@src/core/constant/exception-message/external-api.enum';
 import {
+  AbstractUnknownException,
   ErrorMessageBotException,
   SmsApiException,
   TmapApiException,
-  UnknownException,
 } from '@src/core/exception';
 import { ErrorMessageBot, ErrorResponseBody } from '@src/core/module';
 import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
@@ -65,7 +65,7 @@ describe('UnknownExceptionFilter', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockResponse.json).toHaveBeenCalledWith({
         message: ExternalApiExceptionMessage.ErrorMessageBotException,
-        statusCode: HttpStatus.BAD_GATEWAY,
+        code: HttpStatus.BAD_GATEWAY,
       });
     });
 
@@ -78,7 +78,7 @@ describe('UnknownExceptionFilter', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockResponse.json).toHaveBeenCalledWith({
         message: ExternalApiExceptionMessage.TmapApiException,
-        statusCode: HttpStatus.BAD_GATEWAY,
+        code: HttpStatus.BAD_GATEWAY,
       });
     });
 
@@ -91,23 +91,25 @@ describe('UnknownExceptionFilter', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockResponse.json).toHaveBeenCalledWith({
         message: ExternalApiExceptionMessage.SmsApiException,
-        statusCode: HttpStatus.BAD_GATEWAY,
+        code: HttpStatus.BAD_GATEWAY,
       });
     });
-    test('실패: 모르는 예외', async () => {
-      class UnhandledException extends UnknownException {}
 
-      const response = {} as ErrorResponseBody;
+    test('실패: 모르는 예외', async () => {
+      class UnhandledException extends AbstractUnknownException<unknown> {
+        protected error: unknown;
+      }
+
       const message = 'error message';
-      const statusCode = HttpStatus.BAD_GATEWAY;
-      const exception = new UnhandledException(response, message, statusCode);
+      const code = HttpStatus.BAD_GATEWAY;
+      const exception = new UnhandledException(message, code);
 
       await filter.catch(exception, mockHost);
 
-      expect(mockResponse.status).toHaveBeenCalledWith(statusCode);
+      expect(mockResponse.status).toHaveBeenCalledWith(code);
       expect(mockResponse.json).toHaveBeenCalledWith({
         message,
-        statusCode,
+        code,
       });
     });
   });

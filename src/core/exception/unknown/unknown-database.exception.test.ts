@@ -1,3 +1,4 @@
+import { HttpStatus } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import { UnknownDataBaseException } from './unknown-database.exception';
 
@@ -12,8 +13,8 @@ describe('UnknownDataBaseException', () => {
       const responseBody = instanceToPlain(exception.getResponse());
 
       expect(responseBody).toEqual({
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
         message: message,
-        statusCode: 500,
       });
     });
   });

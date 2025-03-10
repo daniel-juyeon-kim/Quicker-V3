@@ -1,15 +1,16 @@
 import { HttpStatus } from '@nestjs/common';
 import { DataBaseExceptionMessage } from '@src/core/constant/exception-message/database.enum';
-import { UnknownException } from './unknown.exception';
+import { AbstractUnknownException } from './unknown.exception';
 
-export class UnknownDataBaseException extends UnknownException {
-  private static readonly statusCode: HttpStatus =
-    HttpStatus.INTERNAL_SERVER_ERROR;
+export class UnknownDataBaseException extends AbstractUnknownException<Error> {
+  private static readonly code: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+  protected readonly error: Error;
 
   constructor(
     error: Error,
     message: string = DataBaseExceptionMessage.UnknownDataBaseException,
   ) {
-    super(error, message, UnknownDataBaseException.statusCode);
+    super(message, UnknownDataBaseException.code);
+    this.error = error;
   }
 }

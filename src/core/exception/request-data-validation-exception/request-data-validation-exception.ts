@@ -1,10 +1,18 @@
-import { Paramtype, ValidationError } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Paramtype,
+  ValidationError,
+} from '@nestjs/common';
+import { ErrorResponseBody } from '@src/core/response/error-response-body';
 import { isUndefined } from '@src/core/util';
-import { ValidationErrorElement } from './validation-error-element';
+import { ValidationErrorDetail } from './validation-error-detail';
 
-export class RequestDataValidationError {
+export class RequestDataValidationException extends BadRequestException {
   private readonly validationErrors: ValidationError[];
   private readonly paramType: Paramtype;
+  private readonly code: HttpStatus = this.getStatus();
+  public readonly message: string = HttpStatus[this.code];
 
   constructor({
     validationErrors,
@@ -13,28 +21,31 @@ export class RequestDataValidationError {
     validationErrors: ValidationError[];
     paramType: Paramtype;
   }) {
+    super();
     this.validationErrors = validationErrors;
     this.paramType = paramType;
   }
 
-  createValidationErrorResponseBody(): ValidationErrorElement[] {
-    const list: ValidationErrorElement[] = [];
+  getResponse(): ErrorResponseBody<ValidationErrorDetail[]> {
+    const errors: ValidationErrorDetail[] = [];
 
-    this.flatMapValidationError(list, this.validationErrors);
+    this.flatMapValidationError(errors, this.validationErrors);
 
-    return list;
+    return new ErrorResponseBody(this.code, this.message, errors);
   }
 
   private flatMapValidationError(
-    list: ValidationErrorElement[],
+    list: ValidationErrorDetail[],
     errors: ValidationError[],
   ) {
     errors.forEach(({ property, value, constraints, children }) => {
-      // 응답의 요소, 유효성 검사 에러
-      const error = this.createCustomValidationError({
+      const message = this.findAllConstraintMessage(constraints);
+
+      const error = new ValidationErrorDetail({
         property,
         value,
-        constraints,
+        message,
+        paramType: this.paramType,
       });
 
       list.push(error);
@@ -42,21 +53,6 @@ export class RequestDataValidationError {
       if (!this.isExistEmptyArray(children)) {
         this.flatMapValidationError(list, children);
       }
-    });
-  }
-
-  private createCustomValidationError({
-    property,
-    value,
-    constraints,
-  }: ValidationError): ValidationErrorElement {
-    const message = this.findAllConstraintMessage(constraints);
-
-    return new ValidationErrorElement({
-      property,
-      value,
-      message,
-      paramType: this.paramType,
     });
   }
 

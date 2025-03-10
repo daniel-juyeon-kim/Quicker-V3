@@ -1,6 +1,6 @@
 import { Paramtype } from '@nestjs/common';
 
-export class ValidationErrorElement {
+export class ValidationErrorDetail {
   private readonly property: string;
   private readonly value?: any | undefined;
   private readonly message?: string[] | undefined;
@@ -13,8 +13,8 @@ export class ValidationErrorElement {
     paramType,
   }: {
     property: string;
-    value: any;
-    message: string[];
+    value?: any | undefined;
+    message?: string[] | undefined;
     paramType: Paramtype;
   }) {
     this.property = property;
