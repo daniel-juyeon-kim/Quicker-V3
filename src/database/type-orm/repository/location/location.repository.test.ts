@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ENTITY_MANAGER_KEY } from '@src/core/constant';
-import { NotExistDataException } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import {
+  NotExistDataException,
+  UnknownDataBaseException,
+} from '@src/core/exception';
 import {
   BirthDateEntity,
   DepartureEntity,
@@ -183,7 +185,7 @@ describe('LocationRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 주문 아이디로 조회하면 NotExistDataException을 던짐', async () => {
       const orderId = 32;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);

@@ -4,9 +4,12 @@ import { mongo } from 'mongoose';
 export abstract class MongoRepository {
   private readonly ERROR_CODE_DUPLICATED_DATA = 11000;
 
-  protected validateNull<T>(data: T | null): asserts data is T {
-    if (isNull(data)) {
-      throw new NotExistDataException();
+  protected validateNull<T>(
+    findOption: any,
+    value: T | null,
+  ): asserts value is T {
+    if (isNull(value)) {
+      throw new NotExistDataException(findOption);
     }
   }
 

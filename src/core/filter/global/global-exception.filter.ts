@@ -1,18 +1,18 @@
 import {
   ArgumentsHost,
   Catch,
+  HttpException,
   HttpStatus,
   Inject,
   LoggerService,
 } from '@nestjs/common';
 import { CoreToken, LoggerToken } from '@src/core/constant';
-import { CustomException } from '@src/core/exception/custom.exception';
 import { ErrorMessageBot } from '@src/core/module';
 import { Response } from 'express';
 import { AbstractExceptionFilter } from '../abstract/abstract-exception.filter';
 
 @Catch()
-export class GlobalExceptionFilter extends AbstractExceptionFilter<CustomException> {
+export class GlobalExceptionFilter extends AbstractExceptionFilter<HttpException> {
   constructor(
     @Inject(CoreToken.ERROR_MESSAGE_BOT)
     protected errorMessageBot: ErrorMessageBot,
@@ -22,16 +22,18 @@ export class GlobalExceptionFilter extends AbstractExceptionFilter<CustomExcepti
     super();
   }
 
-  async catch(exception: CustomException, host: ArgumentsHost) {
+  async catch(exception: HttpException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
-    const responseBody = exception.createResponseBody();
+
+    if (exception instanceof HttpException) {
+      super.catch(exception, host);
+      return;
+    }
 
     this.logger.log(exception);
+    await this.sendErrorMessageBySlack(exception);
 
-    const date = new Date();
-    await this.sendErrorMessageBySlack({ date, exception });
-
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(responseBody);
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json();
   }
 }

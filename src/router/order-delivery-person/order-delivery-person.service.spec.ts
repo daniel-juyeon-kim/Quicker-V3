@@ -2,8 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '@slack/web-api/dist/types/response/AdminAppsRequestsListResponse';
 import { ENTITY_MANAGER_KEY, RepositoryToken } from '@src/core/constant';
-import { NotExistDataException, SmsApiException } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import {
+  NotExistDataException,
+  SmsApiException,
+  UnknownDataBaseException,
+} from '@src/core/exception';
 import { DeliveryUrlCreator, NaverSmsApi } from '@src/core/module';
 import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
 import {
@@ -93,7 +96,7 @@ describe('OrderDeliveryPersonService', () => {
 
     test('실패하는 테스트, NotExistDataError를 던짐 ', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
       currentDeliveryLocationRepository.findCurrentLocationByOrderId.mockRejectedValueOnce(
         error,
       );
@@ -372,7 +375,7 @@ describe('OrderDeliveryPersonService', () => {
       test('실패하는 테스트, db 계층에서 에러 NotExistDataError를 던짐', async () => {
         const orderId = 2;
         const walletAddress = '배송원 지갑주소';
-        const error = new NotExistDataException('orderId', orderId);
+        const error = new NotExistDataException(orderId);
 
         await cls.run(async () => {
           cls.set(ENTITY_MANAGER_KEY, manager);

@@ -1,7 +1,7 @@
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { setMiddleware } from './core/middleware/set-middleware';
+import { setCommonMiddlewares } from './core/middleware/set-common-middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -12,7 +12,7 @@ async function bootstrap() {
       errorHttpStatusCode: HttpStatus.BAD_REQUEST,
     }),
   );
-  setMiddleware(app);
+  setCommonMiddlewares(app);
 
   await app.listen(process.env.PORT ?? 3000);
 }

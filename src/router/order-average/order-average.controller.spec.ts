@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import { UnknownDataBaseException } from '@src/core/exception';
 import { mock, mockClear } from 'jest-mock-extended';
 import { OrderAverageController } from './order-average.controller';
 import { IOrderAverageService } from './order-average.service.interface';

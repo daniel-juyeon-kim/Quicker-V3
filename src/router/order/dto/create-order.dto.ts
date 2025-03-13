@@ -1,4 +1,4 @@
-import { IsNumberEqual } from '@src/core/decorator/validator/is-number-equal/is-number-equal.decorator';
+import { IsNumberEqual } from '@src/core/decorator/validator/is-number-equal.decorator';
 import { Transform, Type } from 'class-transformer';
 import {
   IsEthereumAddress,

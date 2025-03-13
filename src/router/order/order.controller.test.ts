@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceToken } from '@src/core/constant';
-import { NotExistDataException } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import {
+  NotExistDataException,
+  UnknownDataBaseException,
+} from '@src/core/exception';
 import { mock, mockClear } from 'jest-mock-extended';
 import { describe } from 'node:test';
 import { MatchableOrderDto } from './dto/matchable-order.dto';
@@ -73,7 +75,7 @@ describe('OrderController', () => {
     });
 
     test('실패하는 테스트, 데이터가 존재하지 않으면 NotExistDataError를 던짐', async () => {
-      const error = new NotExistDataException();
+      const error = new NotExistDataException('값');
       service.createOrder.mockRejectedValue(error);
 
       await expect(controller.createOrder(dto)).rejects.toStrictEqual(error);
@@ -114,7 +116,7 @@ describe('OrderController', () => {
 
     test('실패하는 테스트, 존재하지 않는 정보를 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '배송원 지갑주소';
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(walletAddress);
       service.findAllMatchableOrderByWalletAddress.mockRejectedValueOnce(error);
 
       await expect(

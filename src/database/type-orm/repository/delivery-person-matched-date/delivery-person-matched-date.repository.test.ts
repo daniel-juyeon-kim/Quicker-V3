@@ -188,7 +188,7 @@ describe('DeliveryPersonMatchedDateRepository', () => {
 
     test('실패하는 테스트, 이미 존재하는 아이디로 생성하면 DuplicatedDataException을 던짐', async () => {
       const orderId = 1;
-      const error = new DuplicatedDataException('orderId', orderId);
+      const error = new DuplicatedDataException(orderId);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);

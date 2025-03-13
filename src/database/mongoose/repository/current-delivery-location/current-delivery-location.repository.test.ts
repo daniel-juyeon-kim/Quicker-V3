@@ -106,7 +106,7 @@ describe('CurrentDeliverLocationRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 값 입력', async () => {
       const orderId = 99;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
 
       await expect(
         repository.findCurrentLocationByOrderId(orderId),

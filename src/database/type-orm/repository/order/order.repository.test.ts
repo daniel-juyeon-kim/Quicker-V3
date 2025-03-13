@@ -490,7 +490,6 @@ describe('OrderRepository', () => {
       const anotherDeliveryPersonWalletAddress =
         '존재하지 않는 배송원의 지갑주소';
       const error = new NotExistDataException(
-        'deliverPersonWalletAddress',
         anotherDeliveryPersonWalletAddress,
       );
 
@@ -618,10 +617,7 @@ describe('OrderRepository', () => {
         orderId: 1,
         walletAddress: '존재하지 않는 지갑주소',
       };
-      const error = new NotExistDataException(
-        'walletAddress',
-        '존재하지 않는 지갑주소',
-      );
+      const error = new NotExistDataException(dto.walletAddress);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -637,7 +633,7 @@ describe('OrderRepository', () => {
         walletAddress: DELIVERY_PERSON_WALLET_ADDRESS,
         orderId: 2,
       };
-      const error = new NotExistDataException('orderId', 2);
+      const error = new NotExistDataException(dto.orderId);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -655,10 +651,7 @@ describe('OrderRepository', () => {
         walletAddress,
         orderId,
       };
-      const error = new BusinessRuleConflictDataException(
-        'walletAddress',
-        walletAddress,
-      );
+      const error = new BusinessRuleConflictDataException(walletAddress);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);

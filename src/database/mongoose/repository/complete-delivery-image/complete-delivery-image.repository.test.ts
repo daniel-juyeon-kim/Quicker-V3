@@ -72,7 +72,7 @@ describe('CompleteDeliveryImageRepository', () => {
 
     test('실패하는 테스트, 존재하지 않는 값 입력', async () => {
       const orderId = 3;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
 
       await expect(
         repository.findCompleteImageBufferByOrderId(orderId),
@@ -101,7 +101,7 @@ describe('CompleteDeliveryImageRepository', () => {
     describe('실패하는 테스트', () => {
       test('중복된 데이터', async () => {
         const orderId = 1;
-        const error = new DuplicatedDataException('orderId', orderId);
+        const error = new DuplicatedDataException(orderId);
 
         await new model({
           _id: 1,

@@ -1,12 +1,17 @@
+import { HttpStatus } from '@nestjs/common';
 import { DataBaseExceptionMessage } from '@src/core/constant/exception-message/database.enum';
 import { DataBaseException } from './database.exception';
+import { ErrorDetail } from './error-detail';
 
 export class BusinessRuleConflictDataException extends DataBaseException {
+  private static readonly code: HttpStatus = HttpStatus.UNPROCESSABLE_ENTITY;
+  protected readonly error: ErrorDetail;
+
   constructor(
-    target?: string,
-    value?: string | number,
-    cause: string = DataBaseExceptionMessage.BusinessRuleConflictDataException,
+    value: unknown,
+    message: string = DataBaseExceptionMessage.BusinessRuleConflictDataException,
   ) {
-    super(target, value, cause);
+    super(message, BusinessRuleConflictDataException.code);
+    this.error = new ErrorDetail(value);
   }
 }

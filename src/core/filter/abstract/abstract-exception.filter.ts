@@ -1,19 +1,15 @@
-import { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
+import { BaseExceptionFilter } from '@nestjs/core';
 import { CustomException } from '@src/core/exception/custom.exception';
 import { ErrorMessage, ErrorMessageBot } from '@src/core/module';
 
-export abstract class AbstractExceptionFilter<T> implements ExceptionFilter<T> {
+export abstract class AbstractExceptionFilter<
+  T,
+> extends BaseExceptionFilter<T> {
   protected abstract readonly errorMessageBot: ErrorMessageBot;
 
-  abstract catch(exception: T, host: ArgumentsHost): any;
+  protected async sendErrorMessageBySlack(exception: CustomException<unknown>) {
+    const date = new Date();
 
-  protected async sendErrorMessageBySlack({
-    exception,
-    date,
-  }: {
-    exception: CustomException;
-    date: Date;
-  }) {
     const errorMessage = new ErrorMessage({ date, exception });
     await this.errorMessageBot.sendMessage(errorMessage);
   }

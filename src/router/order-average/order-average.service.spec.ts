@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RepositoryToken } from '@src/core/constant';
-import { NotExistDataException } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
+import {
+  NotExistDataException,
+  UnknownDataBaseException,
+} from '@src/core/exception';
 import { createLastMonth } from '@src/core/module';
 import { IAverageCostRepository } from '@src/database/type-orm/repository/average-cost/average-cost.repository.interface';
 import { plainToInstance } from 'class-transformer';
@@ -54,7 +56,7 @@ describe('OrderAverageService', () => {
     describe('실패하는 테스트', () => {
       test('NotExistDataError를 던짐', async () => {
         const distance = 50;
-        const error = new NotExistDataException();
+        const error = new NotExistDataException(distance);
         repository.findAverageCostByDateAndDistanceUnit.mockRejectedValueOnce(
           error,
         );

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import {
   DuplicatedDataException,
   NotExistDataException,
+  UnknownDataBaseException,
 } from '@src/core/exception';
-import { UnknownDataBaseException } from '@src/core/exception/database/unknown-database.exception';
 import { OrderAverageCostDto } from '@src/router/order-average/dto/order-average-cost.dto';
 import { plainToInstance } from 'class-transformer';
 import { AverageCostEntity } from '../../entity/average-cost.entity';
@@ -37,12 +37,12 @@ export class AverageCostRepository
         select: { [distanceUnit]: true },
       });
 
-      this.validateNotNull(average);
+      this.validateNotNull(lastMonth, average);
 
       return plainToInstance(OrderAverageCostDto, average[distanceUnit]);
     } catch (error) {
       if (error instanceof NotExistDataException) {
-        throw new NotExistDataException('lastMonth', lastMonth.toString());
+        throw error;
       }
       throw new UnknownDataBaseException(error);
     }
@@ -55,7 +55,7 @@ export class AverageCostRepository
   ) {
     try {
       if (await this.getManager().existsBy(AverageCostEntity, { date })) {
-        throw new DuplicatedDataException('date', date.toString());
+        throw new DuplicatedDataException(date);
       }
 
       await this.getManager().insert(AverageCostEntity, {
