@@ -4,7 +4,10 @@ import { TmapApiException } from '@src/core/exception';
 import { mock } from 'jest-mock-extended';
 import fetch from 'node-fetch';
 import { TmapApi } from './tmap-api';
-import { DestinationDepartureLocation, ErrorResponseBody } from './types';
+import {
+  DestinationDepartureLocation,
+  TmapApiErrorResponseBody,
+} from './types';
 
 jest.mock('node-fetch');
 
@@ -30,7 +33,7 @@ describe('TmapApi', () => {
 
   describe('requestRouteDistances', () => {
     test('실패하는 테스트, 요청 후 에러 발생 시 TmapApiError를 던짐 ', async () => {
-      const error: ErrorResponseBody = {
+      const error: TmapApiErrorResponseBody = {
         error: {
           id: 'id',
           category: 'map',

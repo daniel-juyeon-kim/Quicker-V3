@@ -58,7 +58,7 @@ describe('OrderSenderReceiverService', () => {
 
     test('실패하는 테스트, NotExistDataException 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
 
       repository.findSenderReceiverLocationAndPhoneNumberByOrderId.mockRejectedValueOnce(
         error,

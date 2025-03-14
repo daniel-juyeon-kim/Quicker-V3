@@ -46,7 +46,7 @@ describe('OrderLocationService', () => {
 
     test('실패하는 테스트', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
 
       repository.findDestinationDepartureByOrderId.mockRejectedValueOnce(error);
 

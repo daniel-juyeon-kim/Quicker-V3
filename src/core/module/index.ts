@@ -4,7 +4,6 @@ export * from '../util/date';
 export * from '../util/parser';
 export * from './blockchain';
 export * from './core.module';
-export * from './db-pk-creator';
 export * from './delivery-url-creator';
 export * from './external-api';
 export * from './key-creator';

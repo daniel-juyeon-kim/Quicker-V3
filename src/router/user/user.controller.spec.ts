@@ -47,7 +47,8 @@ describe('UsersController', () => {
         contact: '01012341234',
         birthDate: new Date('1999/01/01'),
       };
-      const error = new DuplicatedDataException();
+
+      const error = new DuplicatedDataException(dto.walletAddress);
       service.createUser.mockRejectedValueOnce(error);
 
       await expect(controller.createUser(dto)).rejects.toStrictEqual(error);
@@ -72,7 +73,7 @@ describe('UsersController', () => {
 
     test('실패하는 테스트, 존재하지 않는 지갑주소로 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '0x123';
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(walletAddress);
       service.findUserNameByWalletAddress.mockRejectedValueOnce(error);
 
       await expect(
@@ -107,7 +108,7 @@ describe('UsersController', () => {
       const dto: UpdateUserDto = {
         imageId: 'image123',
       };
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(dto.imageId);
       service.updateUserProfileImageId.mockRejectedValueOnce(error);
 
       await expect(
@@ -138,7 +139,7 @@ describe('UsersController', () => {
 
     test('실패하는 테스트, 존재하지 않는 지갑주소는 NotExistDataError를 던짐', async () => {
       const walletAddress = '0x123';
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(walletAddress);
       service.findUserProfileImageIdByWalletAddress.mockRejectedValueOnce(
         error,
       );

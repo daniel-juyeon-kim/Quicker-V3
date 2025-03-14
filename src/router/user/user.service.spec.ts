@@ -64,7 +64,7 @@ describe('UserService', () => {
         contact: '연락처',
         birthDate: '2000/01/01',
       });
-      const error = new DuplicatedDataException();
+      const error = new DuplicatedDataException('id');
 
       // 사용자 생성
       await expect(service.createUser(dto)).resolves.toEqual(undefined);
@@ -93,7 +93,7 @@ describe('UserService', () => {
 
     test('실패하는 테스트, 존재하지 않는 사용자의 지갑주소로 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '존재하지 않는 지갑주소';
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(walletAddress);
       repository.findNameByWalletAddress.mockRejectedValue(error);
 
       await expect(
@@ -121,7 +121,7 @@ describe('UserService', () => {
 
     test('실패하는 테스트, 존재하지 않는 사용자의 지갑주소로 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '존재하지 않는 지갑주소';
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(walletAddress);
       repository.findUserProfileImageIdByWalletAddress.mockRejectedValue(error);
 
       await expect(
@@ -143,7 +143,7 @@ describe('UserService', () => {
 
     test('실패하는 테스트, 존재하지 않는 사용자의 지갑주소로 프로필 이미지 아이디를 업데이트하면 NotExistDataError를 던짐', async () => {
       const dto = { walletAddress: '존재하지 않는 지갑주소', imageId: '100' };
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(dto.walletAddress);
       repository.updateUserProfileImageIdByWalletAddress.mockRejectedValue(
         error,
       );

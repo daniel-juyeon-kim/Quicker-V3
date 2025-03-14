@@ -43,7 +43,7 @@ describe('OrderDeliveryPersonController', () => {
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(orderId);
       service.findCurrentLocationByOrderId.mockRejectedValueOnce(error);
 
       await expect(
@@ -75,7 +75,7 @@ describe('OrderDeliveryPersonController', () => {
         y: 37.71,
         orderId: 1,
       };
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(4);
       service.createCurrentLocation.mockRejectedValueOnce(error);
 
       await expect(
@@ -100,7 +100,7 @@ describe('OrderDeliveryPersonController', () => {
     });
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(99);
       service.matchDeliveryPersonAtOrder.mockRejectedValueOnce(error);
 
       await expect(

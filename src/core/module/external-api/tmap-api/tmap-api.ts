@@ -7,9 +7,9 @@ import fetch from 'node-fetch';
 import { Distance } from './distance';
 import {
   DestinationDepartureLocation,
-  ErrorResponseBody,
   RequestBody,
   ResponseBody,
+  TmapApiErrorResponseBody,
 } from './types';
 
 @Injectable()
@@ -70,7 +70,7 @@ export class TmapApi {
 
       return this.toKilometers(totalDistance);
     } catch (e) {
-      const error: ErrorResponseBody = e;
+      const error: TmapApiErrorResponseBody = e;
       throw new TmapApiException(error);
     }
   }
