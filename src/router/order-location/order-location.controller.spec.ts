@@ -45,7 +45,7 @@ describe('OrderLocationController', () => {
 
     test('실패하는 테스트, 데이터가 존재하지 않아 예외 발생', async () => {
       const orderId = 1;
-      const error = new NotExistDataException();
+      const error = new NotExistDataException(orderId);
       service.findDepartureDestinationByOrderId.mockRejectedValueOnce(error);
 
       await expect(

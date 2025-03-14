@@ -50,7 +50,7 @@ describe('ChatService', () => {
 
     test('실패하는 테스트, orderId에 해당되는 데이터가 존재하지 않으면 NotExistDataError를 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
       repository.findRecentMessageByOrderId.mockRejectedValueOnce(error);
 
       await expect(

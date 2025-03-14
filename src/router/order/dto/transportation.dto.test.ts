@@ -16,6 +16,8 @@ describe('transportationDto', () => {
     const dto = new TransportationDto();
 
     dto.bicycle = 1;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     dto.bike = 2;
 
     const errors = await validate(dto);

@@ -38,7 +38,7 @@ describe('ChatController', () => {
 
     test('실패하는 테스트, 데이터베이스에 해당 데이터가 없음 NotExistDataError를 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
 
       service.findRecentMessageByOrderId.mockRejectedValueOnce(error);
 

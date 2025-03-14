@@ -70,7 +70,7 @@ describe('OrderFailImageService', () => {
         buffer: Buffer.from('file content'),
       };
       const reason = '이유';
-      const error = new DuplicatedDataException('orderId', orderId);
+      const error = new DuplicatedDataException(orderId);
       repository.createFailDeliveryImage.mockRejectedValueOnce(error);
 
       await expect(
@@ -101,7 +101,7 @@ describe('OrderFailImageService', () => {
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
       repository.findFailDeliveryImageByOrderId.mockRejectedValueOnce(error);
 
       await expect(

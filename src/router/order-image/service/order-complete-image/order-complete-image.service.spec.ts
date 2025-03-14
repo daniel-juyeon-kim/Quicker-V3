@@ -69,7 +69,7 @@ describe('OrderCompleteImageService', () => {
         buffer: Buffer.from('file content'),
       };
       const orderId = 1;
-      const error = new DuplicatedDataException('orderId', orderId);
+      const error = new DuplicatedDataException(orderId);
 
       repository.create.mockRejectedValueOnce(error);
 
@@ -98,7 +98,7 @@ describe('OrderCompleteImageService', () => {
 
     test('실패하는 테스트', async () => {
       const orderId = 1;
-      const error = new NotExistDataException('orderId', orderId);
+      const error = new NotExistDataException(orderId);
 
       repository.findCompleteImageBufferByOrderId.mockRejectedValueOnce(error);
 
