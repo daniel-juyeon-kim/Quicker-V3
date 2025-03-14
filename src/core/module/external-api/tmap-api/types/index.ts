@@ -20,7 +20,7 @@ export interface ResponseBody {
   ];
 }
 
-export interface ErrorResponseBody {
+export interface TmapApiErrorResponseBody {
   error: {
     id: string;
     category: string;

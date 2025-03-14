@@ -1,4 +1,4 @@
-import { HttpStatus, LoggerService } from '@nestjs/common';
+import { LoggerService } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatPostMessageResponse } from '@slack/web-api';
 import { LoggerToken } from '@src/core/constant';
@@ -8,7 +8,8 @@ import {
   SmsApiException,
   TmapApiException,
 } from '@src/core/exception';
-import { ErrorResponseBody } from '@src/core/module';
+import { UnknownExceptionConstructor } from '@src/core/exception/unknown/unknown-exception-constructor.interface';
+import { TmapApiErrorResponseBody } from '@src/core/module';
 import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
 import { mock } from 'jest-mock-extended';
 import { UnknownExceptionLoggerMap } from './unknown-exception-logger-map';
@@ -32,7 +33,7 @@ describe('UnknownExceptionLoggerMap', () => {
             smsApiExceptionLogger: LoggerService,
             tmapApiExceptionLogger: LoggerService,
           ) => {
-            return new Map<typeof AbstractUnknownException, LoggerService>([
+            return new Map<UnknownExceptionConstructor, LoggerService>([
               [ErrorMessageBotException, errorMessageBotExceptionLogger],
               [SmsApiException, smsApiExceptionLogger],
               [TmapApiException, tmapApiExceptionLogger],
@@ -70,14 +71,11 @@ describe('UnknownExceptionLoggerMap', () => {
 
   describe('getLogger', () => {
     it('정의되지 않은 예외에 대해 기본 로거를 반환해야 한다', () => {
-      class UndefinedException extends AbstractUnknownException {}
+      class UndefinedException extends AbstractUnknownException<never> {
+        protected error: never;
+      }
 
-      const error = {} as ErrorResponseBody;
-      const exception = new UndefinedException(
-        error,
-        '에러메시지',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const exception = new UndefinedException('메시지', 404);
 
       const logger = loggerMap.getLogger(exception);
 
@@ -85,7 +83,7 @@ describe('UnknownExceptionLoggerMap', () => {
     });
 
     it('TmapApiException에 대해 TmapApiException 로거를 반환해야 한다', () => {
-      const error = {} as ErrorResponseBody;
+      const error = {} as TmapApiErrorResponseBody;
       const exception = new TmapApiException(error);
 
       const logger = loggerMap.getLogger(exception);

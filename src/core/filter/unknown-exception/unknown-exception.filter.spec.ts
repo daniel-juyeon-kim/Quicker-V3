@@ -9,7 +9,7 @@ import {
   SmsApiException,
   TmapApiException,
 } from '@src/core/exception';
-import { ErrorMessageBot, ErrorResponseBody } from '@src/core/module';
+import { ErrorMessageBot, TmapApiErrorResponseBody } from '@src/core/module';
 import { NaverSmsApiResponse } from '@src/core/module/external-api/sms-api/naver-sms-api.response';
 import { Response } from 'express';
 import { mock, mockDeep, mockReset } from 'jest-mock-extended';
@@ -70,7 +70,7 @@ describe('UnknownExceptionFilter', () => {
     });
 
     test('통과: TmapApiError', async () => {
-      const response = {} as ErrorResponseBody;
+      const response = {} as TmapApiErrorResponseBody;
       const exception = new TmapApiException(response);
 
       await filter.catch(exception, mockHost);

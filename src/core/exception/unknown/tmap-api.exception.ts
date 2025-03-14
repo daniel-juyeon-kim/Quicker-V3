@@ -1,14 +1,14 @@
 import { HttpStatus } from '@nestjs/common';
 import { ExternalApiExceptionMessage } from '@src/core/constant/exception-message/external-api.enum';
-import { ErrorResponseBody } from '@src/core/module';
+import { TmapApiErrorResponseBody } from '@src/core/module';
 import { AbstractUnknownException } from './unknown.exception';
 
-export class TmapApiException extends AbstractUnknownException<ErrorResponseBody> {
+export class TmapApiException extends AbstractUnknownException<TmapApiErrorResponseBody> {
   private static readonly code: HttpStatus = HttpStatus.BAD_GATEWAY;
-  protected readonly error: ErrorResponseBody;
+  protected readonly error: TmapApiErrorResponseBody;
 
   constructor(
-    error: ErrorResponseBody,
+    error: TmapApiErrorResponseBody,
     message: string = ExternalApiExceptionMessage.TmapApiException,
   ) {
     super(message, TmapApiException.code);
