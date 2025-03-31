@@ -6,9 +6,10 @@ import {
 } from '@src/core/exception';
 import { ICompleteDeliveryImageRepository } from '@src/database/mongoose/repository/complete-delivery-image/complete-delivery-image.repository.interface';
 import { Buffer } from 'buffer';
+import { plainToInstance } from 'class-transformer';
 import { mock, mockClear } from 'jest-mock-extended';
 import { Readable } from 'stream';
-import { OrderCompleteImageDto } from '../../dto/order-complete-image.dto';
+import { FindCompleteDeliveryImageDto } from '../../dto/find-complete-image.dto';
 import { OrderCompleteImageService } from './order-complete-image.service';
 
 describe('OrderCompleteImageService', () => {
@@ -33,7 +34,7 @@ describe('OrderCompleteImageService', () => {
 
   describe('createCompleteImageBuffer', () => {
     test('통과하는 테스트', async () => {
-      const file = {
+      const imageFile = {
         fieldname: 'uploadedFile',
         originalname: 'example.png',
         encoding: '7bit',
@@ -43,15 +44,18 @@ describe('OrderCompleteImageService', () => {
         destination: '/uploads',
         filename: 'example-1234.png',
         path: '/uploads/example-1234.png',
-        buffer: Buffer.from('file content'),
+        image: Buffer.from('file content'),
       };
       const orderId = 1;
 
-      await service.createCompleteImageBuffer({ buffer: file.buffer, orderId });
+      await service.createCompleteImageBuffer({
+        image: imageFile.image,
+        orderId,
+      });
 
       expect(repository.create).toHaveBeenCalledWith({
         orderId,
-        bufferImage: file.buffer,
+        image: imageFile.image,
       });
     });
 
@@ -66,7 +70,7 @@ describe('OrderCompleteImageService', () => {
         destination: '/uploads',
         filename: 'example-1234.png',
         path: '/uploads/example-1234.png',
-        buffer: Buffer.from('file content'),
+        image: Buffer.from('file content'),
       };
       const orderId = 1;
       const error = new DuplicatedDataException(orderId);
@@ -74,7 +78,7 @@ describe('OrderCompleteImageService', () => {
       repository.create.mockRejectedValueOnce(error);
 
       await expect(
-        service.createCompleteImageBuffer({ orderId, buffer: file.buffer }),
+        service.createCompleteImageBuffer({ orderId, image: file.image }),
       ).rejects.toStrictEqual(error);
     });
   });
@@ -82,10 +86,11 @@ describe('OrderCompleteImageService', () => {
   describe('findCompleteImageBufferByOrderId', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
-      const resolvedValue: OrderCompleteImageDto = {
-        data: Buffer.from('file content'),
-        type: 'Buffer',
-      };
+      const resolvedValue = plainToInstance(
+        FindCompleteDeliveryImageDto,
+        Buffer.from('file content'),
+        { excludeExtraneousValues: true },
+      );
 
       repository.findCompleteImageBufferByOrderId.mockResolvedValueOnce(
         resolvedValue,

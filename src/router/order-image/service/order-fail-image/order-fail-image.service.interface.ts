@@ -1,10 +1,13 @@
-import { FailDeliveryImageDto } from '../../dto/order-fail-image.dto';
+import { FindFailDeliveryImageDto } from '../../dto/find-fail-image.dto';
 
 export interface IOrderFailImageService {
-  findOrderFailImageByOrderId(orderId: number): Promise<FailDeliveryImageDto>;
+  findOrderFailImageByOrderId(
+    orderId: number,
+  ): Promise<FindFailDeliveryImageDto>;
+
   createFailImage(params: {
     orderId: number;
     reason: string;
-    file: Express.Multer.File;
+    image: Buffer;
   }): Promise<void>;
 }

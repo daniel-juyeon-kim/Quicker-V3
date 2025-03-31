@@ -1,12 +1,12 @@
-import { IsNumber, IsPositive } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNumber } from 'class-validator';
 
 export class CreateDeliveryPersonLocationDto {
-  @IsPositive()
-  orderId: number;
-
+  @ApiProperty({ description: '경도' })
   @IsNumber()
   x: number;
 
+  @ApiProperty({ description: '위도' })
   @IsNumber()
   y: number;
 }

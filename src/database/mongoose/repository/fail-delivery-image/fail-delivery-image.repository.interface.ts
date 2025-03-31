@@ -1,17 +1,17 @@
-import { FailDeliveryImageDto } from '@src/router/order-image/dto/order-fail-image.dto';
+import { FindFailDeliveryImageDto } from '@src/router/order-image/dto/find-fail-image.dto';
 
 export interface IFailDeliveryImageRepository {
   createFailDeliveryImage({
     orderId,
-    bufferImage,
+    image,
     reason,
   }: {
     orderId: number;
-    bufferImage: Buffer;
+    image: Buffer;
     reason: string;
   }): Promise<void>;
 
   findFailDeliveryImageByOrderId(
     orderId: number,
-  ): Promise<FailDeliveryImageDto>;
+  ): Promise<FindFailDeliveryImageDto>;
 }

@@ -58,31 +58,37 @@ describe('OrderDeliveryPersonController', () => {
 
   describe('createDeliveryPersonCurrentLocation', () => {
     test('통과하는 테스트', async () => {
+      const orderId = 1;
       const dto = {
         x: 126.73,
         y: 37.71,
-        orderId: 1,
       };
 
-      await controller.createDeliveryPersonCurrentLocation(dto);
+      await controller.createDeliveryPersonCurrentLocation(orderId, dto);
 
-      expect(service.createCurrentLocation).toHaveBeenCalledWith(dto);
+      expect(service.createCurrentLocation).toHaveBeenCalledWith({
+        ...dto,
+        orderId,
+      });
     });
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
+      const orderId = 1;
       const dto = {
         x: 126.73,
         y: 37.71,
-        orderId: 1,
       };
       const error = new NotExistDataException(4);
       service.createCurrentLocation.mockRejectedValueOnce(error);
 
       await expect(
-        controller.createDeliveryPersonCurrentLocation(dto),
+        controller.createDeliveryPersonCurrentLocation(orderId, dto),
       ).rejects.toStrictEqual(error);
 
-      expect(service.createCurrentLocation).toHaveBeenCalledWith(dto);
+      expect(service.createCurrentLocation).toHaveBeenCalledWith({
+        ...dto,
+        orderId,
+      });
     });
   });
 

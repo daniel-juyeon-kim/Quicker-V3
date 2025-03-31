@@ -7,7 +7,7 @@ import {
 import { IFailDeliveryImageRepository } from '@src/database/mongoose/repository/fail-delivery-image/fail-delivery-image.repository.interface';
 import { mock, mockClear } from 'jest-mock-extended';
 import { Readable } from 'stream';
-import { FailDeliveryImageDto } from '../../dto/order-fail-image.dto';
+import { FindFailDeliveryImageDto } from '../../dto/find-fail-image.dto';
 import { OrderFailImageService } from './order-fail-image.service';
 
 describe('OrderFailImageService', () => {
@@ -41,17 +41,17 @@ describe('OrderFailImageService', () => {
         destination: '/uploads',
         filename: 'example-1234.png',
         path: '/uploads/example-1234.png',
-        buffer: Buffer.from('file content'),
+        image: Buffer.from('file content'),
       };
       const orderId = 1;
       const reason = '이유';
 
-      await service.createFailImage({ file, orderId, reason });
+      await service.createFailImage({ image: file.image, orderId, reason });
 
       expect(repository.createFailDeliveryImage).toHaveBeenCalledWith({
         orderId,
         reason,
-        bufferImage: file.buffer,
+        image: file.image,
       });
     });
 
@@ -67,14 +67,14 @@ describe('OrderFailImageService', () => {
         destination: '/uploads',
         filename: 'example-1234.png',
         path: '/uploads/example-1234.png',
-        buffer: Buffer.from('file content'),
+        image: Buffer.from('file content'),
       };
       const reason = '이유';
       const error = new DuplicatedDataException(orderId);
       repository.createFailDeliveryImage.mockRejectedValueOnce(error);
 
       await expect(
-        service.createFailImage({ file, orderId, reason }),
+        service.createFailImage({ image: file.image, orderId, reason }),
       ).rejects.toStrictEqual(error);
     });
   });
@@ -82,9 +82,9 @@ describe('OrderFailImageService', () => {
   describe('findOrderFailImageByOrderId', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
-      const resolvedValue: FailDeliveryImageDto = {
+      const resolvedValue: FindFailDeliveryImageDto = {
         reason: '이유',
-        image: { data: Buffer.from('file content'), type: 'Buffer' },
+        image: Buffer.from('file content'),
       };
       repository.findFailDeliveryImageByOrderId.mockResolvedValueOnce(
         resolvedValue,

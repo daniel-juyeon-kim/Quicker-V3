@@ -5,7 +5,7 @@ import {
   NotExistDataException,
   UnknownDataBaseException,
 } from '@src/core/exception';
-import { OrderCompleteImageDto } from '@src/router/order-image/dto/order-complete-image.dto';
+import { FindCompleteDeliveryImageDto } from '@src/router/order-image/dto/find-complete-image.dto';
 import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
 import { CompleteDeliveryImage } from '../../models/complete-delivery-image';
@@ -24,17 +24,11 @@ export class CompleteDeliveryImageRepository
     super();
   }
 
-  async create({
-    orderId,
-    bufferImage,
-  }: {
-    orderId: number;
-    bufferImage: Buffer;
-  }) {
+  async create({ orderId, image }: { orderId: number; image: Buffer }) {
     try {
-      const image = new this.model({ _id: orderId, bufferImage });
+      const imageModel = new this.model({ _id: orderId, image });
 
-      await image.save();
+      await imageModel.save();
     } catch (error) {
       if (this.isDuplicatedDataError(error)) {
         throw new DuplicatedDataException(orderId);
@@ -45,17 +39,17 @@ export class CompleteDeliveryImageRepository
 
   async findCompleteImageBufferByOrderId(orderId: number) {
     try {
-      const image = await this.model
+      const completeDeliveryImage = await this.model
         .findById(orderId)
-        .select(['bufferImage', '-_id']);
+        .select(['image', '-_id']);
 
-      this.validateNull(orderId, image);
+      this.validateNull(orderId, completeDeliveryImage);
 
-      const { bufferImage } = image.toJSON();
-
-      return plainToInstance(OrderCompleteImageDto, bufferImage, {
-        excludeExtraneousValues: true,
-      });
+      return plainToInstance(
+        FindCompleteDeliveryImageDto,
+        completeDeliveryImage,
+        { excludeExtraneousValues: true },
+      );
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw error;

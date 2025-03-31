@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ResponseBody } from '@src/core/response';
 import { TransportationEntity } from '@src/database';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -11,19 +12,19 @@ import {
 } from 'class-validator';
 
 class Product {
-  @ApiProperty()
+  @ApiProperty({ description: '가로' })
   @IsNumber()
   width: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '세로' })
   @IsNumber()
   length: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '높이' })
   @IsNumber()
   height: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '무게' })
   @IsNumber()
   weight: number;
 }
@@ -80,50 +81,55 @@ class Transportation {
 }
 
 class Location {
-  @ApiProperty()
+  @ApiProperty({ description: '경도' })
   @IsNumber()
   x: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '위도' })
   @IsNumber()
   y: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '세부 정보(동, 호수)' })
   @IsString()
   detail: string;
 }
 
 export class MatchableOrderDto {
-  @ApiProperty()
+  @ApiProperty({ description: '주문 아이디' })
   @IsNumber()
   id: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '세부사항' })
   @IsString()
   detail: string;
 
-  @ApiProperty({ type: Product })
+  @ApiProperty({ type: Product, description: '상품정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Product)
   product: Product;
 
-  @ApiProperty({ type: Transportation })
+  @ApiProperty({ type: Transportation, description: '운송수단' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Transportation)
   @Transform(({ value }) => Transportation.parseToTransportationDto(value))
   transportation: Transportation;
 
-  @ApiProperty({ type: Location })
+  @ApiProperty({ type: Location, description: '도착지' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Location)
   destination: Location;
 
-  @ApiProperty({ type: Location })
+  @ApiProperty({ type: Location, description: '출발지' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Location)
   departure: Location;
+}
+
+export class MatchableOrderResponseDto extends ResponseBody {
+  @ApiProperty()
+  data: MatchableOrderDto;
 }
