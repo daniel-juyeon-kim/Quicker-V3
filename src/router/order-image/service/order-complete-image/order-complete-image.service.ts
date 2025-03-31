@@ -18,14 +18,14 @@ export class OrderCompleteImageService implements IOrderCompleteImageService {
 
   async createCompleteImageBuffer({
     orderId,
-    buffer,
+    image,
   }: {
     orderId: number;
-    buffer: Buffer;
+    image: Buffer;
   }) {
     await this.completeDeliveryImageRepository.create({
       orderId,
-      bufferImage: buffer,
+      image,
     });
   }
 }

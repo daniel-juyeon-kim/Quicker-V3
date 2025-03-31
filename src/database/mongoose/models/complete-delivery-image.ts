@@ -5,7 +5,7 @@ export class CompleteDeliveryImage {
   @Prop({ required: true })
   _id: number;
   @Prop({ required: true, type: Buffer })
-  bufferImage: Buffer;
+  image: Express.Multer.File['image'];
 }
 
 export const CompleteDeliveryImageSchema = SchemaFactory.createForClass(

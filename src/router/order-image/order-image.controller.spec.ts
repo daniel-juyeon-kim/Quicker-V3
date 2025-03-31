@@ -6,8 +6,8 @@ import {
 } from '@src/core/exception';
 import { mock } from 'jest-mock-extended';
 import { Readable } from 'stream';
-import { OrderCompleteImageDto } from './dto/order-complete-image.dto';
-import { FailDeliveryImageDto } from './dto/order-fail-image.dto';
+import { FindCompleteDeliveryImageDto } from './dto/find-complete-image.dto';
+import { FindFailDeliveryImageDto } from './dto/find-fail-image.dto';
 import { OrderImageController } from './order-image.controller';
 import { IOrderCompleteImageService } from './service/order-complete-image/order-complete-image.service.interface';
 import { IOrderFailImageService } from './service/order-fail-image/order-fail-image.service.interface';
@@ -39,11 +39,8 @@ describe('OrderImageController', () => {
   describe('findFailImage', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
-      const resolvedValue: FailDeliveryImageDto = {
-        image: {
-          data: Buffer.from([102, 97, 107, 101, 66, 117]),
-          type: 'Buffer',
-        },
+      const resolvedValue: FindFailDeliveryImageDto = {
+        image: Buffer.from([102, 97, 107, 101, 66, 117]),
         reason: '이유',
       };
       orderFailImageService.findOrderFailImageByOrderId.mockResolvedValueOnce(
@@ -73,47 +70,29 @@ describe('OrderImageController', () => {
   });
 
   describe('postFailImage', () => {
-    const file = {
-      fieldname: 'uploadedFile',
-      originalname: 'example.png',
-      encoding: '7bit',
-      mimetype: 'image/png',
-      size: 1024,
-      stream: new Readable(),
-      destination: '/uploads',
-      filename: 'example-1234.png',
-      path: '/uploads/example-1234.png',
-      buffer: Buffer.from('file content'),
+    const imageFile = {
+      image: Buffer.from('file content'),
     };
     const orderId = 1;
     const reason = '이유';
 
     test('통과하는 테스트', async () => {
-      const dto = {
-        orderId,
-        reason,
-      };
-
-      await controller.postFailImage(file, dto);
+      await controller.createFailDeliveryImage(imageFile, orderId, reason);
 
       expect(orderFailImageService.createFailImage).toHaveBeenCalledWith({
-        file,
+        image: imageFile.image,
         orderId,
         reason,
       });
     });
 
     test('실패하는 테스트, 중복되는 데이터', async () => {
-      const dto = {
-        orderId,
-        reason,
-      };
       const error = new DuplicatedDataException(orderId);
       orderFailImageService.createFailImage.mockRejectedValueOnce(error);
 
-      await expect(controller.postFailImage(file, dto)).rejects.toStrictEqual(
-        error,
-      );
+      await expect(
+        controller.createFailDeliveryImage(imageFile, orderId, reason),
+      ).rejects.toStrictEqual(error);
     });
   });
 
@@ -122,9 +101,8 @@ describe('OrderImageController', () => {
       const orderId = 1;
       const buffer = Buffer.from([102, 97, 107, 101, 66, 117]);
 
-      const dto = new OrderCompleteImageDto();
-      dto.data = buffer;
-      dto.type = 'Buffer';
+      const dto = new FindCompleteDeliveryImageDto();
+      dto.image = buffer;
 
       orderCompleteImageService.findCompleteImageBufferByOrderId.mockResolvedValueOnce(
         dto,
@@ -154,7 +132,7 @@ describe('OrderImageController', () => {
   });
 
   describe('postCompleteImageBuffer', () => {
-    const file = {
+    const imageFile = {
       fieldname: 'uploadedFile',
       originalname: 'example.png',
       encoding: '7bit',
@@ -164,19 +142,19 @@ describe('OrderImageController', () => {
       destination: '/uploads',
       filename: 'example-1234.png',
       path: '/uploads/example-1234.png',
-      buffer: Buffer.from('file content'),
+      image: Buffer.from('file content'),
     };
 
     test('통과하는 테스트', async () => {
       const dto = { orderId: 1 };
 
-      await controller.postCompleteImageBuffer(file, dto);
+      await controller.postCompleteImageBuffer(imageFile, dto.orderId);
 
       expect(
         orderCompleteImageService.createCompleteImageBuffer,
       ).toHaveBeenCalledWith({
         orderId: dto.orderId,
-        buffer: file.buffer,
+        image: imageFile.image,
       });
     });
 
@@ -189,7 +167,7 @@ describe('OrderImageController', () => {
       );
 
       await expect(
-        controller.postCompleteImageBuffer(file, dto),
+        controller.postCompleteImageBuffer(imageFile, dto.orderId),
       ).rejects.toStrictEqual(error);
     });
   });

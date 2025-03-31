@@ -1,13 +1,11 @@
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  DuplicatedDataException,
-  NotExistDataException,
-} from '@src/core/exception';
+import { DuplicatedDataException, NotExistDataException } from '@src/core';
+import { FindCompleteDeliveryImageDto } from '@src/router/order-image/dto/find-complete-image.dto';
+import { plainToInstance } from 'class-transformer';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
 import {
-  ChatMessages,
   CompleteDeliveryImage,
   CompleteDeliveryImageSchema,
 } from '../../models';
@@ -15,7 +13,7 @@ import { CompleteDeliveryImageRepository } from './complete-delivery-image.repos
 
 describe('CompleteDeliveryImageRepository', () => {
   let mongod: MongoMemoryServer;
-  let model: Model<ChatMessages>;
+  let model: Model<CompleteDeliveryImage>;
   let repository: CompleteDeliveryImageRepository;
   let testModule: TestingModule;
 
@@ -48,7 +46,7 @@ describe('CompleteDeliveryImageRepository', () => {
     beforeEach(async () => {
       const image = await model.create({
         _id: 1,
-        bufferImage: Buffer.from('1'),
+        image: Buffer.from('1'),
       });
 
       await image.save();
@@ -60,10 +58,9 @@ describe('CompleteDeliveryImageRepository', () => {
 
     test('통과하는 테스트', async () => {
       const orderId = 1;
-      const result = {
-        data: [49],
-        type: 'Buffer',
-      };
+      const result = plainToInstance(FindCompleteDeliveryImageDto, {
+        image: Buffer.from('1'),
+      });
 
       await expect(
         repository.findCompleteImageBufferByOrderId(orderId),
@@ -88,14 +85,18 @@ describe('CompleteDeliveryImageRepository', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const result = {
-        __v: 0,
-        _id: 1,
-        bufferImage: { data: [49], type: 'Buffer' },
+        image: Buffer.from([49]),
       };
 
-      await repository.create({ orderId, bufferImage: Buffer.from('1') });
+      await repository.create({ orderId, image: Buffer.from([49]) });
 
-      expect((await model.findById(orderId)).toJSON()).toEqual(result);
+      const plain = await model.findById(orderId);
+
+      const instance = plainToInstance(FindCompleteDeliveryImageDto, plain, {
+        excludeExtraneousValues: true,
+      });
+
+      expect(instance).toEqual(result);
     });
 
     describe('실패하는 테스트', () => {
@@ -105,11 +106,11 @@ describe('CompleteDeliveryImageRepository', () => {
 
         await new model({
           _id: 1,
-          bufferImage: Buffer.from('1'),
+          image: Buffer.from('1'),
         }).save();
 
         await expect(
-          repository.create({ orderId, bufferImage: Buffer.from('1') }),
+          repository.create({ orderId, image: Buffer.from('1') }),
         ).rejects.toStrictEqual(error);
       });
     });

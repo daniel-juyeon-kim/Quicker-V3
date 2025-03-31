@@ -19,16 +19,16 @@ export class OrderFailImageService implements IOrderFailImageService {
   async createFailImage({
     orderId,
     reason,
-    file,
+    image,
   }: {
     orderId: number;
     reason: string;
-    file: Express.Multer.File;
+    image: Buffer;
   }) {
     await this.failDeliveryImageRepository.createFailDeliveryImage({
       orderId,
       reason,
-      bufferImage: file.buffer,
+      image: image,
     });
   }
 }

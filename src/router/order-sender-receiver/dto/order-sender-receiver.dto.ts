@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ResponseBody } from '@src/core/response';
 
 import { Type } from 'class-transformer';
 import {
@@ -9,17 +10,17 @@ import {
 } from 'class-validator';
 
 class Phone {
-  @ApiProperty()
+  @ApiProperty({ description: '전화번호' })
   @IsPhoneNumber('KR')
   phone: string;
 }
 
 class Departure {
-  @ApiProperty()
+  @ApiProperty({ description: '경도' })
   @IsNumber()
   x: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '위도' })
   @IsNumber()
   y: number;
 
@@ -30,11 +31,11 @@ class Departure {
 }
 
 class Destination {
-  @ApiProperty()
+  @ApiProperty({ description: '경도' })
   @IsNumber()
   x: number;
 
-  @ApiProperty()
+  @ApiProperty({ description: '위도' })
   @IsNumber()
   y: number;
 
@@ -45,17 +46,22 @@ class Destination {
 }
 
 export class OrderSenderReceiverDto {
-  @ApiProperty()
+  @ApiProperty({ description: '주문 아이디' })
   @IsPositive()
   id: number;
 
-  @ApiProperty({ type: Departure })
+  @ApiProperty({ type: Departure, description: '출발지 정보' })
   @ValidateNested()
   @Type(() => Departure)
   departure: Departure;
 
-  @ApiProperty({ type: Destination })
+  @ApiProperty({ type: Destination, description: '도착지 정보' })
   @ValidateNested()
   @Type(() => Destination)
   destination: Destination;
+}
+
+export class OrderSenderReceiverResponseDto extends ResponseBody {
+  @ApiProperty()
+  data: OrderSenderReceiverDto;
 }

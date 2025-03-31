@@ -6,6 +6,8 @@ import {
   NotExistDataException,
   UnknownDataBaseException,
 } from '@src/core/exception';
+import { FindFailDeliveryImageDto } from '@src/router/order-image/dto/find-fail-image.dto';
+import { plainToInstance } from 'class-transformer';
 import { mock } from 'jest-mock-extended';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Model } from 'mongoose';
@@ -59,18 +61,14 @@ describe('FailDeliveryImageRepository', () => {
 
     test('통과하는 테스트', async () => {
       const orderId = 1;
-      const result = {
-        image: { data: [49], type: 'Buffer' },
+      const result = plainToInstance(FindFailDeliveryImageDto, {
+        image: Buffer.from([49]),
         reason: '이유',
-      };
+      });
 
       await expect(
         repository.findFailDeliveryImageByOrderId(orderId),
       ).resolves.toEqual(result);
-
-      expect(await repository.findFailDeliveryImageByOrderId(orderId)).toEqual(
-        result,
-      );
     });
 
     test('실패하는 테스트, 존재하지 않는 값 입력', async () => {
@@ -104,19 +102,20 @@ describe('FailDeliveryImageRepository', () => {
     test('통과하는 테스트', async () => {
       const orderId = 1;
       const result = {
-        __v: 0,
-        _id: orderId,
-        image: { data: [49], type: 'Buffer' },
+        image: Buffer.from('1'),
         reason: '이유',
       };
 
       await repository.createFailDeliveryImage({
         orderId,
-        bufferImage: Buffer.from('1'),
+        image: Buffer.from('1'),
         reason: '이유',
       });
 
-      expect((await model.findById(orderId))?.toJSON()).toEqual(result);
+      const savedData = await model.findById(orderId);
+
+      expect(Buffer.from(savedData.image)).toStrictEqual(result.image);
+      expect(savedData.reason).toEqual(result.reason);
     });
 
     test('실패하는 테스트, 중복 데이터', async () => {
@@ -133,7 +132,7 @@ describe('FailDeliveryImageRepository', () => {
       await expect(
         repository.createFailDeliveryImage({
           orderId,
-          bufferImage: Buffer.from('1'),
+          image: Buffer.from('1'),
           reason: '이유',
         }),
       ).rejects.toStrictEqual(error);

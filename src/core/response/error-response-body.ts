@@ -2,11 +2,10 @@ import { HttpStatus } from '@nestjs/common';
 import { BaseResponseBody } from './base-response-body';
 
 export class ErrorResponseBody<T> extends BaseResponseBody {
-  constructor(
-    code: HttpStatus,
-    message: string,
-    readonly error?: T,
-  ) {
+  readonly error?: T;
+
+  constructor(code: HttpStatus, message: string, error?: T) {
     super(code, message);
+    this.error = error;
   }
 }

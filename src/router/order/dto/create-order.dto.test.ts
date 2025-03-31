@@ -53,17 +53,22 @@ describe('CreateOrderDto', () => {
     });
 
     test('상품 정보가 없으면 검증에 실패해야 한다', async () => {
-      const data = {
+      const dto = {
         ...validData,
         product: {},
       };
+      const instance = plainToInstance(CreateOrderDto, dto);
 
-      const dto = plainToInstance(CreateOrderDto, data);
-
-      const errors = await validate(dto);
+      const errors = await validate(instance);
 
       expect(errors.length).toEqual(1);
-      expect(errors[0].property).toEqual('product');
+      expect(errors[0].constraints).toEqual({
+        isNotEmptyObject: 'product must be a non-empty object',
+      });
+      expect(errors[0].children.length).toEqual(4);
+      expect(errors[0].children[0].constraints).toEqual({
+        isPositive: 'width must be a positive number',
+      });
     });
   });
 

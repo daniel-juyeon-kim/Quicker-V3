@@ -1,12 +1,12 @@
 import { Buffer } from 'buffer';
-import { OrderCompleteImageDto } from '../../dto/order-complete-image.dto';
+import { FindCompleteDeliveryImageDto } from '../../dto/find-complete-image.dto';
 
 export interface IOrderCompleteImageService {
   findCompleteImageBufferByOrderId(
     orderId: number,
-  ): Promise<OrderCompleteImageDto>;
+  ): Promise<FindCompleteDeliveryImageDto>;
   createCompleteImageBuffer(params: {
     orderId: number;
-    buffer: Buffer;
+    image: Buffer;
   }): Promise<void>;
 }

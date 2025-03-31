@@ -1,4 +1,4 @@
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
 
@@ -36,14 +36,20 @@ describe('CreateUserDto', () => {
         },
         {
           children: [],
-          constraints: { isString: 'name must be a string' },
+          constraints: {
+            isNotEmpty: 'name should not be empty',
+            isString: 'name must be a string',
+          },
           property: 'name',
           target: {},
           value: undefined,
         },
         {
           children: [],
-          constraints: { isEmail: 'email must be an email' },
+          constraints: {
+            isEmail: 'email must be an email',
+            isNotEmpty: 'email should not be empty',
+          },
           property: 'email',
           target: {},
           value: undefined,
@@ -51,6 +57,7 @@ describe('CreateUserDto', () => {
         {
           children: [],
           constraints: {
+            isNotEmpty: 'contact should not be empty',
             isPhoneNumber: 'contact must be a valid phone number',
           },
           property: 'contact',
@@ -71,7 +78,7 @@ describe('CreateUserDto', () => {
 
       const errors = await validate(dto);
 
-      expect(errors).toEqual(result);
+      expect(instanceToPlain(errors)).toEqual(result);
     });
 
     test('잘못된 데이터 타입', async () => {

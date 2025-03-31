@@ -5,7 +5,7 @@ import {
   NotExistDataException,
   UnknownDataBaseException,
 } from '@src/core/exception';
-import { FailDeliveryImageDto } from '@src/router/order-image/dto/order-fail-image.dto';
+import { FindFailDeliveryImageDto } from '@src/router/order-image/dto/find-fail-image.dto';
 import { plainToInstance } from 'class-transformer';
 import { Model } from 'mongoose';
 import { FailDeliveryImage } from '../../models';
@@ -26,21 +26,21 @@ export class FailDeliveryImageRepository
 
   async createFailDeliveryImage({
     orderId,
-    bufferImage,
+    image,
     reason,
   }: {
     orderId: number;
-    bufferImage: Buffer;
+    image: Buffer;
     reason: string;
   }) {
     try {
-      const image = new this.model({
+      const imageModel = new this.model({
         _id: orderId,
-        image: bufferImage,
+        image,
         reason,
       });
 
-      await image.save();
+      await imageModel.save();
     } catch (error) {
       if (this.isDuplicatedDataError(error)) {
         throw new DuplicatedDataException(orderId);
@@ -55,9 +55,9 @@ export class FailDeliveryImageRepository
 
       this.validateNull(orderId, failImage);
 
-      const convertedFailImage = failImage.toJSON();
+      const plainFailImage: FindFailDeliveryImageDto = failImage;
 
-      return plainToInstance(FailDeliveryImageDto, convertedFailImage, {
+      return plainToInstance(FindFailDeliveryImageDto, plainFailImage, {
         excludeExtraneousValues: true,
       });
     } catch (error) {
