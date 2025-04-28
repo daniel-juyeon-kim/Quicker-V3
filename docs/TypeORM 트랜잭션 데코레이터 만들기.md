@@ -1,17 +1,16 @@
 ## 문제
 
-TypeORM을 이용하여 트랜잭션을 수행하려면 `DataSource`나 `EntityManager`로 트랜잭션 콜백함수나 QueryRunner로 코드를 감싸야합니다. 이러한 방식은 아래와 같은 문제점이 있습니다.
+TypeORM의 트랜잭션 콜백함수로 비즈니스 로직를 감싸면서 아래의 문제가 발생했습니다
 
-- React의 Props Drilling처럼 트랜잭션과 관련된 함수에 인수로 `DataSource`, `EntityManager`를 전달해야합니다.
-- 서비스 계층 메서드에서 트랜잭션 관련 코드를 작성해야합니다.(서비스 자체에 집중이 떨어집니다.)
+- React의 Props Drilling처럼 트랜잭션과 관련된 메서드에 `EntityManager`를 인수로 전달해야합니다.
+- 서비스 클래스의 메서드 내부에서 직접 트랜잭션을 열어야 합니다.(응집도가 떨어집니다.)
 
-Spring에서는 Transactional 어노테이션으로 AOP를 할 수 있습니다. Transactional 데코레이터로 공통 관심사를 추출하면 아래와 같은 장점이 있습니다.
+Spring의 Transactional 어노테이션처럼 공통 관심사를 추출해 AOP를 적용하면 아래와 같은 장점이 있습니다.
 
-- 레포지토리 메서드에 넘기는 인자를 줄일 수 있다.
-- 서비스 계층 메서드 내부에서 직접 트랜잭션 코드를 작성하지 않는다.
-- AOP가 가능하다.
+- 레포지토리 계층 메서드에 넘기는 인자를 줄일 수 있다.
+- 서비스 계층 메서드 내부에서 직접 트랜잭션을 열지 않는다.
 
-아래는 Transactional데코레이터를 적용한 서비스 계층으로 이번 글의 목표입니다.
+아래는 이번 글의 목표인 Transactional 데코레이터를 적용한 서비스의 코드 입니다.
 
 ```diff
 @Injectable()
@@ -54,7 +53,7 @@ export class Service implements IService {
 
       const url = this.deliveryUrlCreator.createUrl({ orderId, walletAddress });
       
-      // 외부 API
+      // 문자 발송 외부 API
       await this.smsApi.sendDeliveryTrackingMessage(url, receiver.phone);
 -   });
   }
@@ -65,8 +64,8 @@ export class Service implements IService {
 
 NestJS CLS 라이브러리의 뿌리가 되는 기능인 ALS(AsyncLocalStorage)에 대해 정리하고 NestJS CLS를 이용해 문제를 해결하겠습니다.
 
-> **NOTE:**\
-> [Typeorm Transactional](https://www.npmjs.com/package/typeorm-transactional)을 사용하면 본문에서 다루는 문제를 해결할 수 있습니다. 학습의 목적도 있으므로 본문에서는 NestJS CLS를 이용하겠습니다.
+> **NOTE**\
+> [Typeorm Transactional](https://www.npmjs.com/package/typeorm-transactional)을 사용하면 본문에서 다루는 문제를 쉽고 빠르게 해결할 수 있습니다. 학습의 목적도 있으므로 본문에서는 NestJS CLS를 이용하겠습니다.
 
 #### ALS(AsyncLocalStorage)
 
@@ -74,21 +73,20 @@ NestJS CLS 라이브러리의 뿌리가 되는 기능인 ALS(AsyncLocalStorage)�
 
 `AsyncLocalStorage#run` 내부에 실행된 함수는 같은 저장소에 접근하게 됩니다. 비동기 함수의 실행마다 고유한 저장소를 가지게 됩니다.
 
-이걸 활용하면 요청마다 트랜잭션 매니저를 별도로 저장하고 불러올 수 있습니다.
-
-> - [nestjs: async-local-storage](https://docs.nestjs.com/recipes/async-local-storage)
-> - [nodejs: async_context_class_asynclocalstorage](https://nodejs.org/api/async_context.html#async_context_class_asynclocalstorage)
+> **참고**\
+> [NestJS: Async Local Storage](https://docs.nestjs.com/recipes/async-local-storage)\
+> [Node.js: AsyncLocalStorage](https://nodejs.org/api/async_context.html#async_context_class_asynclocalstorage)
 
 ### 동작 흐름
 
-아이디어는 React에서 Props Drilling의 문제를 해결하기 위한 전역 상태 관리 라이브러리(Redux, Zustand)와 유사합니다. 필요할 때 전역 공간에 있는 데이터를 읽거나 저장합니다.
+아이디어는 React에서 Props Drilling을 해결하기 위해 사용하는 전역 상태 관리 라이브러리(Redux, Zustand)처럼 필요할 때 전역 공간에 있는 데이터를 읽거나 저장합니다.
 
 ![트랜잭션 데코레이터 동작 흐름](<transaction decorator work flow.drawio.svg>)
 
-1. 요청이 들어오면 미들웨어나 인터셉터에서 cls 컨텍스트에 `EntityManager`를 저장합니다.
+1. 요청이 들어오면 미들웨어에서 cls 컨텍스트에 `EntityManager`를 저장합니다.
 2. 트랜잭션 데코레이터 호출
    1. 데코레이터에서 cls 컨텍스트에 저장된 `EntityManager`를 가져옵니다.
-   2. 가져온 `EntityManager`로 트랜잭션을 엽니다. 트랜잭션 `EntityManager`를 cls 컨텍스트에 저장합니다.
+   2. 가져온 `EntityManager`로 트랜잭션을 엽니다. 트랜잭션 콜백에서 트랜잭션 엔티티 매니저를 cls 컨텍스트에 저장합니다.
 3. 레포지토리에서는 트랜잭션 매니저(cls 컨텍스트에서 `EntityManager`를 가지고 오는 헬퍼 클래스)를 통해 `EntityManager`를 가져와 모든 DB 작업을 수행합니다.
 
 ### 소스코드
