@@ -1,16 +1,11 @@
 ## 문제
 
-TypeORM의 트랜잭션 콜백함수로 비즈니스 로직를 감싸면서 아래의 문제가 발생했습니다
+TypeORM 0.3 부터 `Transaction` 데코레이터가 삭제되면서 `EntityManager.transaction`으로 트랜잭션을 처리했는데 다음과 같은 문제가 있었습니다.
 
-- React의 Props Drilling처럼 트랜잭션과 관련된 메서드에 `EntityManager`를 인수로 전달해야합니다.
-- 서비스 클래스의 메서드 내부에서 직접 트랜잭션을 열어야 합니다.(응집도가 떨어집니다.)
+- 레포지토리에 `TransactionalEntityManager`를 전달하면서 인터페이스가 커짐
+- 서비스 계층에서 트랜잭션 코드를 작성해 비즈니스 로직에 집중이 떨어짐
 
-Spring의 Transactional 어노테이션처럼 공통 관심사를 추출해 AOP를 적용하면 아래와 같은 장점이 있습니다.
-
-- 레포지토리 계층 메서드에 넘기는 인자를 줄일 수 있다.
-- 서비스 계층 메서드 내부에서 직접 트랜잭션을 열지 않는다.
-
-아래는 이번 글의 목표인 Transactional 데코레이터를 적용한 서비스의 코드 입니다.
+그래서 Spring의 Transactional 어노테이션 처럼 데코레이터를 만들어 AOP를 적용하고 싶었습니다. 아래는 Transactional 데코레이터를 적용한 서비스 계층의 코드입니다.
 
 ```diff
 @Injectable()
@@ -62,10 +57,7 @@ export class Service implements IService {
 
 ## 해결
 
-NestJS CLS 라이브러리의 뿌리가 되는 기능인 ALS(AsyncLocalStorage)에 대해 정리하고 NestJS CLS를 이용해 문제를 해결하겠습니다.
-
-> **NOTE**\
-> [Typeorm Transactional](https://www.npmjs.com/package/typeorm-transactional)을 사용하면 본문에서 다루는 문제를 쉽고 빠르게 해결할 수 있습니다. 학습의 목적도 있으므로 본문에서는 NestJS CLS를 이용하겠습니다.
+NestJS CLS의 기반이 되는 API인 ALS(AsyncLocalStorage)에 대해 정리하고 문제를 해결하겠습니다.
 
 #### ALS(AsyncLocalStorage)
 
@@ -77,17 +69,20 @@ NestJS CLS 라이브러리의 뿌리가 되는 기능인 ALS(AsyncLocalStorage)�
 > [NestJS: Async Local Storage](https://docs.nestjs.com/recipes/async-local-storage)\
 > [Node.js: AsyncLocalStorage](https://nodejs.org/api/async_context.html#async_context_class_asynclocalstorage)
 
+> **NOTE**\
+> [Typeorm Transactional](https://www.npmjs.com/package/typeorm-transactional)을 사용하면 본문에서 다루는 문제를 쉽고 빠르게 해결할 수 있습니다.
+
 ### 동작 흐름
 
-아이디어는 React에서 Props Drilling을 해결하기 위해 사용하는 전역 상태 관리 라이브러리(Redux, Zustand)처럼 필요할 때 전역 공간에 있는 데이터를 읽거나 저장합니다.
+React에서는 Props Drilling을 전역 상태 관리 라이브러리로 해결하는 방법이 있습니다. 본문에서는 이와 유사한 방법으로 `TransactionEntityManager`를 관리해 해결합니다.
 
 ![트랜잭션 데코레이터 동작 흐름](<transaction decorator work flow.drawio.svg>)
 
-1. 요청이 들어오면 미들웨어에서 cls 컨텍스트에 `EntityManager`를 저장합니다.
+1. 요청이 들어오면 미들웨어에서 cls 컨텍스트에 `EntityManager`를 저장
 2. 트랜잭션 데코레이터 호출
-   1. 데코레이터에서 cls 컨텍스트에 저장된 `EntityManager`를 가져옵니다.
-   2. 가져온 `EntityManager`로 트랜잭션을 엽니다. 트랜잭션 콜백에서 트랜잭션 엔티티 매니저를 cls 컨텍스트에 저장합니다.
-3. 레포지토리에서는 트랜잭션 매니저(cls 컨텍스트에서 `EntityManager`를 가지고 오는 헬퍼 클래스)를 통해 `EntityManager`를 가져와 모든 DB 작업을 수행합니다.
+   1. 데코레이터에서 cls 컨텍스트에 저장된 `EntityManager`를 가져옴
+   2. 가져온 `EntityManager`로 트랜잭션을 열고 트랜잭션 콜백에서 `TransactionEntityManager`를 cls 컨텍스트에 저장
+3. 레포지토리에서 트랜잭션 매니저(핼퍼)를 통해 저장된 `TransactionEntityManager`나 `EntityManager`로 DB 작업을 수행합니다.
 
 ### 소스코드
 
@@ -351,3 +346,8 @@ export class TransactionManager {
   }
 }
 ```
+
+### 성과
+
+- 레포지토리 메서드에 넘기는 인자를 줄여 인터페이스가 축소됨
+- 서비스 계층에서 비즈니스 로직에 더 집중할 수 있음

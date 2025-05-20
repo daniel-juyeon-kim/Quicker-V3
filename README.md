@@ -1,24 +1,22 @@
-## Quicker NestJS
+## Quicker V3
 
-기존 Express 프로젝트를 NestJS로 마이그레이션 한 프로젝트입니다. 개발자가 직접 의존성 주입을 하면서 복잡해진 코드를 Nest IoC 컨테이너로 간소화했습니다. 트랜잭션 코드를 데코레이터로 분리해 가독성과 유지 보수성을 향상시켰습니다.
+[Quicker V2](https://github.com/daniel-juyeon-kim/Quicker-V2)를 NestJS로 마이그레이션 한 프로젝트입니다. 의존성 주입 관리가 복잡해지는 문제를 Nest IoC 컨테이너를 이용해 간소화 하고 트랜잭션 코드를 데코레이터로 분리해 AOP를 적용했습니다.
 
-### Transactional 데코레이터로 AOP 구현
+### Transactional 데코레이터를 구현하여 AOP적용 [더보기](<docs/TypeORM 트랜잭션 데코레이터 만들기.md>)
 
 #### [문제]
 
-TypeORM의 트랜잭션 코드가 비즈니스 로직을 감싸면서 다음과 같은 문제가 있습니다.
+TypeORM 0.3 부터 `Transaction` 데코레이터가 삭제되서 `EntityManager.transaction`으로 트랜잭션을 했고 다음과 같은 문제가 있었습니다.
 
-- 트랜잭션을 수행할 메서드에 EntityManager를 인수로 전달 해야 함
-- 서비스 계층 메서드 내부에서 트랜잭션 코드를 직접 작성해야 함 (서비스 자체에 집중이 떨어짐)
+- 레포지토리에 `TransactionalEntityManager`를 전달하면서 인터페이스가 커짐
+- 서비스 계층 메서드 내부에서 트랜잭션 코드를 작성해 비즈니스 로직에 집중이 떨어짐
 
 #### [해결]
 
-Transactional 데코레이터를 만들어 AOP를 적용했습니다. NestJS CLS로 요청마다 독립된 컨텍스트에 `EntityManager`를 관리하고 핼퍼를 통해 이 컨텍스트에 접근해 DB 작업을 합니다. 다음과 같은 이점이 있었습니다.
+트랜잭션 코드를 Transactional 데코레이터로 추출해 AOP를 적용했습니다. NestJS CLS로 요청마다 [독립된 컨텍스트에 `EntityManager`를 두고 핼퍼로 접근](<docs/TypeORM 트랜잭션 데코레이터 만들기.md#동작-흐름>)해 DB 작업을 합니다. 다음과 같은 이점이 있습니다.
 
-- 레포지토리 메서드에 넘기는 인자를 줄일 수 있음
-- 서비스 계층 메서드 내부에서 직접 트랜잭션 코드를 제어하지 않음
-
-[자세히 보기](<docs/TypeORM 트랜잭션 데코레이터 만들기.md>)
+- 레포지토리 인터페이스 축소
+- 서비스 계층에서 비즈니스 로직에 더 집중할 수 있음
 
 #### 사용 기술
 
