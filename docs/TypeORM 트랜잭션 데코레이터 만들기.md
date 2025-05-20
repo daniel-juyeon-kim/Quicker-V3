@@ -2,8 +2,8 @@
 
 TypeORM 0.3 부터 `Transaction` 데코레이터가 삭제되면서 `EntityManager.transaction`으로 트랜잭션을 처리했는데 다음과 같은 문제가 있었습니다.
 
-- 레포지토리에 `TransactionalEntityManager`를 전달하면서 인터페이스가 커짐
-- 서비스 계층에서 트랜잭션 코드를 작성해 비즈니스 로직에 집중이 떨어짐
+- 레포지토리에 `TransactionalEntityManager`를 전달하면서 **인터페이스가 커짐**
+- 서비스 계층에서 트랜잭션 코드를 작성해 **비즈니스 로직에 집중이 떨어짐**
 
 그래서 Spring의 Transactional 어노테이션 처럼 데코레이터를 만들어 AOP를 적용하고 싶었습니다. 아래는 Transactional 데코레이터를 적용한 서비스 계층의 코드입니다.
 
@@ -57,7 +57,7 @@ export class Service implements IService {
 
 ## 해결
 
-NestJS CLS의 기반이 되는 API인 ALS(AsyncLocalStorage)에 대해 정리하고 문제를 해결하겠습니다.
+React에서는 Props Drilling을 전역 상태 관리 라이브러리로 해결하는 방법이 있습니다. 본문에서는 이와 유사하게 **NestJS CLS로 `TransactionEntityManager`를 관리해 해결**하겠습니다. 문제에 본격적으로 접근하지 전에 NestJS CLS의 기반이 되는 API인 ALS(AsyncLocalStorage)에 대해 정리하겠습니다.
 
 #### ALS(AsyncLocalStorage)
 
@@ -73,8 +73,6 @@ NestJS CLS의 기반이 되는 API인 ALS(AsyncLocalStorage)에 대해 정리하
 > [Typeorm Transactional](https://www.npmjs.com/package/typeorm-transactional)을 사용하면 본문에서 다루는 문제를 쉽고 빠르게 해결할 수 있습니다.
 
 ### 동작 흐름
-
-React에서는 Props Drilling을 전역 상태 관리 라이브러리로 해결하는 방법이 있습니다. 본문에서는 이와 유사한 방법으로 `TransactionEntityManager`를 관리해 해결합니다.
 
 ![트랜잭션 데코레이터 동작 흐름](<transaction decorator work flow.drawio.svg>)
 
@@ -349,5 +347,5 @@ export class TransactionManager {
 
 ### 성과
 
-- 레포지토리 메서드에 넘기는 인자를 줄여 인터페이스가 축소됨
+- 레포지토리 메서드에 넘기는 인자를 줄여 **인터페이스가 축소**됨
 - 서비스 계층에서 비즈니스 로직에 더 집중할 수 있음
