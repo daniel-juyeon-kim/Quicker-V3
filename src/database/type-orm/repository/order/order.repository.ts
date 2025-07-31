@@ -7,7 +7,7 @@ import {
 import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
 import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
 import { plainToInstance } from 'class-transformer';
-import { In, IsNull, Not } from 'typeorm';
+import { In } from 'typeorm';
 import {
   DepartureEntity,
   DestinationEntity,
@@ -165,54 +165,42 @@ export class OrderRepository
     deliverPersonWalletAddress: string,
   ) {
     try {
-      const isExistUser = await this.getManager().exists(UserEntity, {
+      const deliveryPerson = await this.getManager().findOne(UserEntity, {
+        select: { id: true },
         where: { walletAddress: deliverPersonWalletAddress },
       });
 
-      if (!isExistUser) {
+      if (!deliveryPerson) {
         throw new NotExistDataException(deliverPersonWalletAddress);
       }
 
-      const matchableOrders = await this.getManager().find(OrderEntity, {
-        relations: {
-          product: true,
-          transportation: true,
-          destination: true,
-          departure: true,
-        },
-        where: {
-          requester: { walletAddress: Not(deliverPersonWalletAddress) },
-          deliveryPerson: { walletAddress: IsNull() },
-        },
-        select: {
-          id: true,
-          detail: true,
-          product: {
-            width: true,
-            length: true,
-            height: true,
-            weight: true,
-          },
-          transportation: {
-            walking: true,
-            bicycle: true,
-            scooter: true,
-            bike: true,
-            car: true,
-            truck: true,
-          },
-          destination: {
-            x: true,
-            y: true,
-            detail: true,
-          },
-          departure: {
-            x: true,
-            y: true,
-            detail: true,
-          },
-        },
-      });
+      const matchableOrders = await this.getManager()
+        .createQueryBuilder(OrderEntity, 'order')
+        .where('order.requesterId != :deliveryPersonId', {
+          deliveryPersonId: deliveryPerson.id,
+        })
+        .andWhere('order.deliveryPersonId is null')
+        .leftJoin('order.product', 'product')
+        .addSelect([
+          'product.width',
+          'product.length',
+          'product.height',
+          'product.weight',
+        ])
+        .leftJoin('order.transportation', 'transportation')
+        .addSelect([
+          'transportation.walking',
+          'transportation.bicycle',
+          'transportation.scooter',
+          'transportation.bike',
+          'transportation.car',
+          'transportation.truck',
+        ])
+        .leftJoin('order.destination', 'destination')
+        .addSelect(['destination.x', 'destination.y', 'destination.detail'])
+        .leftJoin('order.departure', 'departure')
+        .addSelect(['departure.x', 'departure.y', 'departure.detail'])
+        .getMany();
 
       return plainToInstance(MatchableOrderDto, matchableOrders);
     } catch (error) {
