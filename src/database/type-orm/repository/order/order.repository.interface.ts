@@ -7,6 +7,7 @@ export interface IOrderRepository {
   ): Promise<OrderDetailDto[]>;
   findAllMatchableOrderByWalletAddress(
     walletAddress: string,
+    skipNumber: number,
   ): Promise<MatchableOrderDto[]>;
   updateDeliveryPersonAtOrder(deliveryPerson: {
     orderId: number;

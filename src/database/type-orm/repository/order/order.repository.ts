@@ -163,6 +163,7 @@ export class OrderRepository
   @Transactional()
   async findAllMatchableOrderByWalletAddress(
     deliverPersonWalletAddress: string,
+    skipNumber: number = 0,
   ) {
     try {
       const deliveryPerson = await this.getManager().findOne(UserEntity, {
@@ -176,18 +177,30 @@ export class OrderRepository
 
       const matchableOrders = await this.getManager()
         .createQueryBuilder(OrderEntity, 'order')
-        .where('order.requesterId != :deliveryPersonId', {
-          deliveryPersonId: deliveryPerson.id,
+        .where((qb) => {
+          const subQuery = qb
+            .subQuery()
+            .select('sq_order.id')
+            .from(OrderEntity, 'sq_order')
+            .where('sq_order.requesterId != :deliveryPersonId', {
+              deliveryPersonId: deliveryPerson.id,
+            })
+            .andWhere('sq_order.deliveryPersonId is null')
+            .orderBy('sq_order.id', 'DESC')
+            .limit(20)
+            .offset(skipNumber)
+            .getQuery();
+
+          return 'order.id IN (SELECT * FROM' + subQuery + ' as t)';
         })
-        .andWhere('order.deliveryPersonId is null')
-        .leftJoin('order.product', 'product')
+        .innerJoin('order.product', 'product')
         .addSelect([
           'product.width',
           'product.length',
           'product.height',
           'product.weight',
         ])
-        .leftJoin('order.transportation', 'transportation')
+        .innerJoin('order.transportation', 'transportation')
         .addSelect([
           'transportation.walking',
           'transportation.bicycle',
@@ -196,9 +209,9 @@ export class OrderRepository
           'transportation.car',
           'transportation.truck',
         ])
-        .leftJoin('order.destination', 'destination')
+        .innerJoin('order.destination', 'destination')
         .addSelect(['destination.x', 'destination.y', 'destination.detail'])
-        .leftJoin('order.departure', 'departure')
+        .innerJoin('order.departure', 'departure')
         .addSelect(['departure.x', 'departure.y', 'departure.detail'])
         .getMany();
 

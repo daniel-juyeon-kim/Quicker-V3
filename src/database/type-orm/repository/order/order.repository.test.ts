@@ -486,6 +486,34 @@ describe('OrderRepository', () => {
       });
     });
 
+    test('통과하는 테스트, 페이지네이션 사용으로 주문정보 하나는 조회 대상에서 넘어감', async () => {
+      const result = plainToInstance(MatchableOrderDto, [
+        {
+          id: 1,
+          detail: '디테일',
+          departure: { detail: '디테일', x: 0, y: 0 },
+          destination: { detail: '디테일', x: 37.5, y: 112 },
+          product: { height: 0, length: 0, weight: 0, width: 0 },
+          transportation: {
+            bicycle: 1,
+            bike: 1,
+            truck: 1,
+          },
+        },
+      ]);
+
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        await expect(
+          repository.findAllMatchableOrderByWalletAddress(
+            DELIVERY_PERSON_2_WALLET_ADDRESS,
+            1,
+          ),
+        ).resolves.toEqual(result);
+      });
+    });
+
     test('실패하는 테스트, 존재하지 않는 배송원의 지갑주소를 입력하면 NotExistDataException을 던짐', async () => {
       const anotherDeliveryPersonWalletAddress =
         '존재하지 않는 배송원의 지갑주소';
