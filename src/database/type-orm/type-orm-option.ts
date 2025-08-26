@@ -18,7 +18,7 @@ export class TypeOrmOption implements TypeOrmOptionsFactory {
       username: config.user,
       password: config.password,
       database: config.database,
-      entities: [join(__dirname, '/database/type-orm/entity/*.ts')],
+      entities: [join(__dirname, '/entity/*.{t,j}s')],
     };
   }
 
