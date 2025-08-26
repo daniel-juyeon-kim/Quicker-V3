@@ -7,5 +7,6 @@ export interface IOrderService {
   findAllOrderDetailByOrderIds(orderIds: number[]): Promise<OrderDetailDto[]>;
   findAllMatchableOrderByWalletAddress(
     walletAddress: string,
+    skipNumber: number,
   ): Promise<MatchableOrderDto[]>;
 }

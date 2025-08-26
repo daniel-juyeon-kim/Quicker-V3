@@ -46,9 +46,11 @@ export class OrderController {
   @ApiCommonInternalServerErrorResponse
   async findAllMatchableOrder(
     @Query('walletAddress', ValidateWalletAddressPipe) walletAddress: string,
+    @Query('skipNumber') skipNumber: number,
   ) {
     return await this.orderService.findAllMatchableOrderByWalletAddress(
       walletAddress,
+      skipNumber,
     );
   }
 
