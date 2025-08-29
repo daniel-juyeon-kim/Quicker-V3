@@ -486,31 +486,45 @@ describe('OrderRepository', () => {
       });
     });
 
-    test('통과하는 테스트, 페이지네이션 사용으로 주문정보 하나는 조회 대상에서 넘어감', async () => {
-      const result = plainToInstance(MatchableOrderDto, [
+    test('통과하는 테스트, 페이지네이션(skip) 적용 시, 지정된 수만큼 결과를 건너뛴다', async () => {
+      const skipNumber = 1;
+      const allMatchableOrders = plainToInstance(MatchableOrderDto, [
         {
           id: 1,
           detail: '디테일',
           departure: { detail: '디테일', x: 0, y: 0 },
           destination: { detail: '디테일', x: 37.5, y: 112 },
           product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: {
-            bicycle: 1,
-            bike: 1,
-            truck: 1,
-          },
+          transportation: { bicycle: 1, bike: 1, truck: 1 },
+        },
+        {
+          id: 2,
+          detail: '디테일',
+          departure: { detail: '디테일', x: 0, y: 0 },
+          destination: { detail: '디테일', x: 37.5, y: 112 },
+          product: { height: 0, length: 0, weight: 0, width: 0 },
+          transportation: { bicycle: 1, bike: 1, truck: 1 },
         },
       ]);
+      const skippedOrders = [allMatchableOrders[0]];
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
 
+        // skip 없이 조회
         await expect(
           repository.findAllMatchableOrderByWalletAddress(
             DELIVERY_PERSON_2_WALLET_ADDRESS,
-            1,
           ),
-        ).resolves.toEqual(result);
+        ).resolves.toEqual(allMatchableOrders);
+
+        // skip을 적용하여 조회
+        await expect(
+          repository.findAllMatchableOrderByWalletAddress(
+            DELIVERY_PERSON_2_WALLET_ADDRESS,
+            skipNumber,
+          ),
+        ).resolves.toEqual(skippedOrders);
       });
     });
 
@@ -710,9 +724,8 @@ describe('OrderRepository', () => {
     });
 
     test('통과하는 테스트', async () => {
-      await expect(manager.exists(OrderEntity)).resolves.toBe(true);
-
       const orderId = 1;
+      await expect(manager.exists(OrderEntity)).resolves.toBe(true);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
