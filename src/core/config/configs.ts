@@ -39,6 +39,7 @@ export const typeOrmConfig = registerAs('typeOrm', () => ({
   port: parseInt(process.env.DB_PORT),
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  poolSize: parseInt(process.env.DB_POOL_SIZE),
 }));
 
 export const mongooseConfig = registerAs('mongoose', () => ({
