@@ -11,7 +11,7 @@ export class UserEntity {
   @PrimaryColumn()
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   walletAddress: string;
 
   @Column()
