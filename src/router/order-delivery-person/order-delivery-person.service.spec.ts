@@ -408,7 +408,7 @@ describe('OrderDeliveryPersonService', () => {
 
         await createUser(manager, {
           userId: '0xjf823uh98h',
-          walletAddress,
+          walletAddress: '0xijfo2ijf',
           contact: '01046631513',
         });
 
