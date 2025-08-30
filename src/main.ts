@@ -1,8 +1,10 @@
-import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
+import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { setCommonMiddlewares } from './core/middleware/set-common-middleware';
+import {
+  setApiDocument,
+  setCommonMiddlewares,
+} from './core/middleware/set-common-middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -13,19 +15,9 @@ async function bootstrap() {
       errorHttpStatusCode: HttpStatus.BAD_REQUEST,
     }),
   );
-  setCommonMiddlewares(app);
   setApiDocument(app);
+  setCommonMiddlewares(app);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.SERVER_PORT);
 }
 bootstrap();
-
-const setApiDocument = (app: INestApplication) => {
-  const config = new DocumentBuilder()
-    .setTitle('Quicker Nest Server API')
-    .setDescription('Quicker nestjs API 문서')
-    .setVersion('1.0')
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
-};
