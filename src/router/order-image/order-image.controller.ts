@@ -110,7 +110,7 @@ export class OrderImageController {
         .addFileTypeValidator({ fileType: SUPPORT_IMAGE_EXT_REG_EXP })
         .build(),
     )
-    { image }: Express.Multer.File,
+    image: Express.Multer.File['buffer'],
     @Param('orderId', ParseIntPipe) orderId: number,
   ) {
     await this.orderCompleteImageService.createCompleteImageBuffer({

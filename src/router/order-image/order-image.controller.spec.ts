@@ -5,7 +5,6 @@ import {
   NotExistDataException,
 } from '@src/core/exception';
 import { mock } from 'jest-mock-extended';
-import { Readable } from 'stream';
 import { FindCompleteDeliveryImageDto } from './dto/find-complete-image.dto';
 import { FindFailDeliveryImageDto } from './dto/find-fail-image.dto';
 import { OrderImageController } from './order-image.controller';
@@ -132,29 +131,18 @@ describe('OrderImageController', () => {
   });
 
   describe('postCompleteImageBuffer', () => {
-    const imageFile = {
-      fieldname: 'uploadedFile',
-      originalname: 'example.png',
-      encoding: '7bit',
-      mimetype: 'image/png',
-      size: 1024,
-      stream: new Readable(),
-      destination: '/uploads',
-      filename: 'example-1234.png',
-      path: '/uploads/example-1234.png',
-      image: Buffer.from('file content'),
-    };
+    const image = Buffer.from('file content');
 
     test('통과하는 테스트', async () => {
       const dto = { orderId: 1 };
 
-      await controller.postCompleteImageBuffer(imageFile, dto.orderId);
+      await controller.postCompleteImageBuffer(image, dto.orderId);
 
       expect(
         orderCompleteImageService.createCompleteImageBuffer,
       ).toHaveBeenCalledWith({
         orderId: dto.orderId,
-        image: imageFile.image,
+        image,
       });
     });
 
@@ -167,7 +155,7 @@ describe('OrderImageController', () => {
       );
 
       await expect(
-        controller.postCompleteImageBuffer(imageFile, dto.orderId),
+        controller.postCompleteImageBuffer(image, dto.orderId),
       ).rejects.toStrictEqual(error);
     });
   });
