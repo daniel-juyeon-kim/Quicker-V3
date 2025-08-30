@@ -5,7 +5,7 @@ export class FailDeliveryImage {
   @Prop({ required: true })
   _id: number;
   @Prop({ type: Buffer, required: true })
-  image: Express.Multer.File['image'];
+  image: Express.Multer.File['buffer'];
   @Prop({ required: true })
   reason: string;
 }
