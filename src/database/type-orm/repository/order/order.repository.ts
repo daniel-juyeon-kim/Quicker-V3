@@ -163,8 +163,10 @@ export class OrderRepository
   @Transactional()
   async findAllMatchableOrderByWalletAddress(
     deliverPersonWalletAddress: string,
-    skipNumber: number = 0,
+    cursorId: number = 0,
   ) {
+    const pageSize = 20;
+
     try {
       const deliveryPerson = await this.getManager().findOne(UserEntity, {
         select: { id: true },
@@ -178,7 +180,7 @@ export class OrderRepository
       const matchableOrders = await this.getManager()
         .createQueryBuilder(OrderEntity, 'order')
         .where((qb) => {
-          const subQuery = qb
+          const subQueryBuilder = qb
             .subQuery()
             .select('sq_order.id')
             .from(OrderEntity, 'sq_order')
@@ -186,12 +188,17 @@ export class OrderRepository
               deliveryPersonId: deliveryPerson.id,
             })
             .andWhere('sq_order.deliveryPersonId is null')
-            .orderBy('sq_order.id', 'DESC')
-            .limit(20)
-            .offset(skipNumber)
-            .getQuery();
+            .limit(pageSize);
 
-          return 'order.id IN (SELECT * FROM' + subQuery + ' as t)';
+          if (cursorId > 0) {
+            subQueryBuilder.andWhere('sq_order.id < :cursorId', {
+              cursorId,
+            });
+          }
+
+          return (
+            'order.id IN (SELECT * FROM' + subQueryBuilder.getQuery() + ' as t)'
+          );
         })
         .innerJoin('order.product', 'product')
         .addSelect([
@@ -213,6 +220,7 @@ export class OrderRepository
         .addSelect(['destination.x', 'destination.y', 'destination.detail'])
         .innerJoin('order.departure', 'departure')
         .addSelect(['departure.x', 'departure.y', 'departure.detail'])
+        .orderBy('order.id', 'DESC')
         .getMany();
 
       return plainToInstance(MatchableOrderDto, matchableOrders);

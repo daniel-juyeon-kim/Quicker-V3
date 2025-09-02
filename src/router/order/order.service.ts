@@ -21,13 +21,13 @@ export class OrderService implements IOrderService {
     );
   }
 
-  async findAllMatchableOrderByWalletAddress(
+  async findAllMatchableOrder(
     walletAddress: string,
-    skipNumber: number,
+    lastCheckedOrderId: number,
   ) {
     return await this.orderRepository.findAllMatchableOrderByWalletAddress(
       walletAddress,
-      skipNumber,
+      lastCheckedOrderId,
     );
   }
 }

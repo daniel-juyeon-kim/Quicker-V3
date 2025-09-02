@@ -219,12 +219,12 @@ describe('LocationRepository', () => {
       const orderIds = [1, 2];
       const result = [
         {
-          id: 1,
+          id: 2,
           departure: { x: 127.09, y: 37.527 },
           destination: { x: 127.8494, y: 37.5 },
         },
         {
-          id: 2,
+          id: 1,
           departure: { x: 127.09, y: 37.527 },
           destination: { x: 127.8494, y: 37.5 },
         },

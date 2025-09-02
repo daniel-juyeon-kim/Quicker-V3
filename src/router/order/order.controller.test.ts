@@ -87,7 +87,7 @@ describe('OrderController', () => {
   describe('findAllMatchableOrder', () => {
     test('통과하는 테스트', async () => {
       const walletAddress = '배송원 지갑주소';
-      const skipNumber = 0;
+      const lastCheckedOrderId = 0;
       const resolveValue: MatchableOrderDto[] = [
         {
           id: 1,
@@ -102,33 +102,31 @@ describe('OrderController', () => {
           },
         },
       ];
-      service.findAllMatchableOrderByWalletAddress.mockResolvedValueOnce(
-        resolveValue,
-      );
+      service.findAllMatchableOrder.mockResolvedValueOnce(resolveValue);
 
       await expect(
-        controller.findAllMatchableOrder(walletAddress, skipNumber),
+        controller.findAllMatchableOrder(walletAddress, lastCheckedOrderId),
       ).resolves.toEqual(resolveValue);
 
-      expect(service.findAllMatchableOrderByWalletAddress).toHaveBeenCalledWith(
+      expect(service.findAllMatchableOrder).toHaveBeenCalledWith(
         walletAddress,
-        skipNumber,
+        lastCheckedOrderId,
       );
     });
 
     test('실패하는 테스트, 존재하지 않는 정보를 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '배송원 지갑주소';
-      const skipNumber = 0;
+      const lastCheckedOrderId = 0;
       const error = new NotExistDataException(walletAddress);
-      service.findAllMatchableOrderByWalletAddress.mockRejectedValueOnce(error);
+      service.findAllMatchableOrder.mockRejectedValueOnce(error);
 
       await expect(
-        controller.findAllMatchableOrder(walletAddress, skipNumber),
+        controller.findAllMatchableOrder(walletAddress, lastCheckedOrderId),
       ).rejects.toStrictEqual(error);
 
-      expect(service.findAllMatchableOrderByWalletAddress).toHaveBeenCalledWith(
+      expect(service.findAllMatchableOrder).toHaveBeenCalledWith(
         walletAddress,
-        skipNumber,
+        lastCheckedOrderId,
       );
     });
   });

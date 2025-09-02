@@ -324,25 +324,19 @@ describe('OrderRepository', () => {
       const orderIds = [2, 3];
       const result = [
         {
-          id: 2,
+          id: 3,
           detail: '디테일',
           departure: {
             x: 0,
             y: 0,
             detail: '디테일',
-            sender: {
-              name: '이름',
-              phone: '01012345678',
-            },
+            sender: { name: '이름', phone: '01012345678' },
           },
           destination: {
             x: 37.5,
             y: 112,
             detail: '디테일',
-            receiver: {
-              name: '이름',
-              phone: '01012345678',
-            },
+            receiver: { name: '이름', phone: '01012345678' },
           },
           product: {
             height: 0,
@@ -352,25 +346,19 @@ describe('OrderRepository', () => {
           },
         },
         {
-          id: 3,
+          id: 2,
           detail: '디테일',
           departure: {
             x: 0,
             y: 0,
             detail: '디테일',
-            sender: {
-              name: '이름',
-              phone: '01012345678',
-            },
+            sender: { name: '이름', phone: '01012345678' },
           },
           destination: {
             x: 37.5,
             y: 112,
             detail: '디테일',
-            receiver: {
-              name: '이름',
-              phone: '01012345678',
-            },
+            receiver: { name: '이름', phone: '01012345678' },
           },
           product: {
             height: 0,
@@ -450,28 +438,20 @@ describe('OrderRepository', () => {
     test('통과하는 테스트, 배송원이 수락한 주문과 생성한 주문은 조회되지 않음', async () => {
       const result = plainToInstance(MatchableOrderDto, [
         {
-          id: 1,
-          detail: '디테일',
-          departure: { detail: '디테일', x: 0, y: 0 },
-          destination: { detail: '디테일', x: 37.5, y: 112 },
-          product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: {
-            bicycle: 1,
-            bike: 1,
-            truck: 1,
-          },
-        },
-        {
           id: 2,
           detail: '디테일',
           departure: { detail: '디테일', x: 0, y: 0 },
           destination: { detail: '디테일', x: 37.5, y: 112 },
           product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: {
-            bicycle: 1,
-            bike: 1,
-            truck: 1,
-          },
+          transportation: { bicycle: 1, bike: 1, truck: 1 },
+        },
+        {
+          id: 1,
+          detail: '디테일',
+          departure: { detail: '디테일', x: 0, y: 0 },
+          destination: { detail: '디테일', x: 37.5, y: 112 },
+          product: { height: 0, length: 0, weight: 0, width: 0 },
+          transportation: { bicycle: 1, bike: 1, truck: 1 },
         },
       ]);
 
@@ -486,17 +466,8 @@ describe('OrderRepository', () => {
       });
     });
 
-    test('통과하는 테스트, 페이지네이션(skip) 적용 시, 지정된 수만큼 결과를 건너뛴다', async () => {
-      const skipNumber = 1;
+    test('통과하는 테스트, 페이지네이션(cursor) 적용 시, 커서 ID 보다 작은 ID를 가진 결과를 반환한다', async () => {
       const allMatchableOrders = plainToInstance(MatchableOrderDto, [
-        {
-          id: 1,
-          detail: '디테일',
-          departure: { detail: '디테일', x: 0, y: 0 },
-          destination: { detail: '디테일', x: 37.5, y: 112 },
-          product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: { bicycle: 1, bike: 1, truck: 1 },
-        },
         {
           id: 2,
           detail: '디테일',
@@ -505,26 +476,36 @@ describe('OrderRepository', () => {
           product: { height: 0, length: 0, weight: 0, width: 0 },
           transportation: { bicycle: 1, bike: 1, truck: 1 },
         },
+        {
+          id: 1,
+          detail: '디테일',
+          departure: { detail: '디테일', x: 0, y: 0 },
+          destination: { detail: '디테일', x: 37.5, y: 112 },
+          product: { height: 0, length: 0, weight: 0, width: 0 },
+          transportation: { bicycle: 1, bike: 1, truck: 1 },
+        },
       ]);
-      const skippedOrders = [allMatchableOrders[0]];
+
+      const paginatedOrders = [allMatchableOrders[1]];
+      const cursorOrderId = 2;
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
 
-        // skip 없이 조회
+        // 1. 페이지네이션 없이 전체 결과 조회
         await expect(
           repository.findAllMatchableOrderByWalletAddress(
             DELIVERY_PERSON_2_WALLET_ADDRESS,
           ),
         ).resolves.toEqual(allMatchableOrders);
 
-        // skip을 적용하여 조회
+        // 2. 커서를 적용하여 다음 페이지 조회
         await expect(
           repository.findAllMatchableOrderByWalletAddress(
             DELIVERY_PERSON_2_WALLET_ADDRESS,
-            skipNumber,
+            cursorOrderId,
           ),
-        ).resolves.toEqual(skippedOrders);
+        ).resolves.toEqual(paginatedOrders);
       });
     });
 
