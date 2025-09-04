@@ -15,7 +15,7 @@ import {
   UserEntity,
 } from '.';
 
-@Entity({ name: 'order' })
+@Entity({ name: 'order', orderBy: { id: 'DESC' } })
 export class OrderEntity {
   @PrimaryGeneratedColumn()
   id: number;
