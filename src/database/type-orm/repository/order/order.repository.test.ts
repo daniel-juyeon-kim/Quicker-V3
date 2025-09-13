@@ -5,16 +5,16 @@ import {
   BusinessRuleConflictDataException,
   NotExistDataException,
 } from '@src/core/exception';
-import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
-import { plainToInstance } from 'class-transformer';
 import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
 import { afterEach } from 'node:test';
 import { EntityManager } from 'typeorm';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import {
+  DenormalOrderEntity,
   DepartureEntity,
   DestinationEntity,
   OrderEntity,
+  OrderParticipantEntity,
   ProductEntity,
   TransportationEntity,
   UserEntity,
@@ -147,6 +147,8 @@ describe('OrderRepository', () => {
           OrderEntity,
           UserEntity,
           ProductEntity,
+          DenormalOrderEntity,
+          OrderParticipantEntity,
           TransportationEntity,
           DestinationEntity,
           DepartureEntity,
@@ -380,6 +382,55 @@ describe('OrderRepository', () => {
   });
 
   describe('findAllMatchableOrderByWalletAddress', () => {
+    const createOrder = async (
+      manager: EntityManager,
+      {
+        requester,
+        deliveryPerson,
+        orderId,
+      }: {
+        requester: UserEntity;
+        deliveryPerson: UserEntity | null;
+        orderId: number;
+      },
+    ) => {
+      await manager.transaction(async (manager) => {
+        const order = manager.create(DenormalOrderEntity, {
+          id: orderId,
+          requester,
+          deliveryPerson,
+          participant: {
+            id: orderId,
+            senderName: '발송인 이름',
+            senderPhone: '010-1234-1234',
+            receiverName: '수취인 이름',
+            receiverPhone: '010-0987-0987',
+          },
+          walking: 0,
+          bicycle: 1,
+          scooter: 0,
+          bike: 1,
+          car: 0,
+          truck: 1,
+          width: 0,
+          length: 0,
+          height: 0,
+          weight: 0,
+          destinationX: 37.5,
+          destinationY: 112,
+          detail: '디테일',
+          destinationDetail: '디테일',
+          departureX: 0,
+          departureY: 0,
+          departureDetail: '디테일',
+          deliveryPersonMatchedDate: null,
+        });
+        await manager.save(order);
+
+        return order.id;
+      });
+    };
+
     const REQUESTER_WALLET_ADDRESS = '의뢰인 지갑주소';
     const DELIVERY_PERSON_1_WALLET_ADDRESS = '배송원1 지갑주소';
     const DELIVERY_PERSON_2_WALLET_ADDRESS = '배송원2 지갑주소';
@@ -432,18 +483,18 @@ describe('OrderRepository', () => {
 
     afterEach(async () => {
       await manager.clear(UserEntity);
-      await manager.clear(OrderEntity);
+      await manager.clear(DenormalOrderEntity);
     });
 
     test('통과하는 테스트, 배송원이 수락한 주문과 생성한 주문은 조회되지 않음', async () => {
-      const result = plainToInstance(MatchableOrderDto, [
+      const result = [
         {
           id: 2,
           detail: '디테일',
           departure: { detail: '디테일', x: 0, y: 0 },
           destination: { detail: '디테일', x: 37.5, y: 112 },
           product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: { bicycle: 1, bike: 1, truck: 1 },
+          transportation: { bicycle: true, bike: true, truck: true },
         },
         {
           id: 1,
@@ -451,9 +502,9 @@ describe('OrderRepository', () => {
           departure: { detail: '디테일', x: 0, y: 0 },
           destination: { detail: '디테일', x: 37.5, y: 112 },
           product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: { bicycle: 1, bike: 1, truck: 1 },
+          transportation: { bicycle: true, bike: true, truck: true },
         },
-      ]);
+      ];
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -462,19 +513,19 @@ describe('OrderRepository', () => {
           repository.findAllMatchableOrderByWalletAddress(
             DELIVERY_PERSON_2_WALLET_ADDRESS,
           ),
-        ).resolves.toEqual(result);
+        ).resolves.toMatchObject(result);
       });
     });
 
     test('통과하는 테스트, 페이지네이션(cursor) 적용 시, 커서 ID 보다 작은 ID를 가진 결과를 반환한다', async () => {
-      const allMatchableOrders = plainToInstance(MatchableOrderDto, [
+      const allMatchableOrders = [
         {
           id: 2,
           detail: '디테일',
           departure: { detail: '디테일', x: 0, y: 0 },
           destination: { detail: '디테일', x: 37.5, y: 112 },
           product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: { bicycle: 1, bike: 1, truck: 1 },
+          transportation: { bicycle: true, bike: true, truck: true },
         },
         {
           id: 1,
@@ -482,9 +533,9 @@ describe('OrderRepository', () => {
           departure: { detail: '디테일', x: 0, y: 0 },
           destination: { detail: '디테일', x: 37.5, y: 112 },
           product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: { bicycle: 1, bike: 1, truck: 1 },
+          transportation: { bicycle: true, bike: true, truck: true },
         },
-      ]);
+      ];
 
       const paginatedOrders = [allMatchableOrders[1]];
       const cursorOrderId = 2;

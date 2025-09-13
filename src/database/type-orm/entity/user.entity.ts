@@ -1,8 +1,8 @@
 import { Column, Entity, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 import {
   BirthDateEntity,
+  DenormalOrderEntity,
   JoinDateEntity,
-  OrderEntity,
   ProfileImageEntity,
 } from '.';
 
@@ -38,9 +38,9 @@ export class UserEntity {
   })
   birthDate: BirthDateEntity;
 
-  @OneToMany(() => OrderEntity, (order) => order.requester)
-  requestOrder: OrderEntity[];
+  @OneToMany(() => DenormalOrderEntity, (order) => order.requester)
+  requestOrder: DenormalOrderEntity[];
 
-  @OneToMany(() => OrderEntity, (order) => order.deliveryPerson)
-  deliverOrder: OrderEntity[];
+  @OneToMany(() => DenormalOrderEntity, (order) => order.deliveryPerson)
+  deliverOrder: DenormalOrderEntity[];
 }
