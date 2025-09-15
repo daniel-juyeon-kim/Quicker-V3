@@ -4,11 +4,15 @@ import {
   NotExistDataException,
   UnknownDataBaseException,
 } from '@src/core/exception';
-import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
+import {
+  DenomalMatchableOrderDto,
+  MatchableOrderDto,
+} from '@src/router/order/dto/matchable-order.dto';
 import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
 import { plainToInstance } from 'class-transformer';
 import { In } from 'typeorm';
 import {
+  DenormalOrderEntity,
   DepartureEntity,
   DestinationEntity,
   OrderEntity,
@@ -164,7 +168,7 @@ export class OrderRepository
   async findAllMatchableOrderByWalletAddress(
     deliverPersonWalletAddress: string,
     cursorId: number = 0,
-  ) {
+  ): Promise<MatchableOrderDto[]> {
     const pageSize = 20;
 
     try {
@@ -177,53 +181,24 @@ export class OrderRepository
         throw new NotExistDataException(deliverPersonWalletAddress);
       }
 
-      const matchableOrders = await this.getManager()
-        .createQueryBuilder(OrderEntity, 'order')
-        .where((qb) => {
-          const subQueryBuilder = qb
-            .subQuery()
-            .select('sq_order.id')
-            .from(OrderEntity, 'sq_order')
-            .where('sq_order.requesterId != :deliveryPersonId', {
-              deliveryPersonId: deliveryPerson.id,
-            })
-            .andWhere('sq_order.deliveryPersonId is null')
-            .limit(pageSize);
-
-          if (cursorId > 0) {
-            subQueryBuilder.andWhere('sq_order.id < :cursorId', {
-              cursorId,
-            });
-          }
-
-          return (
-            'order.id IN (SELECT * FROM' + subQueryBuilder.getQuery() + ' as t)'
-          );
+      const queryBuilder = this.getManager()
+        .createQueryBuilder(DenormalOrderEntity, 'order')
+        .where('order.requesterId != :deliveryPersonId', {
+          deliveryPersonId: deliveryPerson.id,
         })
-        .innerJoin('order.product', 'product')
-        .addSelect([
-          'product.width',
-          'product.length',
-          'product.height',
-          'product.weight',
-        ])
-        .innerJoin('order.transportation', 'transportation')
-        .addSelect([
-          'transportation.walking',
-          'transportation.bicycle',
-          'transportation.scooter',
-          'transportation.bike',
-          'transportation.car',
-          'transportation.truck',
-        ])
-        .innerJoin('order.destination', 'destination')
-        .addSelect(['destination.x', 'destination.y', 'destination.detail'])
-        .innerJoin('order.departure', 'departure')
-        .addSelect(['departure.x', 'departure.y', 'departure.detail'])
+        .andWhere('order.deliveryPersonId is null')
         .orderBy('order.id', 'DESC')
-        .getMany();
+        .limit(pageSize);
 
-      return plainToInstance(MatchableOrderDto, matchableOrders);
+      if (cursorId > 0) {
+        queryBuilder.andWhere('order.id < :cursorId', {
+          cursorId,
+        });
+      }
+
+      const matchableOrders = await queryBuilder.getMany();
+
+      return matchableOrders.map((o) => new DenomalMatchableOrderDto(o));
     } catch (error) {
       if (error instanceof NotExistDataException) {
         throw error;

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ResponseBody } from '@src/core/response';
-import { TransportationEntity } from '@src/database';
+import { DenormalOrderEntity, TransportationEntity } from '@src/database';
 import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -132,4 +132,48 @@ export class MatchableOrderDto {
 export class MatchableOrderResponseDto extends ResponseBody {
   @ApiProperty()
   data: MatchableOrderDto;
+}
+
+export class DenomalMatchableOrderDto {
+  id: number;
+
+  detail: string;
+
+  product: Product;
+
+  transportation: Transportation;
+
+  destination: Location;
+
+  departure: Location;
+
+  constructor(denomalOrder: DenormalOrderEntity) {
+    this.id = denomalOrder.id;
+    this.detail = denomalOrder.detail;
+    this.product = {
+      width: denomalOrder.width,
+      length: denomalOrder.length,
+      height: denomalOrder.height,
+      weight: denomalOrder.weight,
+    };
+    this.destination = {
+      x: denomalOrder.destinationX,
+      y: denomalOrder.destinationY,
+      detail: denomalOrder.destinationDetail,
+    };
+    this.departure = {
+      x: denomalOrder.departureX,
+      y: denomalOrder.departureY,
+      detail: denomalOrder.departureDetail,
+    };
+    const transportation = Transportation.parseToTransportationDto({
+      walking: denomalOrder.walking,
+      bicycle: denomalOrder.bicycle,
+      scooter: denomalOrder.scooter,
+      bike: denomalOrder.bike,
+      car: denomalOrder.car,
+      truck: denomalOrder.truck,
+    });
+    this.transportation = transportation;
+  }
 }
