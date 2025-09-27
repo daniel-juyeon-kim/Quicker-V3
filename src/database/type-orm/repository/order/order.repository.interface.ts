@@ -1,5 +1,5 @@
-import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
 import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
+import { MatchableOrderDto } from '@src/router/order/dto/unmached-order.dto';
 
 export interface IOrderRepository {
   findAllCreatedOrDeliveredOrderDetailByOrderIds(

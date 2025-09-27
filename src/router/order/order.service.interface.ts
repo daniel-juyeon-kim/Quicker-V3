@@ -1,6 +1,6 @@
 import { CreateOrderDto } from './dto/create-order.dto';
-import { MatchableOrderDto } from './dto/matchable-order.dto';
 import { OrderDetailDto } from './dto/order-detail.dto';
+import { MatchableOrderDto } from './dto/unmached-order.dto';
 
 export interface IOrderService {
   createOrder(dto: CreateOrderDto): Promise<void>;

@@ -17,6 +17,7 @@ import {
   OrderParticipantEntity,
   ProductEntity,
   TransportationEntity,
+  UnmatchedOrderEntity,
   UserEntity,
 } from '../../entity';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
@@ -386,19 +387,16 @@ describe('OrderRepository', () => {
       manager: EntityManager,
       {
         requester,
-        deliveryPerson,
         orderId,
       }: {
         requester: UserEntity;
-        deliveryPerson: UserEntity | null;
         orderId: number;
       },
     ) => {
       await manager.transaction(async (manager) => {
-        const order = manager.create(DenormalOrderEntity, {
+        const order = manager.create(UnmatchedOrderEntity, {
           id: orderId,
           requester,
-          deliveryPerson,
           participant: {
             id: orderId,
             senderName: '발송인 이름',
@@ -446,7 +444,7 @@ describe('OrderRepository', () => {
         walletAddress: DELIVERY_PERSON_1_WALLET_ADDRESS,
         contact: '01012340987',
       });
-      const deliveryPerson2 = await createUser(manager, {
+      await createUser(manager, {
         userId: '배송원2',
         walletAddress: DELIVERY_PERSON_2_WALLET_ADDRESS,
         contact: '01009870987',
@@ -456,55 +454,37 @@ describe('OrderRepository', () => {
       await createOrder(manager, {
         orderId: 1,
         requester,
-        deliveryPerson: null,
       });
-
-      // 배송원이 주문 생성
+      // 배송원1이 주문 생성
       await createOrder(manager, {
         orderId: 2,
         requester: deliveryPerson1,
-        deliveryPerson: null,
-      });
-
-      // 의뢰인이 생성한 주문을 배송원이 수락
-      await createOrder(manager, {
-        orderId: 3,
-        requester,
-        deliveryPerson: deliveryPerson1,
-      });
-
-      // 의뢰인이 생성한 주문을 다른 배송원이 수락
-      await createOrder(manager, {
-        orderId: 4,
-        requester,
-        deliveryPerson: deliveryPerson2,
       });
     });
 
     afterEach(async () => {
       await manager.clear(UserEntity);
-      await manager.clear(DenormalOrderEntity);
+      await manager.clear(UnmatchedOrderEntity);
     });
 
-    test('통과하는 테스트, 배송원이 수락한 주문과 생성한 주문은 조회되지 않음', async () => {
-      const result = [
-        {
-          id: 2,
-          detail: '디테일',
-          departure: { detail: '디테일', x: 0, y: 0 },
-          destination: { detail: '디테일', x: 37.5, y: 112 },
-          product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: { bicycle: true, bike: true, truck: true },
-        },
-        {
-          id: 1,
-          detail: '디테일',
-          departure: { detail: '디테일', x: 0, y: 0 },
-          destination: { detail: '디테일', x: 37.5, y: 112 },
-          product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: { bicycle: true, bike: true, truck: true },
-        },
-      ];
+    test('통과하는 테스트, 의뢰인은 자신의 의뢰를 볼 수 없다.', async () => {
+      const requesterOrder = {
+        id: 1,
+        detail: '디테일',
+        departure: { detail: '디테일', x: 0, y: 0 },
+        destination: { detail: '디테일', x: 37.5, y: 112 },
+        product: { height: 0, length: 0, weight: 0, width: 0 },
+        transportation: { bicycle: true, bike: true, truck: true },
+      };
+      const deliveryPerson1Order = {
+        id: 2,
+        detail: '디테일',
+        departure: { detail: '디테일', x: 0, y: 0 },
+        destination: { detail: '디테일', x: 37.5, y: 112 },
+        product: { height: 0, length: 0, weight: 0, width: 0 },
+        transportation: { bicycle: true, bike: true, truck: true },
+      };
+      const result = [deliveryPerson1Order, requesterOrder];
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
@@ -514,6 +494,18 @@ describe('OrderRepository', () => {
             DELIVERY_PERSON_2_WALLET_ADDRESS,
           ),
         ).resolves.toMatchObject(result);
+
+        await expect(
+          repository.findAllMatchableOrderByWalletAddress(
+            DELIVERY_PERSON_1_WALLET_ADDRESS,
+          ),
+        ).resolves.toMatchObject([requesterOrder]);
+
+        await expect(
+          repository.findAllMatchableOrderByWalletAddress(
+            REQUESTER_WALLET_ADDRESS,
+          ),
+        ).resolves.toMatchObject([deliveryPerson1Order]);
       });
     });
 
