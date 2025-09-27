@@ -467,7 +467,7 @@ describe('OrderRepository', () => {
       await manager.clear(UnmatchedOrderEntity);
     });
 
-    test('통과하는 테스트, 의뢰인은 자신의 의뢰를 볼 수 없다.', async () => {
+    test('통과하는 테스트, 의뢰인도 자신의 의뢰를 볼 수 있다.', async () => {
       const requesterOrder = {
         id: 1,
         detail: '디테일',
@@ -499,13 +499,13 @@ describe('OrderRepository', () => {
           repository.findAllMatchableOrderByWalletAddress(
             DELIVERY_PERSON_1_WALLET_ADDRESS,
           ),
-        ).resolves.toMatchObject([requesterOrder]);
+        ).resolves.toMatchObject(result);
 
         await expect(
           repository.findAllMatchableOrderByWalletAddress(
             REQUESTER_WALLET_ADDRESS,
           ),
-        ).resolves.toMatchObject([deliveryPerson1Order]);
+        ).resolves.toMatchObject(result);
       });
     });
 

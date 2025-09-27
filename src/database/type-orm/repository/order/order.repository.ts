@@ -183,9 +183,6 @@ export class OrderRepository
 
       const queryBuilder = this.getManager()
         .createQueryBuilder(UnmatchedOrderEntity, 'order')
-        .where('order.requesterId != :deliveryPersonId', {
-          deliveryPersonId: deliveryPerson.id,
-        })
         .orderBy('order.id', 'DESC')
         .limit(pageSize);
 
