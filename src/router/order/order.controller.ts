@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { ARRAY_SEPARATOR, ServiceToken } from '@src/core/constant';
-import { ValidateWalletAddressPipe } from '@src/core/pipe/wallet-address-pipe/wallet-address.pipe';
 import { ApiCommonBadRequestResponse } from '@src/core/response/dto/bad-request-response';
 import { ApiCommonCreatedResponse } from '@src/core/response/dto/created-response';
 import { ApiCommonInternalServerErrorResponse } from '@src/core/response/dto/internal-server-error-response';
@@ -45,13 +44,9 @@ export class OrderController {
   @ApiCommonNotFoundResponse
   @ApiCommonInternalServerErrorResponse
   async findAllMatchableOrder(
-    @Query('walletAddress', ValidateWalletAddressPipe) walletAddress: string,
     @Query('lastCheckedOrderId') lastCheckedOrderId: number,
   ) {
-    return await this.orderService.findAllMatchableOrder(
-      walletAddress,
-      lastCheckedOrderId,
-    );
+    return await this.orderService.findAllUnmatchedOrder(lastCheckedOrderId);
   }
 
   @Get('detail')

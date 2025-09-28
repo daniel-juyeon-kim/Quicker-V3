@@ -5,8 +5,7 @@ import { MatchableOrderDto } from './dto/unmached-order.dto';
 export interface IOrderService {
   createOrder(dto: CreateOrderDto): Promise<void>;
   findAllOrderDetailByOrderIds(orderIds: number[]): Promise<OrderDetailDto[]>;
-  findAllMatchableOrder(
-    walletAddress: string,
+  findAllUnmatchedOrder(
     lastCheckedOrderId: number,
   ): Promise<MatchableOrderDto[]>;
 }

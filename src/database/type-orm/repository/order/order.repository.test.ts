@@ -489,23 +489,9 @@ describe('OrderRepository', () => {
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
 
-        await expect(
-          repository.findAllMatchableOrderByWalletAddress(
-            DELIVERY_PERSON_2_WALLET_ADDRESS,
-          ),
-        ).resolves.toMatchObject(result);
-
-        await expect(
-          repository.findAllMatchableOrderByWalletAddress(
-            DELIVERY_PERSON_1_WALLET_ADDRESS,
-          ),
-        ).resolves.toMatchObject(result);
-
-        await expect(
-          repository.findAllMatchableOrderByWalletAddress(
-            REQUESTER_WALLET_ADDRESS,
-          ),
-        ).resolves.toMatchObject(result);
+        await expect(repository.findAllUnmatchedOrder()).resolves.toMatchObject(
+          result,
+        );
       });
     });
 
@@ -536,37 +522,14 @@ describe('OrderRepository', () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
 
         // 1. 페이지네이션 없이 전체 결과 조회
-        await expect(
-          repository.findAllMatchableOrderByWalletAddress(
-            DELIVERY_PERSON_2_WALLET_ADDRESS,
-          ),
-        ).resolves.toEqual(allMatchableOrders);
+        await expect(repository.findAllUnmatchedOrder()).resolves.toEqual(
+          allMatchableOrders,
+        );
 
         // 2. 커서를 적용하여 다음 페이지 조회
         await expect(
-          repository.findAllMatchableOrderByWalletAddress(
-            DELIVERY_PERSON_2_WALLET_ADDRESS,
-            cursorOrderId,
-          ),
+          repository.findAllUnmatchedOrder(cursorOrderId),
         ).resolves.toEqual(paginatedOrders);
-      });
-    });
-
-    test('실패하는 테스트, 존재하지 않는 배송원의 지갑주소를 입력하면 NotExistDataException을 던짐', async () => {
-      const anotherDeliveryPersonWalletAddress =
-        '존재하지 않는 배송원의 지갑주소';
-      const error = new NotExistDataException(
-        anotherDeliveryPersonWalletAddress,
-      );
-
-      await cls.run(async () => {
-        cls.set(ENTITY_MANAGER_KEY, manager);
-
-        await expect(
-          repository.findAllMatchableOrderByWalletAddress(
-            anotherDeliveryPersonWalletAddress,
-          ),
-        ).rejects.toStrictEqual(error);
       });
     });
   });

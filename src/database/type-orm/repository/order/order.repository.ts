@@ -165,22 +165,12 @@ export class OrderRepository
   }
 
   @Transactional()
-  async findAllMatchableOrderByWalletAddress(
-    deliverPersonWalletAddress: string,
+  async findAllUnmatchedOrder(
     cursorId: number = 0,
   ): Promise<MatchableOrderDto[]> {
     const pageSize = 20;
 
     try {
-      const deliveryPerson = await this.getManager().findOne(UserEntity, {
-        select: { id: true },
-        where: { walletAddress: deliverPersonWalletAddress },
-      });
-
-      if (!deliveryPerson) {
-        throw new NotExistDataException(deliverPersonWalletAddress);
-      }
-
       const queryBuilder = this.getManager()
         .createQueryBuilder(UnmatchedOrderEntity, 'order')
         .orderBy('order.id', 'DESC')
@@ -196,9 +186,6 @@ export class OrderRepository
 
       return matchableOrders.map((o) => new UnmatchedOrderDto(o));
     } catch (error) {
-      if (error instanceof NotExistDataException) {
-        throw error;
-      }
       throw new UnknownDataBaseException(error);
     }
   }
