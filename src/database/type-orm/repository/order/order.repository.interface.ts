@@ -1,14 +1,11 @@
-import { MatchableOrderDto } from '@src/router/order/dto/matchable-order.dto';
 import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
+import { MatchableOrderDto } from '@src/router/order/dto/unmached-order.dto';
 
 export interface IOrderRepository {
   findAllCreatedOrDeliveredOrderDetailByOrderIds(
     orderIds: number[],
   ): Promise<OrderDetailDto[]>;
-  findAllMatchableOrderByWalletAddress(
-    walletAddress: string,
-    skipNumber: number,
-  ): Promise<MatchableOrderDto[]>;
+  findAllUnmatchedOrder(skipNumber: number): Promise<MatchableOrderDto[]>;
   updateDeliveryPersonAtOrder(deliveryPerson: {
     orderId: number;
     walletAddress: string;

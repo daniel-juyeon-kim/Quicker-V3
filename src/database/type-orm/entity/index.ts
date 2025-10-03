@@ -12,4 +12,5 @@ export * from './profile-image.entity';
 export * from './receiver.entity';
 export * from './sender.entity';
 export * from './transportation.entity';
+export * from './unmatched-order.entity';
 export * from './user.entity';

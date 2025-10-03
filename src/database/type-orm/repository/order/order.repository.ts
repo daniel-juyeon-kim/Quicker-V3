@@ -4,15 +4,14 @@ import {
   NotExistDataException,
   UnknownDataBaseException,
 } from '@src/core/exception';
-import {
-  DenomalMatchableOrderDto,
-  MatchableOrderDto,
-} from '@src/router/order/dto/matchable-order.dto';
 import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
+import {
+  MatchableOrderDto,
+  UnmatchedOrderDto,
+} from '@src/router/order/dto/unmached-order.dto';
 import { plainToInstance } from 'class-transformer';
 import { In } from 'typeorm';
 import {
-  DenormalOrderEntity,
   DepartureEntity,
   DestinationEntity,
   OrderEntity,
@@ -20,6 +19,7 @@ import {
   ReceiverEntity,
   SenderEntity,
   TransportationEntity,
+  UnmatchedOrderEntity,
   UserEntity,
 } from '../..';
 import { Transactional } from '../../util/transaction/decorator/transactional.decorator';
@@ -165,28 +165,14 @@ export class OrderRepository
   }
 
   @Transactional()
-  async findAllMatchableOrderByWalletAddress(
-    deliverPersonWalletAddress: string,
+  async findAllUnmatchedOrder(
     cursorId: number = 0,
   ): Promise<MatchableOrderDto[]> {
     const pageSize = 20;
 
     try {
-      const deliveryPerson = await this.getManager().findOne(UserEntity, {
-        select: { id: true },
-        where: { walletAddress: deliverPersonWalletAddress },
-      });
-
-      if (!deliveryPerson) {
-        throw new NotExistDataException(deliverPersonWalletAddress);
-      }
-
       const queryBuilder = this.getManager()
-        .createQueryBuilder(DenormalOrderEntity, 'order')
-        .where('order.requesterId != :deliveryPersonId', {
-          deliveryPersonId: deliveryPerson.id,
-        })
-        .andWhere('order.deliveryPersonId is null')
+        .createQueryBuilder(UnmatchedOrderEntity, 'order')
         .orderBy('order.id', 'DESC')
         .limit(pageSize);
 
@@ -198,11 +184,8 @@ export class OrderRepository
 
       const matchableOrders = await queryBuilder.getMany();
 
-      return matchableOrders.map((o) => new DenomalMatchableOrderDto(o));
+      return matchableOrders.map((o) => new UnmatchedOrderDto(o));
     } catch (error) {
-      if (error instanceof NotExistDataException) {
-        throw error;
-      }
       throw new UnknownDataBaseException(error);
     }
   }

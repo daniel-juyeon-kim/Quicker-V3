@@ -1,6 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ResponseBody } from '@src/core/response';
-import { DenormalOrderEntity, TransportationEntity } from '@src/database';
+import {
+  DenormalOrderEntity,
+  TransportationEntity,
+  UnmatchedOrderEntity,
+} from '@src/database';
 import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -134,7 +138,7 @@ export class MatchableOrderResponseDto extends ResponseBody {
   data: MatchableOrderDto;
 }
 
-export class DenomalMatchableOrderDto {
+export class UnmatchedOrderDto {
   id: number;
 
   detail: string;
@@ -147,7 +151,7 @@ export class DenomalMatchableOrderDto {
 
   departure: Location;
 
-  constructor(denomalOrder: DenormalOrderEntity) {
+  constructor(denomalOrder: UnmatchedOrderEntity | DenormalOrderEntity) {
     this.id = denomalOrder.id;
     this.detail = denomalOrder.detail;
     this.product = {

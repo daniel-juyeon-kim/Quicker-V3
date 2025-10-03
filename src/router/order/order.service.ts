@@ -21,13 +21,7 @@ export class OrderService implements IOrderService {
     );
   }
 
-  async findAllMatchableOrder(
-    walletAddress: string,
-    lastCheckedOrderId: number,
-  ) {
-    return await this.orderRepository.findAllMatchableOrderByWalletAddress(
-      walletAddress,
-      lastCheckedOrderId,
-    );
+  async findAllUnmatchedOrder(lastCheckedOrderId: number) {
+    return await this.orderRepository.findAllUnmatchedOrder(lastCheckedOrderId);
   }
 }
