@@ -24,7 +24,7 @@ export class AverageCostRepository
     super(AverageCostEntity);
   }
 
-  async findAverageCostByDateAndDistanceUnit({
+  async findByDateAndDistanceUnit({
     distanceUnit,
     lastMonth,
   }: {
@@ -33,8 +33,8 @@ export class AverageCostRepository
   }) {
     try {
       const average = await this.getRepository().findOne({
-        where: { date: lastMonth },
         select: { [distanceUnit]: true },
+        where: { date: lastMonth },
       });
 
       this.validateNotNull(lastMonth, average);
@@ -49,12 +49,13 @@ export class AverageCostRepository
   }
 
   @Transactional()
-  async createAverageCost(
-    averageCost: Omit<AverageCostEntity, 'date'>,
-    date: Date,
-  ) {
+  async create(averageCost: Omit<AverageCostEntity, 'date'>, date: Date) {
     try {
-      if (await this.getManager().existsBy(AverageCostEntity, { date })) {
+      const isExist = await this.getManager().existsBy(AverageCostEntity, {
+        date,
+      });
+
+      if (isExist) {
         throw new DuplicatedDataException(date);
       }
 

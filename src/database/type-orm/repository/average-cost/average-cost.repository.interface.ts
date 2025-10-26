@@ -1,7 +1,7 @@
 import { OrderAverageCostDto } from '@src/router/order-average/dto/order-average-cost.dto';
 
 export interface IAverageCostRepository {
-  findAverageCostByDateAndDistanceUnit({
+  findByDateAndDistanceUnit({
     distanceUnit,
     lastMonth,
   }: {
@@ -9,7 +9,7 @@ export interface IAverageCostRepository {
     lastMonth: Date;
   }): Promise<OrderAverageCostDto>;
 
-  createAverageCost(
+  create(
     averageCost: Record<AverageCostDistanceUnion, number>,
     date: Date,
   ): Promise<void>;

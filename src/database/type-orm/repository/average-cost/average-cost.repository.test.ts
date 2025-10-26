@@ -14,7 +14,7 @@ import { AverageCostRepository } from './average-cost.repository';
 
 describe('AverageCostRepository', () => {
   let module: TestingModule;
-  let repository: AverageCostRepository;
+  let averageRepository: AverageCostRepository;
   let manager: EntityManager;
   let cls: ClsService<{ [ENTITY_MANAGER_KEY]: EntityManager }>;
 
@@ -29,7 +29,7 @@ describe('AverageCostRepository', () => {
     }).compile();
 
     manager = module.get(EntityManager);
-    repository = module.get(AverageCostRepository);
+    averageRepository = module.get(AverageCostRepository);
     cls = ClsServiceManager.getClsService();
   });
 
@@ -41,7 +41,7 @@ describe('AverageCostRepository', () => {
     await module.close();
   });
 
-  describe('createAverageCost', () => {
+  describe('create', () => {
     const average = {
       '5KM': 5,
       '10KM': 10,
@@ -55,12 +55,12 @@ describe('AverageCostRepository', () => {
       '60+KM': 70,
     };
 
-    test('통과하는 테스트', async () => {
+    it('통과하는 테스트: 새로운 평균 비용 데이터를 생성한다', async () => {
       const createDate = new Date(1990, 0, 1);
 
       await cls.run(() => {
         cls.set(ENTITY_MANAGER_KEY, manager);
-        return repository.createAverageCost(average, createDate);
+        return averageRepository.create(average, createDate);
       });
 
       await expect(
@@ -68,30 +68,25 @@ describe('AverageCostRepository', () => {
       ).resolves.toBe(true);
     });
 
-    test('실패하는 테스트, 이미 데이터가 존재하면 DuplicatedDataException을 던짐', async () => {
+    it('실패하는 테스트: 이미 동일한 날짜의 데이터가 존재하면, DuplicatedDataException을 발생시킨다.', async () => {
       const createDate = new Date(1990, 4, 1);
       const error = new DuplicatedDataException(createDate);
 
-      // 초기 저장
-      await cls.run(async () => {
+      await cls.run(() => {
         cls.set(ENTITY_MANAGER_KEY, manager);
-        await expect(
-          repository.createAverageCost(average, createDate),
-        ).resolves.not.toThrow();
+        return averageRepository.create(average, createDate);
       });
 
-      // 중복 데이터 저장
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
-
         await expect(
-          repository.createAverageCost(average, createDate),
+          averageRepository.create(average, createDate),
         ).rejects.toStrictEqual(error);
       });
     });
   });
 
-  describe('findAverageCostByDateAndDistanceUnit', () => {
+  describe('findByDateAndDistanceUnit', () => {
     beforeEach(async () => {
       const averages = [
         {
@@ -121,41 +116,34 @@ describe('AverageCostRepository', () => {
           '60+KM': 45098,
         },
       ];
-
       await manager.save(AverageCostEntity, averages);
     });
 
-    afterEach(async () => {
-      await manager.clear(AverageCostEntity);
-    });
-
-    test('통과하는 테스트', async () => {
+    it('통과하는 테스트: 주어진 달과 거리 단위에 해당되는 평균 비용을 조회한다.', async () => {
       const lastMonth = new Date(1993, 1, 1);
       const distanceUnit = '40KM';
-      const result = 34982;
+      const expectedCost = 34982;
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
-
         await expect(
-          repository.findAverageCostByDateAndDistanceUnit({
+          averageRepository.findByDateAndDistanceUnit({
             distanceUnit,
             lastMonth,
           }),
-        ).resolves.toEqual(result);
+        ).resolves.toEqual(expectedCost);
       });
     });
 
-    test('실패하는 테스트, 존재하지 않는 데이터를 조회하면 NotExistDataException을 던짐', async () => {
+    it('실패하는 테스트: 존재하지 않는 날짜의 데이터를 조회하면, NotExistDataException을 발생시켜야 한다', async () => {
       const lastMonth = new Date(1993, 3, 1);
       const distanceUnit = '40KM';
       const error = new NotExistDataException(lastMonth);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
-
         await expect(
-          repository.findAverageCostByDateAndDistanceUnit({
+          averageRepository.findByDateAndDistanceUnit({
             distanceUnit,
             lastMonth,
           }),
