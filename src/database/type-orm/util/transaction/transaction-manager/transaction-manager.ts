@@ -17,7 +17,7 @@ export class TransactionManager {
   }
 
   private validateEntityManager(entityManager: EntityManager) {
-    if (!entityManager) {
+    if (entityManager === undefined) {
       throw new InternalServerErrorException(
         ClsErrorMessage.NOT_FOUND_ENTITY_MANAGER,
       );
