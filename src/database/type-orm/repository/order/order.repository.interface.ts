@@ -1,25 +1,22 @@
-import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
-import { MatchableOrderDto } from '@src/router/order/dto/unmached-order.dto';
-
 export interface IOrderRepository {
-  findAllCreatedOrDeliveredOrderDetailByOrderIds(
-    orderIds: number[],
-  ): Promise<OrderDetailDto[]>;
-  findAllUnmatchedOrder(skipNumber: number): Promise<MatchableOrderDto[]>;
-  updateDeliveryPersonAtOrder(deliveryPerson: {
-    orderId: number;
-    walletAddress: string;
-  }): Promise<void>;
-  createOrder(order: {
-    walletAddress: string;
-    detail?: string;
-    transportation: Partial<Record<TransportationUnion, 1 | 0>>;
-    product: Product;
-    destination: Location;
-    departure: Location;
-    sender: DeliverParticipant;
-    receiver: DeliverParticipant;
-  }): Promise<void>;
+  updateDeliveryPersonId(dto: UpdateDeliveryPersonDto): Promise<void>;
+  createOrder(dto: CreateOrderDto): Promise<void>;
+}
+
+interface CreateOrderDto {
+  walletAddress: string;
+  detail?: string;
+  transportation: Partial<Record<TransportationUnion, 1 | 0>>;
+  product: Product;
+  destination: Location;
+  departure: Location;
+  sender: DeliverParticipant;
+  receiver: DeliverParticipant;
+}
+
+interface UpdateDeliveryPersonDto {
+  orderId: number;
+  deliveryPersonId: string;
 }
 
 interface Location {

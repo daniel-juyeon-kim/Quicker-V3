@@ -10,7 +10,6 @@ export const Transactional = () => {
     propertyKey: string | symbol,
     descriptor: PropertyDescriptor,
   ) => {
-    // 이미 트랜잭션 엔티티 매니저가 있는지 확인하는 코드가 필요함
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
@@ -21,14 +20,6 @@ export const Transactional = () => {
       const entityManager: EntityManager = cls.get(ENTITY_MANAGER_KEY);
 
       validateEntityManager(entityManager);
-
-      // const isTransactionActive = entityManager.queryRunner?.isTransactionActive
-      //   ? true
-      //   : false;
-
-      // if (isTransactionActive) {
-      //   return await originalMethod.apply(this, args);
-      // }
 
       return await entityManager.transaction(
         async (transactionEntityManager) => {

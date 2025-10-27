@@ -1,17 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import {
-  BusinessRuleConflictDataException,
   NotExistDataException,
   UnknownDataBaseException,
 } from '@src/core/exception';
-import { OrderDetailDto } from '@src/router/order/dto/order-detail.dto';
 import {
-  MatchableOrderDto,
-  UnmatchedOrderDto,
-} from '@src/router/order/dto/unmached-order.dto';
-import { plainToInstance } from 'class-transformer';
-import { In } from 'typeorm';
-import {
+  DenormalOrderEntity,
   DepartureEntity,
   DestinationEntity,
   OrderEntity,
@@ -19,7 +12,6 @@ import {
   ReceiverEntity,
   SenderEntity,
   TransportationEntity,
-  UnmatchedOrderEntity,
   UserEntity,
 } from '../..';
 import { Transactional } from '../../util/transaction/decorator/transactional.decorator';
@@ -29,52 +21,26 @@ import { IOrderRepository } from './order.repository.interface';
 
 @Injectable()
 export class OrderRepository
-  extends AbstractRepository<OrderEntity>
+  extends AbstractRepository<DenormalOrderEntity>
   implements IOrderRepository
 {
   constructor(protected readonly transactionManager: TransactionManager) {
-    super(OrderEntity);
+    super(DenormalOrderEntity);
   }
 
-  async updateDeliveryPersonAtOrder({
+  async updateDeliveryPersonId({
     orderId,
-    walletAddress,
+    deliveryPersonId,
   }: {
     orderId: number;
-    walletAddress: string;
+    deliveryPersonId: string;
   }) {
     try {
-      const deliverPerson = await this.getManager().findOneBy(UserEntity, {
-        walletAddress,
-      });
-
-      this.validateNotNull(walletAddress, deliverPerson);
-
-      const order = await this.getManager().findOne(OrderEntity, {
-        relations: { requester: true },
-        select: {
-          requester: { walletAddress: true },
-        },
-        where: { id: orderId },
-      });
-
-      this.validateNotNull(walletAddress, order);
-
-      if (deliverPerson.walletAddress === order.requester.walletAddress) {
-        throw new BusinessRuleConflictDataException(walletAddress);
-      }
-
-      await this.getManager().update(
-        OrderEntity,
+      await this.getRepository().update(
         { id: orderId },
-        { deliveryPerson: deliverPerson },
+        { deliveryPerson: { id: deliveryPersonId } },
       );
     } catch (error) {
-      if (error instanceof NotExistDataException) {
-        throw error;
-      } else if (error instanceof BusinessRuleConflictDataException) {
-        throw error;
-      }
       throw new UnknownDataBaseException(error);
     }
   }
@@ -134,115 +100,6 @@ export class OrderRepository
       if (error instanceof NotExistDataException) {
         throw error;
       }
-      throw new UnknownDataBaseException(error);
-    }
-  }
-
-  async findRequesterIdByOrderId(orderId: number) {
-    try {
-      const requester = await this.getRepository().findOne({
-        relations: {
-          requester: true,
-          deliveryPerson: true,
-        },
-        where: { id: orderId },
-        select: {
-          id: true,
-          requester: { id: true },
-          deliveryPerson: { id: true },
-        },
-      });
-
-      this.validateNotNull(orderId, requester);
-
-      return requester;
-    } catch (error) {
-      if (error instanceof NotExistDataException) {
-        throw error;
-      }
-      throw new UnknownDataBaseException(error);
-    }
-  }
-
-  @Transactional()
-  async findAllUnmatchedOrder(
-    cursorId: number = 0,
-  ): Promise<MatchableOrderDto[]> {
-    const pageSize = 20;
-
-    try {
-      const queryBuilder = this.getManager()
-        .createQueryBuilder(UnmatchedOrderEntity, 'order')
-        .orderBy('order.id', 'DESC')
-        .limit(pageSize);
-
-      if (cursorId > 0) {
-        queryBuilder.andWhere('order.id < :cursorId', {
-          cursorId,
-        });
-      }
-
-      const matchableOrders = await queryBuilder.getMany();
-
-      return matchableOrders.map((o) => new UnmatchedOrderDto(o));
-    } catch (error) {
-      throw new UnknownDataBaseException(error);
-    }
-  }
-
-  async findAllCreatedOrDeliveredOrderDetailByOrderIds(orderIds: number[]) {
-    try {
-      const order = await this.getRepository().find({
-        relations: {
-          product: true,
-          departure: {
-            sender: true,
-          },
-          destination: {
-            receiver: true,
-          },
-        },
-        where: { id: In(orderIds) },
-        select: {
-          id: true,
-          detail: true,
-          product: {
-            width: true,
-            length: true,
-            height: true,
-            weight: true,
-          },
-          departure: {
-            x: true,
-            y: true,
-            detail: true,
-            sender: {
-              name: true,
-              phone: true,
-            },
-          },
-          destination: {
-            x: true,
-            y: true,
-            detail: true,
-            receiver: {
-              name: true,
-              phone: true,
-            },
-          },
-        },
-      });
-
-      return plainToInstance(OrderDetailDto, order);
-    } catch (error) {
-      throw new UnknownDataBaseException(error);
-    }
-  }
-
-  async deleteByOrderId(orderId: number) {
-    try {
-      await this.getRepository().delete(orderId);
-    } catch (error) {
       throw new UnknownDataBaseException(error);
     }
   }

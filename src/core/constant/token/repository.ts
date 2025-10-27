@@ -10,4 +10,5 @@ export enum RepositoryToken {
   COMPLETE_DELIVERY_IMAGE_REPOSITORY = 'ICompleteDeliveryImageRepository',
   CURRENT_DELIVERY_LOCATION_REPOSITORY = 'ICurrentDeliveryLocationRepository',
   FAIL_DELIVERY_IMAGE_REPOSITORY = 'IFailDeliveryImageRepository',
+  ORDER_QUERY_REPOSITORY = 'IOrderQueryRepository',
 }
