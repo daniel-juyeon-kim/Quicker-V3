@@ -9,7 +9,7 @@ import { IOrderAverageService } from './order-average.service.interface';
 export class OrderAverageService implements IOrderAverageService {
   constructor(
     @Inject(RepositoryToken.AVERAGE_COST_REPOSITORY)
-    private readonly repository: IAverageCostRepository,
+    private readonly averageCostRepository: IAverageCostRepository,
   ) {}
 
   async findLatestOrderAverageCostByDistance(distance: number) {
@@ -17,7 +17,7 @@ export class OrderAverageService implements IOrderAverageService {
     const currentDate = new Date();
     const lastMonth = createLastMonth(currentDate);
 
-    return await this.repository.findAverageCostByDateAndDistanceUnit({
+    return await this.averageCostRepository.findByDateAndDistanceUnit({
       distanceUnit,
       lastMonth,
     });

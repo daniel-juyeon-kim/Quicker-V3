@@ -11,7 +11,7 @@ export interface IOrderDeliveryPersonService {
     y,
   }: OrderDeliveryPersonLocationDto & { orderId: number }): Promise<void>;
 
-  matchDeliveryPersonAtOrder({
+  matchDeliveryPerson({
     orderId,
     walletAddress,
   }: {

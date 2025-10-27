@@ -131,7 +131,7 @@ describe('DeliveryPersonMatchedDateRepository', () => {
   };
 
   let testModule: TestingModule;
-  let repository: DeliveryPersonMatchedDateRepository;
+  let deliveryPersonMatchedDateRepository: DeliveryPersonMatchedDateRepository;
   let manager: EntityManager;
   let cls: ClsService<{ [ENTITY_MANAGER_KEY]: EntityManager }>;
 
@@ -145,7 +145,9 @@ describe('DeliveryPersonMatchedDateRepository', () => {
       providers: [DeliveryPersonMatchedDateRepository, TransactionManager],
     }).compile();
 
-    repository = testModule.get(DeliveryPersonMatchedDateRepository);
+    deliveryPersonMatchedDateRepository = testModule.get(
+      DeliveryPersonMatchedDateRepository,
+    );
     manager = testModule.get(EntityManager);
     cls = ClsServiceManager.getClsService();
   });
@@ -170,13 +172,13 @@ describe('DeliveryPersonMatchedDateRepository', () => {
       });
     });
 
-    test('통과하는 테스트', async () => {
+    it('통과하는 테스트: 주어진 orderId로 새로운 매칭 날짜 데이터를 생성한다', async () => {
       const orderId = 1;
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
 
-        await repository.create(orderId);
+        await deliveryPersonMatchedDateRepository.create(orderId);
       });
 
       await expect(
@@ -186,22 +188,24 @@ describe('DeliveryPersonMatchedDateRepository', () => {
       ).resolves.toHaveProperty('id', orderId);
     });
 
-    test('실패하는 테스트, 이미 존재하는 아이디로 생성하면 DuplicatedDataException을 던짐', async () => {
+    it('실패하는 테스트: 이미 존재하는 orderId로 생성을 시도하면 DuplicatedDataException을 발생시킨다', async () => {
       const orderId = 1;
       const error = new DuplicatedDataException(orderId);
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
 
-        await repository.create(orderId);
+        await deliveryPersonMatchedDateRepository.create(orderId);
 
-        await expect(repository.create(orderId)).rejects.toStrictEqual(error);
+        await expect(
+          deliveryPersonMatchedDateRepository.create(orderId),
+        ).rejects.toStrictEqual(error);
       });
     });
   });
 
   describe('findAllOrderIdByBetweenDates', () => {
-    test('통과하는 테스트', async () => {
+    it('통과하는 테스트: 주어진 시작일과 종료일 사이의 모든 orderId를 조회한다', async () => {
       const START_DATE = new Date(2000, 0, 1, 0, 0, 0, 0);
       const END_DATE = new Date(2000, 0, 31, 23, 59, 59, 999);
 
@@ -253,7 +257,10 @@ describe('DeliveryPersonMatchedDateRepository', () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
 
         await expect(
-          repository.findAllOrderIdByBetweenDates(START_DATE, END_DATE),
+          deliveryPersonMatchedDateRepository.findAllOrderIdByBetweenDates(
+            START_DATE,
+            END_DATE,
+          ),
         ).resolves.toEqual([{ id: 2 }, { id: 3 }]);
       });
     });

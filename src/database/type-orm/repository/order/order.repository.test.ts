@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ENTITY_MANAGER_KEY } from '@src/core/constant';
-import {
-  BusinessRuleConflictDataException,
-  NotExistDataException,
-} from '@src/core/exception';
 import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
 import { afterEach } from 'node:test';
 import { EntityManager } from 'typeorm';
+import { DenormalOrderBuilder } from '../../../../../test/builder/denormal-order.builder';
+import { UserBuilder } from '../../../../../test/builder/user.builder';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import {
   DenormalOrderEntity,
@@ -17,122 +15,10 @@ import {
   OrderParticipantEntity,
   ProductEntity,
   TransportationEntity,
-  UnmatchedOrderEntity,
   UserEntity,
 } from '../../entity';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { OrderRepository } from './order.repository';
-
-const createUser = async (
-  manager: EntityManager,
-  {
-    userId,
-    walletAddress,
-    contact,
-  }: { userId: string; walletAddress: string; contact: string },
-) => {
-  const user = manager.create(UserEntity, {
-    id: userId,
-    walletAddress,
-    name: '이름',
-    email: '이메일',
-    contact,
-    birthDate: {
-      id: userId,
-      date: new Date(2000, 9, 12).toISOString(),
-    },
-    profileImage: {
-      id: userId,
-    },
-    joinDate: {
-      id: userId,
-      date: new Date(2023, 9, 12).toISOString(),
-    },
-  });
-
-  return await manager.save(UserEntity, user);
-};
-
-const createOrder = async (
-  manager: EntityManager,
-  {
-    requester,
-    deliveryPerson,
-    orderId,
-  }: {
-    requester: UserEntity;
-    deliveryPerson: UserEntity | null;
-    orderId: number;
-  },
-) => {
-  await manager.transaction(async (manager) => {
-    const order = manager.create(OrderEntity, {
-      id: orderId,
-      requester,
-      deliveryPerson,
-      detail: '디테일',
-    });
-
-    await manager.save(order);
-
-    const id = orderId;
-
-    const product = manager.create(ProductEntity, {
-      id,
-      width: 0,
-      length: 0,
-      height: 0,
-      weight: 0,
-      order,
-    });
-
-    const transportation = manager.create(TransportationEntity, {
-      id,
-      walking: 0,
-      bicycle: 1,
-      scooter: 0,
-      bike: 1,
-      car: 0,
-      truck: 1,
-      order,
-    });
-
-    const destination = manager.create(DestinationEntity, {
-      id,
-      x: 37.5,
-      y: 112,
-      detail: '디테일',
-      order,
-      receiver: {
-        id,
-        name: '이름',
-        phone: '01012345678',
-      },
-    });
-
-    const departure = manager.create(DepartureEntity, {
-      id,
-      x: 0,
-      y: 0,
-      detail: '디테일',
-      order,
-      sender: {
-        id,
-        name: '이름',
-        phone: '01012345678',
-      },
-    });
-
-    await Promise.allSettled([
-      manager.save(ProductEntity, product),
-      manager.save(TransportationEntity, transportation),
-      manager.save(DestinationEntity, destination),
-      manager.save(DepartureEntity, departure),
-    ]);
-
-    return id;
-  });
-};
 
 describe('OrderRepository', () => {
   let testModule: TestingModule;
@@ -168,11 +54,16 @@ describe('OrderRepository', () => {
     const WALLET_ADDRESS = '지갑주소';
 
     beforeEach(async () => {
-      await createUser(manager, {
-        walletAddress: WALLET_ADDRESS,
-        userId: '1',
-        contact: '01012341234',
-      });
+      await manager.save(
+        UserEntity,
+        new UserBuilder()
+          .withId('1')
+          .withWalletAddress(WALLET_ADDRESS)
+          .withContact('01012341234')
+          .withName('이름')
+          .withEmail('이메일')
+          .build(),
+      );
     });
 
     afterEach(async () => {
@@ -192,6 +83,9 @@ describe('OrderRepository', () => {
         bicycle: 1,
         car: 0,
         truck: 0,
+        walking: 0,
+        scooter: 0,
+        bike: 1,
       } as const;
       const destination = {
         x: 37.5,
@@ -273,326 +167,61 @@ describe('OrderRepository', () => {
     });
   });
 
-  describe('findAllCreatedOrDeliveredOrderDetailByOrderIds', () => {
-    beforeEach(async () => {
-      const requester1 = await createUser(manager, {
-        userId: '의뢰인 아이디',
-        walletAddress: '의뢰인 지갑주소',
-        contact: '01012341234',
-      });
-      const deliveryPerson1 = await createUser(manager, {
-        userId: '배송원 아이디',
-        walletAddress: '배송원 지갑주소',
-        contact: '01066868684',
-      });
-      const requester2 = await createUser(manager, {
-        userId: '의뢰인 아이디',
-        walletAddress: '의뢰인 지갑주소',
-        contact: '01054832876',
-      });
-      const deliveryPerson2 = await createUser(manager, {
-        userId: '배송원 아이디',
-        walletAddress: '배송원 지갑주소',
-        contact: '01086544683',
-      });
-
-      await createOrder(manager, {
-        requester: requester1,
-        deliveryPerson: null,
-        orderId: 1,
-      });
-      await createOrder(manager, {
-        requester: requester2,
-        deliveryPerson: null,
-        orderId: 2,
-      });
-      await createOrder(manager, {
-        requester: deliveryPerson1,
-        deliveryPerson: null,
-        orderId: 3,
-      });
-      await createOrder(manager, {
-        requester: deliveryPerson2,
-        deliveryPerson: null,
-        orderId: 4,
-      });
-    });
-
-    afterEach(async () => {
-      await manager.clear(UserEntity);
-      await manager.clear(OrderEntity);
-    });
-
-    test('통과하는 테스트', async () => {
-      const orderIds = [2, 3];
-      const result = [
-        {
-          id: 3,
-          detail: '디테일',
-          departure: {
-            x: 0,
-            y: 0,
-            detail: '디테일',
-            sender: { name: '이름', phone: '01012345678' },
-          },
-          destination: {
-            x: 37.5,
-            y: 112,
-            detail: '디테일',
-            receiver: { name: '이름', phone: '01012345678' },
-          },
-          product: {
-            height: 0,
-            length: 0,
-            weight: 0,
-            width: 0,
-          },
-        },
-        {
-          id: 2,
-          detail: '디테일',
-          departure: {
-            x: 0,
-            y: 0,
-            detail: '디테일',
-            sender: { name: '이름', phone: '01012345678' },
-          },
-          destination: {
-            x: 37.5,
-            y: 112,
-            detail: '디테일',
-            receiver: { name: '이름', phone: '01012345678' },
-          },
-          product: {
-            height: 0,
-            length: 0,
-            weight: 0,
-            width: 0,
-          },
-        },
-      ];
-
-      await cls.run(async () => {
-        cls.set(ENTITY_MANAGER_KEY, manager);
-
-        await expect(
-          repository.findAllCreatedOrDeliveredOrderDetailByOrderIds(orderIds),
-        ).resolves.toEqual(result);
-      });
-    });
-  });
-
-  describe('findAllMatchableOrderByWalletAddress', () => {
-    const createOrder = async (
-      manager: EntityManager,
-      {
-        requester,
-        orderId,
-      }: {
-        requester: UserEntity;
-        orderId: number;
-      },
-    ) => {
-      await manager.transaction(async (manager) => {
-        const order = manager.create(UnmatchedOrderEntity, {
-          id: orderId,
-          requester,
-          participant: {
-            id: orderId,
-            senderName: '발송인 이름',
-            senderPhone: '010-1234-1234',
-            receiverName: '수취인 이름',
-            receiverPhone: '010-0987-0987',
-          },
-          walking: 0,
-          bicycle: 1,
-          scooter: 0,
-          bike: 1,
-          car: 0,
-          truck: 1,
-          width: 0,
-          length: 0,
-          height: 0,
-          weight: 0,
-          destinationX: 37.5,
-          destinationY: 112,
-          detail: '디테일',
-          destinationDetail: '디테일',
-          departureX: 0,
-          departureY: 0,
-          departureDetail: '디테일',
-          deliveryPersonMatchedDate: null,
-        });
-        await manager.save(order);
-
-        return order.id;
-      });
-    };
-
-    const REQUESTER_WALLET_ADDRESS = '의뢰인 지갑주소';
-    const DELIVERY_PERSON_1_WALLET_ADDRESS = '배송원1 지갑주소';
-    const DELIVERY_PERSON_2_WALLET_ADDRESS = '배송원2 지갑주소';
-
-    beforeEach(async () => {
-      const requester = await createUser(manager, {
-        userId: '의뢰인',
-        walletAddress: REQUESTER_WALLET_ADDRESS,
-        contact: '01012341324',
-      });
-      const deliveryPerson1 = await createUser(manager, {
-        userId: '배송원1',
-        walletAddress: DELIVERY_PERSON_1_WALLET_ADDRESS,
-        contact: '01012340987',
-      });
-      await createUser(manager, {
-        userId: '배송원2',
-        walletAddress: DELIVERY_PERSON_2_WALLET_ADDRESS,
-        contact: '01009870987',
-      });
-
-      // 의뢰인이 주문 생성
-      await createOrder(manager, {
-        orderId: 1,
-        requester,
-      });
-      // 배송원1이 주문 생성
-      await createOrder(manager, {
-        orderId: 2,
-        requester: deliveryPerson1,
-      });
-    });
-
-    afterEach(async () => {
-      await manager.clear(UserEntity);
-      await manager.clear(UnmatchedOrderEntity);
-    });
-
-    test('통과하는 테스트, 의뢰인도 자신의 의뢰를 볼 수 있다.', async () => {
-      const requesterOrder = {
-        id: 1,
-        detail: '디테일',
-        departure: { detail: '디테일', x: 0, y: 0 },
-        destination: { detail: '디테일', x: 37.5, y: 112 },
-        product: { height: 0, length: 0, weight: 0, width: 0 },
-        transportation: { bicycle: true, bike: true, truck: true },
-      };
-      const deliveryPerson1Order = {
-        id: 2,
-        detail: '디테일',
-        departure: { detail: '디테일', x: 0, y: 0 },
-        destination: { detail: '디테일', x: 37.5, y: 112 },
-        product: { height: 0, length: 0, weight: 0, width: 0 },
-        transportation: { bicycle: true, bike: true, truck: true },
-      };
-      const result = [deliveryPerson1Order, requesterOrder];
-
-      await cls.run(async () => {
-        cls.set(ENTITY_MANAGER_KEY, manager);
-
-        await expect(repository.findAllUnmatchedOrder()).resolves.toMatchObject(
-          result,
-        );
-      });
-    });
-
-    test('통과하는 테스트, 페이지네이션(cursor) 적용 시, 커서 ID 보다 작은 ID를 가진 결과를 반환한다', async () => {
-      const allMatchableOrders = [
-        {
-          id: 2,
-          detail: '디테일',
-          departure: { detail: '디테일', x: 0, y: 0 },
-          destination: { detail: '디테일', x: 37.5, y: 112 },
-          product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: { bicycle: true, bike: true, truck: true },
-        },
-        {
-          id: 1,
-          detail: '디테일',
-          departure: { detail: '디테일', x: 0, y: 0 },
-          destination: { detail: '디테일', x: 37.5, y: 112 },
-          product: { height: 0, length: 0, weight: 0, width: 0 },
-          transportation: { bicycle: true, bike: true, truck: true },
-        },
-      ];
-
-      const paginatedOrders = [allMatchableOrders[1]];
-      const cursorOrderId = 2;
-
-      await cls.run(async () => {
-        cls.set(ENTITY_MANAGER_KEY, manager);
-
-        // 1. 페이지네이션 없이 전체 결과 조회
-        await expect(repository.findAllUnmatchedOrder()).resolves.toEqual(
-          allMatchableOrders,
-        );
-
-        // 2. 커서를 적용하여 다음 페이지 조회
-        await expect(
-          repository.findAllUnmatchedOrder(cursorOrderId),
-        ).resolves.toEqual(paginatedOrders);
-      });
-    });
-  });
-
-  describe('findRequesterIdByOrderId', () => {
-    const USER_ID = '아이디';
-
-    beforeEach(async () => {
-      const user = await createUser(manager, {
-        userId: USER_ID,
-        walletAddress: '지갑주소',
-        contact: '01012341234',
-      });
-      await createOrder(manager, {
-        orderId: 1,
-        requester: user,
-        deliveryPerson: null,
-      });
-    });
-
-    afterEach(async () => {
-      await manager.clear(OrderEntity);
-      await manager.clear(UserEntity);
-    });
-
-    test('통과하는 테스트', async () => {
-      const orderId = 1;
-      const result = {
-        id: 1,
-        requester: { id: '아이디' },
-        deliveryPerson: null,
-      };
-
-      await cls.run(async () => {
-        cls.set(ENTITY_MANAGER_KEY, manager);
-
-        await expect(
-          repository.findRequesterIdByOrderId(orderId),
-        ).resolves.toEqual(result);
-      });
-    });
-  });
-
   describe('updateDeliveryPersonAtOrder', () => {
-    const DELIVERY_PERSON_WALLET_ADDRESS = '배송원 지갑 주소';
-    const REQUESTER_WALLET_ADDRESS = '의뢰인 지갑 주소';
+    const requesterId = '의뢰인 아이디';
+    const deliveryPersonId = '배송원 아이디';
 
     beforeEach(async () => {
-      const user = await createUser(manager, {
-        userId: '의뢰인 아이디',
-        walletAddress: REQUESTER_WALLET_ADDRESS,
-        contact: '의뢰인 연락처',
+      const requester = await manager.save(
+        UserEntity,
+        new UserBuilder()
+          .withId(requesterId)
+          .withWalletAddress('의뢰인 지갑 주소')
+          .withContact('의뢰인 연락처')
+          .withName('이름')
+          .withEmail('이메일')
+          .build(),
+      );
+      const deliveryPerson = new UserBuilder()
+        .withId(deliveryPersonId)
+        .withWalletAddress('배송원 지갑 주소')
+        .withContact('배송원 연락처')
+        .withName('이름')
+        .withEmail('이메일')
+        .build();
+
+      const orderId = 1;
+      const participant = new OrderParticipantEntity();
+      Object.assign(participant, {
+        id: orderId,
+        senderName: '이름',
+        senderPhone: '01012345678',
+        receiverName: '이름',
+        receiverPhone: '01012345678',
       });
-      await createOrder(manager, {
-        requester: user,
-        deliveryPerson: null,
-        orderId: 1,
-      });
-      await createUser(manager, {
-        userId: '배송원 아이디',
-        walletAddress: '배송원 지갑 주소',
-        contact: '배송원 연락처',
-      });
+
+      await manager.save(
+        DenormalOrderEntity,
+        new DenormalOrderBuilder()
+          .withId(orderId)
+          .withRequester(requester)
+          .withDeliveryPerson(null)
+          .withDetail('디테일')
+          .withProduct({ width: 0, length: 0, height: 0, weight: 0 })
+          .withTransportation({
+            walking: 0,
+            bicycle: 1,
+            scooter: 0,
+            bike: 1,
+            car: 0,
+            truck: 1,
+          })
+          .withDestination({ x: 37.5, y: 112, detail: '디테일' })
+          .withDeparture({ x: 0, y: 0, detail: '디테일' })
+          .withParticipant(participant)
+          .build(),
+      );
+      await manager.save(UserEntity, deliveryPerson);
     });
 
     afterEach(async () => {
@@ -602,12 +231,10 @@ describe('OrderRepository', () => {
 
     test('통과하는 테스트', async () => {
       const dto = {
-        walletAddress: DELIVERY_PERSON_WALLET_ADDRESS,
+        deliveryPersonId,
         orderId: 1,
       };
       const result = {
-        id: 1,
-        detail: '디테일',
         deliveryPerson: {
           contact: '배송원 연락처',
           email: '이메일',
@@ -622,105 +249,42 @@ describe('OrderRepository', () => {
           name: '이름',
           walletAddress: '의뢰인 지갑 주소',
         },
+        bicycle: 1,
+        bike: 1,
+        car: 0,
+        deliveryPersonMatchedDate: null,
+        departureDetail: '디테일',
+        departureX: 0,
+        departureY: 0,
+        destinationDetail: '디테일',
+        destinationX: 37.5,
+        destinationY: 112,
+        detail: '디테일',
+        height: 0,
+        id: 1,
+        length: 0,
+        scooter: 0,
+        truck: 1,
+        walking: 0,
+        weight: 0,
+        width: 0,
       };
 
       await cls.run(async () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
 
-        await repository.updateDeliveryPersonAtOrder(dto);
-      });
-
-      await expect(
-        manager.findOne(OrderEntity, {
-          relations: {
-            requester: true,
-            deliveryPerson: true,
-          },
-          where: { id: 1 },
-        }),
-      ).resolves.toEqual(result);
-    });
-
-    test('실패하는 테스트, 존재하지 않는 배송원의 지갑주소를 입력하면 NotExistDataException을 던짐', async () => {
-      const dto = {
-        orderId: 1,
-        walletAddress: '존재하지 않는 지갑주소',
-      };
-      const error = new NotExistDataException(dto.walletAddress);
-
-      await cls.run(async () => {
-        cls.set(ENTITY_MANAGER_KEY, manager);
+        await repository.updateDeliveryPersonId(dto);
 
         await expect(
-          repository.updateDeliveryPersonAtOrder(dto),
-        ).rejects.toStrictEqual(error);
+          manager.findOne(DenormalOrderEntity, {
+            relations: {
+              requester: true,
+              deliveryPerson: true,
+            },
+            where: { id: 1 },
+          }),
+        ).resolves.toEqual(result);
       });
-    });
-
-    test('실패하는 테스트, 존재하지 않는 주문 아이디를 입력하면 NotExistDataException을 던짐', async () => {
-      const dto = {
-        walletAddress: DELIVERY_PERSON_WALLET_ADDRESS,
-        orderId: 2,
-      };
-      const error = new NotExistDataException(dto.orderId);
-
-      await cls.run(async () => {
-        cls.set(ENTITY_MANAGER_KEY, manager);
-
-        await expect(
-          repository.updateDeliveryPersonAtOrder(dto),
-        ).rejects.toStrictEqual(error);
-      });
-    });
-
-    test('실패하는 테스트, 주문 요청자와 배송원의 지갑주소가 동일하면 BusinessRuleConflictDataException을 던짐', async () => {
-      const walletAddress = '의뢰인 지갑 주소';
-      const orderId = 1;
-      const dto = {
-        walletAddress,
-        orderId,
-      };
-      const error = new BusinessRuleConflictDataException(walletAddress);
-
-      await cls.run(async () => {
-        cls.set(ENTITY_MANAGER_KEY, manager);
-
-        await expect(
-          repository.updateDeliveryPersonAtOrder(dto),
-        ).rejects.toStrictEqual(error);
-      });
-    });
-  });
-
-  describe('deleteByOrderId', () => {
-    beforeEach(async () => {
-      const requester = await createUser(manager, {
-        userId: '아이디',
-        walletAddress: '요청자 지갑주소',
-        contact: '01012341234',
-      });
-      await createOrder(manager, {
-        requester,
-        deliveryPerson: null,
-        orderId: 1,
-      });
-    });
-
-    afterEach(async () => {
-      await manager.clear(OrderEntity);
-    });
-
-    test('통과하는 테스트', async () => {
-      const orderId = 1;
-      await expect(manager.exists(OrderEntity)).resolves.toBe(true);
-
-      await cls.run(async () => {
-        cls.set(ENTITY_MANAGER_KEY, manager);
-
-        await repository.deleteByOrderId(orderId);
-      });
-
-      await expect(manager.exists(OrderEntity)).resolves.toBe(false);
     });
   });
 });

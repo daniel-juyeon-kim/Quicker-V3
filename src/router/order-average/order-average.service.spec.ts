@@ -38,16 +38,12 @@ describe('OrderAverageService', () => {
       });
       const lastMonth = createLastMonth(new Date());
 
-      repository.findAverageCostByDateAndDistanceUnit.mockResolvedValue(
-        resolvedValue,
-      );
+      repository.findByDateAndDistanceUnit.mockResolvedValue(resolvedValue);
 
       await expect(
         service.findLatestOrderAverageCostByDistance(distance),
       ).resolves.toEqual(resolvedValue);
-      expect(
-        repository.findAverageCostByDateAndDistanceUnit,
-      ).toHaveBeenCalledWith({
+      expect(repository.findByDateAndDistanceUnit).toHaveBeenCalledWith({
         distanceUnit: '50KM',
         lastMonth,
       });
@@ -57,9 +53,7 @@ describe('OrderAverageService', () => {
       test('NotExistDataError를 던짐', async () => {
         const distance = 50;
         const error = new NotExistDataException(distance);
-        repository.findAverageCostByDateAndDistanceUnit.mockRejectedValueOnce(
-          error,
-        );
+        repository.findByDateAndDistanceUnit.mockRejectedValueOnce(error);
 
         await expect(
           service.findLatestOrderAverageCostByDistance(distance),
@@ -69,9 +63,7 @@ describe('OrderAverageService', () => {
       test('UnknownDataBaseError를 던짐', async () => {
         const distance = 50;
         const error = new UnknownDataBaseException(new Error('알수없는 에러'));
-        repository.findAverageCostByDateAndDistanceUnit.mockRejectedValueOnce(
-          error,
-        );
+        repository.findByDateAndDistanceUnit.mockRejectedValueOnce(error);
 
         await expect(
           service.findLatestOrderAverageCostByDistance(distance),

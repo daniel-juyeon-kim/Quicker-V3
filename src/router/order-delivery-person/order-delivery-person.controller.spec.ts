@@ -99,7 +99,7 @@ describe('OrderDeliveryPersonController', () => {
     test('통과하는 테스트', async () => {
       await controller.updateDeliveryPersonLocation(orderId, { walletAddress });
 
-      expect(service.matchDeliveryPersonAtOrder).toHaveBeenCalledWith({
+      expect(service.matchDeliveryPerson).toHaveBeenCalledWith({
         orderId,
         walletAddress,
       });
@@ -107,13 +107,13 @@ describe('OrderDeliveryPersonController', () => {
 
     test('실패하는 테스트, NotExistDataError를 던짐', async () => {
       const error = new NotExistDataException(99);
-      service.matchDeliveryPersonAtOrder.mockRejectedValueOnce(error);
+      service.matchDeliveryPerson.mockRejectedValueOnce(error);
 
       await expect(
         controller.updateDeliveryPersonLocation(orderId, { walletAddress }),
       ).rejects.toStrictEqual(error);
 
-      expect(service.matchDeliveryPersonAtOrder).toHaveBeenCalledWith({
+      expect(service.matchDeliveryPerson).toHaveBeenCalledWith({
         orderId,
         walletAddress,
       });

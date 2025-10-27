@@ -38,6 +38,6 @@ export class RepositoryService implements IRepository {
   async saveAverageCost(averageCostEntity: AverageCostEntity) {
     const date = new Date();
 
-    await this.averageCostRepository.createAverageCost(averageCostEntity, date);
+    await this.averageCostRepository.create(averageCostEntity, date);
   }
 }

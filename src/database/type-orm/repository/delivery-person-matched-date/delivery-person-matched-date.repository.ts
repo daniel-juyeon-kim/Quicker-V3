@@ -5,6 +5,7 @@ import {
 } from '@src/core/exception';
 import { Between } from 'typeorm';
 import { DeliveryPersonMatchedDateEntity } from '../../entity';
+import { Transactional } from '../../util/transaction/decorator/transactional.decorator';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { AbstractRepository } from '../abstract-repository';
 import { IDeliveryPersonMatchedDateRepository } from './delivery-person-matched-date.repository.interface';
@@ -18,12 +19,12 @@ export class DeliveryPersonMatchedDateRepository
     super(DeliveryPersonMatchedDateEntity);
   }
 
+  @Transactional()
   async create(orderId: number) {
     try {
-      const matchedDateExists = await this.getManager().existsBy(
-        DeliveryPersonMatchedDateEntity,
-        { id: orderId },
-      );
+      const matchedDateExists = await this.getRepository().existsBy({
+        id: orderId,
+      });
 
       if (matchedDateExists) {
         throw new DuplicatedDataException(orderId);
@@ -32,10 +33,7 @@ export class DeliveryPersonMatchedDateRepository
       const matchedDate = new DeliveryPersonMatchedDateEntity();
       matchedDate.id = orderId;
 
-      await this.getManager().insert(
-        DeliveryPersonMatchedDateEntity,
-        matchedDate,
-      );
+      await this.getRepository().insert(matchedDate);
     } catch (error) {
       if (error instanceof DuplicatedDataException) {
         throw error;

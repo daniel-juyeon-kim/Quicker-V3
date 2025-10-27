@@ -10,7 +10,7 @@ import {
 import { UserEntity } from '.';
 import { OrderParticipantEntity } from './order-participant.entity';
 
-@Entity({ name: 'order', orderBy: { id: 'DESC' } })
+@Entity({ name: 'denormal_order', orderBy: { id: 'DESC' } })
 @Index('idx_deliveryPerson_orderId', ['deliveryPerson', 'id'])
 export class DenormalOrderEntity {
   @PrimaryGeneratedColumn()

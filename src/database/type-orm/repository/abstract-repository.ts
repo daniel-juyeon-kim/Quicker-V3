@@ -1,5 +1,5 @@
 import { NotExistDataException } from '@src/core/exception';
-import { isNull } from '@src/core/util';
+import { isNull, isUndefined } from '@src/core/util';
 import { EntityTarget } from 'typeorm';
 import { TransactionManager } from '../util/transaction/transaction-manager/transaction-manager';
 
@@ -28,7 +28,7 @@ export abstract class AbstractRepository<T> {
     findOption: any,
     data: T | null,
   ): asserts data is T {
-    if (isNull(data)) {
+    if (isNull(data) || isUndefined(data)) {
       throw new NotExistDataException(findOption);
     }
   }
