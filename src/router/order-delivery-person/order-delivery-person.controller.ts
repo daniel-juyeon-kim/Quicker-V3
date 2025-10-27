@@ -81,7 +81,7 @@ export class OrderDeliveryPersonController {
     @Param('orderId', ParseIntPipe) orderId: number,
     @Body() { walletAddress }: UpdateDeliveryPersonLocationDto,
   ) {
-    await this.orderDeliveryPersonService.matchDeliveryPersonAtOrder({
+    await this.orderDeliveryPersonService.matchDeliveryPerson({
       orderId,
       walletAddress,
     });
