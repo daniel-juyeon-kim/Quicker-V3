@@ -7,34 +7,11 @@ import {
 } from '@src/core/exception';
 import { ClsModule, ClsService, ClsServiceManager } from 'nestjs-cls';
 import { EntityManager } from 'typeorm';
+import { UserBuilder } from '../../../../../test/builder/user.builder';
 import { TestTypeormModule } from '../../../../../test/config/typeorm.module';
 import { ProfileImageEntity, UserEntity } from '../../entity';
 import { TransactionManager } from '../../util/transaction/transaction-manager/transaction-manager';
 import { UserRepository } from './user.repository';
-
-const createUser = async (manager: EntityManager) => {
-  const user = manager.create(UserEntity, {
-    id: '아이디',
-    walletAddress: '지갑주소',
-    name: '이름',
-    email: '이메일',
-    contact: '연락처',
-    birthDate: {
-      id: '아이디',
-      date: new Date(2000, 9, 12).toISOString(),
-    },
-    profileImage: {
-      id: '아이디',
-      imageId: '111',
-    },
-    joinDate: {
-      id: '아이디',
-      date: new Date(2023, 9, 12).toISOString(),
-    },
-  });
-
-  await manager.save(UserEntity, user);
-};
 
 describe('UserRepository', () => {
   let testModule: TestingModule;
@@ -126,7 +103,15 @@ describe('UserRepository', () => {
 
   describe('findNameByWalletAddress', () => {
     beforeEach(async () => {
-      await createUser(manager);
+      const user = new UserBuilder()
+        .withId('아이디')
+        .withWalletAddress('지갑주소')
+        .withName('이름')
+        .withEmail('이메일')
+        .withContact('연락처')
+        .withProfileImageId('111')
+        .build();
+      await manager.save(UserEntity, user);
     });
 
     afterEach(async () => {
@@ -162,7 +147,15 @@ describe('UserRepository', () => {
 
   describe('findUserProfileImageIdByWalletAddress', () => {
     beforeEach(async () => {
-      await createUser(manager);
+      const user = new UserBuilder()
+        .withId('아이디')
+        .withWalletAddress('지갑주소')
+        .withName('이름')
+        .withEmail('이메일')
+        .withContact('연락처')
+        .withProfileImageId('111')
+        .build();
+      await manager.save(UserEntity, user);
     });
 
     afterEach(async () => {
@@ -177,7 +170,7 @@ describe('UserRepository', () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
 
         await expect(
-          repository.findUserProfileImageIdByWalletAddress(walletAddress),
+          repository.findProfileImageIdByWalletAddress(walletAddress),
         ).resolves.toEqual(result);
       });
     });
@@ -190,7 +183,7 @@ describe('UserRepository', () => {
         cls.set(ENTITY_MANAGER_KEY, manager);
 
         await expect(
-          repository.findUserProfileImageIdByWalletAddress(walletAddress),
+          repository.findProfileImageIdByWalletAddress(walletAddress),
         ).rejects.toStrictEqual(error);
       });
     });
@@ -198,7 +191,15 @@ describe('UserRepository', () => {
 
   describe('updateUserProfileImageIdByWalletAddress', () => {
     beforeEach(async () => {
-      await createUser(manager);
+      const user = new UserBuilder()
+        .withId('아이디')
+        .withWalletAddress('지갑주소')
+        .withName('이름')
+        .withEmail('이메일')
+        .withContact('연락처')
+        .withProfileImageId('111')
+        .build();
+      await manager.save(UserEntity, user);
     });
 
     test('통과하는 테스트', async () => {
@@ -238,6 +239,49 @@ describe('UserRepository', () => {
         await expect(
           repository.updateUserProfileImageIdByWalletAddress(dto),
         ).rejects.toStrictEqual(error);
+      });
+    });
+  });
+
+  describe('findIdByWalletAddress', () => {
+    beforeEach(async () => {
+      const user = new UserBuilder()
+        .withId('아이디')
+        .withWalletAddress('지갑주소')
+        .withName('이름')
+        .withEmail('이메일')
+        .withContact('연락처')
+        .withProfileImageId('111')
+        .build();
+      await manager.save(UserEntity, user);
+    });
+
+    afterEach(async () => {
+      await manager.clear(UserEntity);
+    });
+
+    test('통과하는 테스트', async () => {
+      const walletAddress = '지갑주소';
+      const expectedId = '아이디';
+
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        const userId = await repository.findIdByWalletAddress(walletAddress);
+        expect(userId).toEqual(expectedId);
+      });
+    });
+
+    test('실패하는 테스트, 존재하지 않는 지갑주소를 입력하면 NotExistDataException을 던짐', async () => {
+      const walletAddress = '없는 지갑주소';
+      const error = new NotExistDataException(walletAddress);
+
+      await cls.run(async () => {
+        cls.set(ENTITY_MANAGER_KEY, manager);
+
+        await expect(
+          repository.findIdByWalletAddress(walletAddress),
+        ).rejects.toEqual(error);
       });
     });
   });

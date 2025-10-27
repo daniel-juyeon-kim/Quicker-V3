@@ -69,6 +69,17 @@ export class UserRepository
     }
   }
 
+  async findIdByWalletAddress(walletAddress: string): Promise<string> {
+    const user = await this.getManager().findOne(UserEntity, {
+      select: { id: true },
+      where: { walletAddress },
+    });
+
+    this.validateNotNull(walletAddress, user);
+
+    return user.id;
+  }
+
   async findNameByWalletAddress(walletAddress: string) {
     try {
       const name = await this.getRepository().findOne({
@@ -87,7 +98,7 @@ export class UserRepository
     }
   }
 
-  async findUserProfileImageIdByWalletAddress(walletAddress: string) {
+  async findProfileImageIdByWalletAddress(walletAddress: string) {
     try {
       const user = await this.getRepository().findOne({
         relations: { profileImage: true },
