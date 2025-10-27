@@ -30,6 +30,7 @@ import {
   ReceiverRepository,
   UserRepository,
 } from './repository';
+import { OrderQueryRepository } from './repository/order/order-query.repository';
 import { TypeOrmOption } from './type-orm-option';
 import { TransactionManager } from './util/transaction/transaction-manager/transaction-manager';
 
@@ -63,6 +64,10 @@ const repositories: Provider[] = [
     useClass: LocationRepository,
   },
   { provide: RepositoryToken.ORDER_REPOSITORY, useClass: OrderRepository },
+  {
+    provide: RepositoryToken.ORDER_QUERY_REPOSITORY,
+    useClass: OrderQueryRepository,
+  },
   {
     provide: RepositoryToken.ORDER_PARTICIPANT_REPOSITORY,
     useClass: OrderParticipantRepository,

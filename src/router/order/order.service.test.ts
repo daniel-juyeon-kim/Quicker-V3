@@ -5,6 +5,7 @@ import {
   UnknownDataBaseException,
 } from '@src/core/exception';
 import { IOrderRepository } from '@src/database';
+import { IOrderQueryRepository } from '@src/database/type-orm/repository/order/order-query.repository.interface';
 import { mock, mockClear } from 'jest-mock-extended';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderService } from './order.service';
@@ -12,22 +13,27 @@ import { IOrderService } from './order.service.interface';
 
 describe('OrderService', () => {
   let service: IOrderService;
-  const repository = mock<IOrderRepository>();
+  const orderRepository = mock<IOrderRepository>();
+  const orderQueryRepository = mock<IOrderQueryRepository>();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         { provide: ServiceToken.ORDER_SERVICE, useClass: OrderService },
         {
+          provide: RepositoryToken.ORDER_QUERY_REPOSITORY,
+          useValue: orderQueryRepository,
+        },
+        {
           provide: RepositoryToken.ORDER_REPOSITORY,
-          useValue: repository,
+          useValue: orderRepository,
         },
       ],
     }).compile();
 
     service = module.get(ServiceToken.ORDER_SERVICE);
 
-    mockClear(repository);
+    mockClear(orderRepository);
   });
 
   describe('createOrder', () => {
@@ -70,7 +76,7 @@ describe('OrderService', () => {
 
       await expect(service.createOrder(dto)).resolves.toEqual(undefined);
 
-      expect(repository.createOrder).toHaveBeenCalledWith(calledValue);
+      expect(orderRepository.createOrder).toHaveBeenCalledWith(calledValue);
     });
 
     test('실패하는 테스트, 지갑주소에 해당되는 사용자가 없으면 NotExistDataError를 던짐', async () => {
@@ -86,7 +92,7 @@ describe('OrderService', () => {
         receiver: { name: 'Jane Smith', phone: '987-654-3210' },
       };
       const error = new NotExistDataException(walletAddress);
-      repository.createOrder.mockRejectedValue(error);
+      orderRepository.createOrder.mockRejectedValue(error);
 
       await expect(service.createOrder(dto)).rejects.toStrictEqual(error);
     });
@@ -124,7 +130,7 @@ describe('OrderService', () => {
           },
         },
       ];
-      repository.findAllCreatedOrDeliveredOrderDetailByOrderIds.mockResolvedValue(
+      orderQueryRepository.findAllOrderDetailsByIds.mockResolvedValue(
         returnValue,
       );
       const orderIds = [1, 2, 3, 4];
@@ -134,16 +140,14 @@ describe('OrderService', () => {
       ).resolves.toEqual(returnValue);
 
       expect(
-        repository.findAllCreatedOrDeliveredOrderDetailByOrderIds,
+        orderQueryRepository.findAllOrderDetailsByIds,
       ).toHaveBeenCalledWith(orderIds);
     });
 
     test('실패하는 테스트, 데이터베이스에 알 수 없는 에러가 발생하면 UnknownDataBaseException 던짐', async () => {
       const orderIds = [1, 2, 3];
       const error = new UnknownDataBaseException(new Error(`알 수 없는 에러.`));
-      repository.findAllCreatedOrDeliveredOrderDetailByOrderIds.mockRejectedValue(
-        error,
-      );
+      orderQueryRepository.findAllOrderDetailsByIds.mockRejectedValue(error);
 
       await expect(
         service.findAllOrderDetailByOrderIds(orderIds),
