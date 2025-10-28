@@ -16,26 +16,26 @@ const MIN_YEAR = 10;
 const ERROR_MESSAGE_OUT_OF_REGISTRABLE_AGE_RANGE = `${MIN_YEAR}세 이상 ${MAX_YEAR}세 이하만 가입 가능합니다.`;
 
 export class CreateUserDto {
-  @ApiProperty({ description: '지갑주소' })
+  @ApiProperty({ description: '사용자의 고유 지갑 주소' })
   @IsEthereumAddress()
   walletAddress: string;
 
-  @ApiProperty({ description: '이름' })
+  @ApiProperty({ description: '사용자의 이름' })
   @IsNotEmpty()
   @IsString()
   name: string;
 
-  @ApiProperty({ description: '이메일' })
+  @ApiProperty({ description: '사용자의 이메일 주소' })
   @IsNotEmpty()
   @IsEmail()
   email: string;
 
-  @ApiProperty({ description: '연락처' })
+  @ApiProperty({ description: '사용자의 연락처 (휴대폰 번호)' })
   @IsNotEmpty()
   @IsPhoneNumber('KR')
   contact: string;
 
-  @ApiProperty({ description: '생년월일' })
+  @ApiProperty({ description: '사용자의 생년월일 (YYYY-MM-DD 형식)' })
   @Type(() => Date)
   @MinDate(
     () => {

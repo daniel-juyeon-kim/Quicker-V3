@@ -3,7 +3,7 @@ import { ResponseBody } from '@src/core/response';
 import { IsNumber } from 'class-validator';
 
 export class OrderAverageCostDto {
-  @ApiProperty({ description: '평균 금액' })
+  @ApiProperty({ description: '평균 의뢰 금액' })
   @IsNumber()
   averageCost: number;
 }

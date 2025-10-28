@@ -11,34 +11,59 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+import 'reflect-metadata';
 
 export class TransportationDto {
-  @ApiProperty({ required: false, example: '1' })
+  @ApiProperty({
+    description: '자전거 운송 수단 사용 여부 (1: 사용)',
+    required: false,
+    example: 1,
+  })
   @IsOptional()
   @IsNumberEqual(1)
   bicycle?: 1;
 
-  @ApiProperty({ required: false, example: '1' })
+  @ApiProperty({
+    description: '오토바이 운송 수단 사용 여부 (1: 사용)',
+    required: false,
+    example: 1,
+  })
   @IsOptional()
   @IsNumberEqual(1)
   bike?: 1;
 
-  @ApiProperty({ required: false, example: '1' })
+  @ApiProperty({
+    description: '자동차 운송 수단 사용 여부 (1: 사용)',
+    required: false,
+    example: 1,
+  })
   @IsOptional()
   @IsNumberEqual(1)
   car?: 1;
 
-  @ApiProperty({ required: false, example: '1' })
+  @ApiProperty({
+    description: '스쿠터 운송 수단 사용 여부 (1: 사용)',
+    required: false,
+    example: 1,
+  })
   @IsOptional()
   @IsNumberEqual(1)
   scooter?: 1;
 
-  @ApiProperty({ required: false, example: '1' })
+  @ApiProperty({
+    description: '트럭 운송 수단 사용 여부 (1: 사용)',
+    required: false,
+    example: 1,
+  })
   @IsOptional()
   @IsNumberEqual(1)
   truck?: 1;
 
-  @ApiProperty({ required: false, example: '1' })
+  @ApiProperty({
+    description: '도보 운송 수단 사용 여부 (1: 사용)',
+    required: false,
+    example: 1,
+  })
   @IsOptional()
   @IsNumberEqual(1)
   walking?: 1;
@@ -74,46 +99,46 @@ class Coordinate {
 }
 
 class DeliverParticipant {
-  @ApiProperty({ description: '이름' })
+  @ApiProperty({ description: '참여자 이름' })
   @IsString()
   name: string;
 
-  @ApiProperty({ description: '전화번호' })
+  @ApiProperty({ description: '참여자 전화번호' })
   @IsPhoneNumber('KR')
   phone: string;
 }
 
 class Product {
-  @ApiProperty({ description: '가로' })
+  @ApiProperty({ description: '상품의 가로 길이 (cm)' })
   @IsPositive()
   width: number;
 
-  @ApiProperty({ description: '세로' })
+  @ApiProperty({ description: '상품의 세로 길이 (cm)' })
   @IsPositive()
   length: number;
 
-  @ApiProperty({ description: '높이' })
+  @ApiProperty({ description: '상품의 높이 (cm)' })
   @IsPositive()
   height: number;
 
-  @ApiProperty({ description: '무게' })
+  @ApiProperty({ description: '상품의 무게 (kg)' })
   @IsPositive()
   weight: number;
 }
 
 export class CreateOrderDto {
-  @ApiProperty({ description: '지갑주소' })
+  @ApiProperty({ description: '의뢰인의 지갑 주소' })
   @IsEthereumAddress()
   walletAddress: string;
 
-  @ApiProperty({ required: false, description: '주문에 대한 세부 정보' })
+  @ApiProperty({ description: '의뢰에 대한 추가 세부 정보', required: false })
   @IsOptional()
   @IsString()
   detail: string | undefined;
 
   @ApiProperty({
     type: TransportationDto,
-    description: '운송 수단, 속성으로 1만 허용됨',
+    description: '의뢰에 필요한 운송 수단 정보',
   })
   @IsNotEmptyObject()
   @ValidateNested()
@@ -123,31 +148,31 @@ export class CreateOrderDto {
   )
   transportation: TransportationDto;
 
-  @ApiProperty({ type: Product, description: '상품정보' })
+  @ApiProperty({ type: Product, description: '배송할 상품의 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Product)
   product: Product;
 
-  @ApiProperty({ type: Coordinate, description: '목적지' })
+  @ApiProperty({ type: Coordinate, description: '배송 목적지 좌표' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Coordinate)
   destination: Coordinate;
 
-  @ApiProperty({ type: Coordinate, description: '출발지' })
+  @ApiProperty({ type: Coordinate, description: '배송 출발지 좌표' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Coordinate)
   departure: Coordinate;
 
-  @ApiProperty({ type: DeliverParticipant, description: '발송인' })
+  @ApiProperty({ type: DeliverParticipant, description: '발송인 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => DeliverParticipant)
   sender: DeliverParticipant;
 
-  @ApiProperty({ type: DeliverParticipant, description: '수취인' })
+  @ApiProperty({ type: DeliverParticipant, description: '수취인 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => DeliverParticipant)

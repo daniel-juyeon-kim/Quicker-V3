@@ -5,11 +5,11 @@ import { IsString } from 'class-validator';
 import { ImageBufferDto } from './image-buffer.dto';
 
 export class CreateFailDeliveryImageDto {
-  @ApiProperty({ description: 'multer 파일' })
+  @ApiProperty({ description: '배송 실패 이미지 파일 (multer를 통해 업로드)' })
   @Expose()
   imageFile: ImageBufferDto;
 
-  @ApiProperty({ description: '배송 실패 사유' })
+  @ApiProperty({ description: '배송 실패에 대한 상세 사유' })
   @IsString()
   reason: string;
 }

@@ -14,16 +14,16 @@ class Location {
 }
 
 export class OrderLocationDto {
-  @ApiProperty({ description: '주문 아이디' })
+  @ApiProperty({ description: '의뢰 ID' })
   @IsPositive()
   id: number;
 
-  @ApiProperty({ type: Location, description: '출발지 정보' })
+  @ApiProperty({ type: Location, description: '배송 출발지 좌표 정보' })
   @ValidateNested()
   @Type(() => Location)
   departure: Location;
 
-  @ApiProperty({ type: Location, description: '도착지 정보' })
+  @ApiProperty({ type: Location, description: '배송 목적지 좌표 정보' })
   @ValidateNested()
   @Type(() => Location)
   destination: Location;

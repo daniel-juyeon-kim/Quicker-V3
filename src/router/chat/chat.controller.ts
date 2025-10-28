@@ -15,7 +15,10 @@ export class ChatController {
   ) {}
 
   @Get(':orderId/recent')
-  @ApiOperation({ description: '최근 메시지를 가지고 옴' })
+  @ApiOperation({
+    summary: '최근 메시지 조회',
+    description: '주문 ID를 통해 해당 의뢰의 최근 채팅 메시지를 조회합니다.',
+  })
   @ApiOkResponse({ type: ChatMessageResponseDto })
   @ApiCommonBadRequestResponse
   @ApiCommonNotFoundResponse

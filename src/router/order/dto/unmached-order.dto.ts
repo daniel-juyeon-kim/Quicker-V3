@@ -16,50 +16,50 @@ import {
 } from 'class-validator';
 
 class Product {
-  @ApiProperty({ description: '가로' })
+  @ApiProperty({ description: '물품의 가로 길이 (cm)' })
   @IsNumber()
   width: number;
 
-  @ApiProperty({ description: '세로' })
+  @ApiProperty({ description: '물품의 세로 길이 (cm)' })
   @IsNumber()
   length: number;
 
-  @ApiProperty({ description: '높이' })
+  @ApiProperty({ description: '물품의 높이 (cm)' })
   @IsNumber()
   height: number;
 
-  @ApiProperty({ description: '무게' })
+  @ApiProperty({ description: '물품의 무게 (kg)' })
   @IsNumber()
   weight: number;
 }
 
 class Transportation {
-  @ApiProperty({ required: false })
+  @ApiProperty({ description: '도보 운송 수단 가능 여부', required: false })
   @IsOptional()
   @IsBoolean()
   walking?: true;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ description: '자전거 운송 수단 가능 여부', required: false })
   @IsOptional()
   @IsBoolean()
   bicycle?: true;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ description: '스쿠터 운송 수단 가능 여부', required: false })
   @IsOptional()
   @IsBoolean()
   scooter?: true;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ description: '오토바이 운송 수단 가능 여부', required: false })
   @IsOptional()
   @IsBoolean()
   bike?: true;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ description: '자동차 운송 수단 가능 여부', required: false })
   @IsOptional()
   @IsBoolean()
   car?: true;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ description: '트럭 운송 수단 가능 여부', required: false })
   @IsOptional()
   @IsBoolean()
   truck?: true;
@@ -93,40 +93,40 @@ class Location {
   @IsNumber()
   y: number;
 
-  @ApiProperty({ description: '세부 정보(동, 호수)' })
+  @ApiProperty({ description: '상세 주소 (동, 호수 등)' })
   @IsString()
   detail: string;
 }
 
 export class MatchableOrderDto {
-  @ApiProperty({ description: '주문 아이디' })
+  @ApiProperty({ description: '의뢰의 ID' })
   @IsNumber()
   id: number;
 
-  @ApiProperty({ description: '세부사항' })
+  @ApiProperty({ description: '의뢰에 대한 추가 세부 정보' })
   @IsString()
   detail: string;
 
-  @ApiProperty({ type: Product, description: '상품정보' })
+  @ApiProperty({ type: Product, description: '배송할 물품의 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Product)
   product: Product;
 
-  @ApiProperty({ type: Transportation, description: '운송수단' })
+  @ApiProperty({ type: Transportation, description: '운송 수단 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Transportation)
   @Transform(({ value }) => Transportation.parseToTransportationDto(value))
   transportation: Transportation;
 
-  @ApiProperty({ type: Location, description: '도착지' })
+  @ApiProperty({ type: Location, description: '배송 목적지 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Location)
   destination: Location;
 
-  @ApiProperty({ type: Location, description: '출발지' })
+  @ApiProperty({ type: Location, description: '배송 출발지 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Location)
@@ -139,16 +139,22 @@ export class MatchableOrderResponseDto extends ResponseBody {
 }
 
 export class UnmatchedOrderDto {
+  @ApiProperty({ description: '의뢰 ID' })
   id: number;
 
+  @ApiProperty({ description: '의뢰 세부 정보' })
   detail: string;
 
+  @ApiProperty({ type: Product, description: '물품 정보' })
   product: Product;
 
+  @ApiProperty({ type: Transportation, description: '운송 수단 정보' })
   transportation: Transportation;
 
+  @ApiProperty({ type: Location, description: '목적지 정보' })
   destination: Location;
 
+  @ApiProperty({ type: Location, description: '출발지 정보' })
   departure: Location;
 
   constructor(denomalOrder: UnmatchedOrderEntity | DenormalOrderEntity) {

@@ -31,7 +31,8 @@ export class UserController {
 
   @Post()
   @ApiOperation({
-    description: '사용자 생성',
+    summary: '새로운 사용자 생성',
+    description: '지갑 주소로 사용자 계정을 등록합니다.',
   })
   @ApiCommonCreatedResponse
   @ApiCommonBadRequestResponse
@@ -43,7 +44,8 @@ export class UserController {
 
   @Get(':walletAddress/name')
   @ApiOperation({
-    description: '지갑주소에 해당되는 사용자의 이름을 가지고 옴',
+    summary: '사용자 이름 조회',
+    description: '지갑 주소를 통해 사용자의 이름을 조회합니다.',
   })
   @ApiOkResponse({ type: UserNameResponseDto })
   @ApiCommonBadRequestResponse
@@ -57,7 +59,8 @@ export class UserController {
 
   @Get(':walletAddress/profile-image/id')
   @ApiOperation({
-    description: '지갑주소에 해당되는 사용자의 프로필 이미지를 가지고 옴',
+    summary: '프로필 이미지 ID 조회',
+    description: '지갑 주소를 통해 사용자의 프로필 이미지 ID를 조회합니다.',
   })
   @ApiOkResponse({ type: UserProfileImageIdResponseDto })
   @ApiCommonBadRequestResponse
@@ -73,8 +76,8 @@ export class UserController {
 
   @Patch(':walletAddress/profile-image/id')
   @ApiOperation({
-    description:
-      '지갑주소에 해당되는 사용자의 프로필 이미지 아이디를 업데이트 함',
+    summary: '사용자 프로필 이미지 ID 업데이트',
+    description: '지갑 주소를 통해 사용자의 프로필 이미지 ID를 업데이트합니다.',
   })
   @ApiCommonOkResponse
   @ApiCommonBadRequestResponse
