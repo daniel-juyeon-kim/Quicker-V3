@@ -34,7 +34,8 @@ export class OrderDeliveryPersonController {
 
   @Get(':orderId/delivery-person/location')
   @ApiOperation({
-    description: '배송원의 위치 정보를 가지고 옴',
+    summary: '배송원 현재 위치 조회',
+    description: '특정 주문에 대한 배송원의 현재 위치 정보를 조회합니다.',
   })
   @ApiOkResponse({ type: OrderDeliveryPersonLocationResponseDto })
   @ApiCommonBadRequestResponse
@@ -50,7 +51,8 @@ export class OrderDeliveryPersonController {
 
   @Post(':orderId/delivery-person/location')
   @ApiOperation({
-    description: '배송원의 위치 정보를 저장함',
+    summary: '배송원 위치 정보 저장',
+    description: '특정 주문에 대한 배송원의 위치 정보를 저장합니다.',
   })
   @ApiCommonCreatedResponse
   @ApiCommonBadRequestResponse
@@ -67,8 +69,9 @@ export class OrderDeliveryPersonController {
 
   @Patch(':orderId/delivery-person')
   @ApiOperation({
+    summary: '의뢰 수락 및 배송원 정보 업데이트',
     description:
-      '배송원이 orderId에 대한 주문을 수락함, 주문 정보에 배송원에 대한 정보를 추가하고 수취인의 휴대폰 번호로 배송 관련 정보가 있는 url링크를 메시지로 보냄',
+      '의뢰 정보에 배송원 정보를 추가하고, 수취인에게 배송 정보가 포함된 URL을 메시지로 전송합니다.',
   })
   @ApiCommonOkResponse
   @ApiCommonBadRequestResponse

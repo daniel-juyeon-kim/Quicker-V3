@@ -3,7 +3,7 @@ import { ResponseBody } from '@src/core/response';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UserNameDto {
-  @ApiProperty({ description: '사용자 이름' })
+  @ApiProperty({ description: '조회된 사용자의 이름' })
   @IsString()
   @IsNotEmpty()
   name: string;

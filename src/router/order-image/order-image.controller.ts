@@ -11,12 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ApiBody,
-  ApiConsumes,
-  ApiOkResponse,
-  ApiOperation,
-} from '@nestjs/swagger';
+import { ApiConsumes, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import {
   HttpContentType,
   ServiceToken,
@@ -27,7 +22,6 @@ import { ApiCommonConflictResponse } from '@src/core/response/dto/conflict-respo
 import { ApiCommonCreatedResponse } from '@src/core/response/dto/created-response';
 import { ApiCommonInternalServerErrorResponse } from '@src/core/response/dto/internal-server-error-response';
 import { ApiCommonNotFoundResponse } from '@src/core/response/dto/not-found-response';
-import { CreateCompleteImageDto } from './dto/create-complete-image';
 import { CreateFailDeliveryImageDto } from './dto/create-fail-image.dto';
 import { FindCompleteDeliveryImageResponseDto } from './dto/find-complete-image.dto';
 import { FindFailDeliveryImageResponseDto } from './dto/find-fail-image.dto';
@@ -44,7 +38,10 @@ export class OrderImageController {
   ) {}
 
   @Get(':orderId/image/fail')
-  @ApiOperation({ description: '배송 실패 이미지와 사유를 가지고 옴' })
+  @ApiOperation({
+    summary: '배송 실패 이미지 및 사유 조회',
+    description: '특정 주문에 대한 배송 실패 이미지와 사유를 조회합니다.',
+  })
   @ApiOkResponse({ type: FindFailDeliveryImageResponseDto })
   @ApiCommonBadRequestResponse
   @ApiCommonNotFoundResponse
@@ -58,8 +55,10 @@ export class OrderImageController {
   @Post(':orderId/image/fail')
   @UseInterceptors(FileInterceptor('imageFile'))
   @ApiConsumes(HttpContentType.MULTIPART_FORM_DATA)
-  @ApiBody({ type: CreateFailDeliveryImageDto })
-  @ApiOperation({ description: '배송 실패 사유와 이미지를 저장함' })
+  @ApiOperation({
+    summary: '배송 실패 이미지 및 사유 저장',
+    description: '특정 주문에 대한 배송 실패 사유와 이미지를 저장합니다.',
+  })
   @ApiCommonCreatedResponse
   @ApiCommonBadRequestResponse
   @ApiCommonConflictResponse
@@ -82,7 +81,10 @@ export class OrderImageController {
   }
 
   @Get(':orderId/image/complete')
-  @ApiOperation({ description: '배송 완료 이미지를 가지고 옴' })
+  @ApiOperation({
+    summary: '배송 완료 이미지 조회',
+    description: '특정 주문에 대한 배송 완료 이미지를 조회합니다.',
+  })
   @ApiOkResponse({ type: FindCompleteDeliveryImageResponseDto })
   @ApiCommonBadRequestResponse
   @ApiCommonNotFoundResponse
@@ -98,8 +100,10 @@ export class OrderImageController {
   @Post(':orderId/image/complete')
   @UseInterceptors(FileInterceptor('imageFile'))
   @ApiConsumes(HttpContentType.MULTIPART_FORM_DATA)
-  @ApiBody({ type: CreateCompleteImageDto })
-  @ApiOperation({ description: '배송 완료 이미지를 저장함' })
+  @ApiOperation({
+    summary: '배송 완료 이미지 저장',
+    description: '특정 주문에 대한 배송 완료 이미지를 저장합니다.',
+  })
   @ApiCommonCreatedResponse
   @ApiCommonBadRequestResponse
   @ApiCommonConflictResponse

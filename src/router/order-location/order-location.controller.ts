@@ -16,7 +16,8 @@ export class OrderLocationController {
 
   @Get(':orderId/coordinates')
   @ApiOperation({
-    description: '출발지와 도착지에 대한 정보를 가지고 옴',
+    summary: '출발지 및 도착지 좌표 조회',
+    description: '특정 주문에 대한 출발지와 도착지 좌표 정보를 조회합니다.',
   })
   @ApiOkResponse({ type: OrderLocationResponseDto })
   @ApiCommonBadRequestResponse

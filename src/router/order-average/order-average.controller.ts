@@ -15,7 +15,8 @@ export class OrderAverageController {
 
   @Get('cost/latest/:distance')
   @ApiOperation({
-    description: 'distance가 해당되는 단위의 평균 의뢰금 정보를 가지고 옴',
+    summary: '최신 평균 의뢰금 조회',
+    description: '특정 거리 단위에 해당하는 최신 평균 의뢰금 정보를 조회합니다.',
   })
   @ApiOkResponse({ type: OrderAverageCostResponseDto })
   @ApiCommonBadRequestResponse

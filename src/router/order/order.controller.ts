@@ -26,7 +26,10 @@ export class OrderController {
   ) {}
 
   @Post()
-  @ApiOperation({ description: '주문 생성' })
+  @ApiOperation({
+    summary: '의뢰 생성',
+    description: '새로운 배송 의뢰을 생성합니다.',
+  })
   @ApiCommonCreatedResponse
   @ApiCommonBadRequestResponse
   @ApiCommonNotFoundResponse
@@ -37,7 +40,8 @@ export class OrderController {
 
   @Get('matchable')
   @ApiOperation({
-    description: '배송원의 지갑 주소로 수락 가능한 모든 주문을 조회',
+    summary: '매칭 가능한 의뢰 조회',
+    description: '매칭되지 않은 모든 의뢰을 조회합니다.',
   })
   @ApiOkResponse({ type: MatchableOrderResponseDto })
   @ApiCommonBadRequestResponse
@@ -51,8 +55,9 @@ export class OrderController {
 
   @Get('detail')
   @ApiOperation({
+    summary: '의뢰 상세 정보 조회',
     description:
-      '의뢰인으로 주문을 생성했거나 배송원으로 배송 완료한 주문들의 세부 정보를 가지고 옴',
+      '의뢰인으로 생성했거나 배송 완료한 의뢰들의 상세 정보를 조회합니다.',
   })
   @ApiOkResponse({ type: OrderDetailResponseDto })
   @ApiCommonBadRequestResponse

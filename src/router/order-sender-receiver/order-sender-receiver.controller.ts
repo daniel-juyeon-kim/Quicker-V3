@@ -16,7 +16,8 @@ export class OrderSenderReceiverController {
 
   @Get(':orderId/sender-receiver')
   @ApiOperation({
-    description: '출발지 도착지, 발송인 수취인에 대한 정보를 가지고 옴',
+    summary: '발송인 및 수취인 정보 조회',
+    description: '특정 주문에 대한 출발지, 도착지, 발송인, 수취인 정보를 조회합니다.',
   })
   @ApiOkResponse({ type: OrderSenderReceiverResponseDto })
   @ApiCommonBadRequestResponse

@@ -6,7 +6,7 @@ import { ErrorResponseBody } from '@src/core/response';
 class CommonBadRequestResponseBody extends ErrorResponseBody<ValidationErrorDetail> {
   @ApiProperty({ example: HttpStatus.BAD_REQUEST })
   readonly code: HttpStatus;
-  @ApiProperty({ description: '유효성 검사 실패 오류' })
+  @ApiProperty({ description: '유효성 검사 실패 상세 정보' })
   error: ValidationErrorDetail;
 }
 

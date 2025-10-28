@@ -7,7 +7,7 @@ export class ImageBufferDto {
   @ApiProperty({
     type: 'string',
     format: 'binary',
-    description: '이미지 버퍼, .jpg .png .jpeg만 가능',
+    description: '이미지 파일의 바이너리 버퍼 (JPG, PNG, JPEG 형식만 허용)',
   })
   @Expose()
   @IsNotEmpty()

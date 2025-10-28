@@ -11,11 +11,11 @@ import {
 } from 'class-validator';
 
 class Participant {
-  @ApiProperty({ description: '이름' })
+  @ApiProperty({ description: '참여자 이름' })
   @IsString()
   name: string;
 
-  @ApiProperty({ description: '전화번호' })
+  @ApiProperty({ description: '참여자 전화번호' })
   @IsPhoneNumber('KR')
   phone: string;
 }
@@ -29,11 +29,11 @@ class Destination {
   @IsNumber()
   y: number;
 
-  @ApiProperty({ description: '세부 주소' })
+  @ApiProperty({ description: '목적지의 상세 주소' })
   @IsString()
   detail: string;
 
-  @ApiProperty({ type: Participant, description: '수취인' })
+  @ApiProperty({ type: Participant, description: '수취인 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Participant)
@@ -49,11 +49,11 @@ class Departure {
   @IsString()
   y: number;
 
-  @ApiProperty({ description: '세부주소' })
+  @ApiProperty({ description: '출발지의 상세 주소' })
   @IsString()
   detail: string;
 
-  @ApiProperty({ type: Participant, description: '발송인' })
+  @ApiProperty({ type: Participant, description: '발송인 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Participant)
@@ -61,45 +61,45 @@ class Departure {
 }
 
 class Product {
-  @ApiProperty({ description: '가로' })
+  @ApiProperty({ description: '상품의 가로 길이 (cm)' })
   @IsNumber()
   width: number;
 
-  @ApiProperty({ description: '세로' })
+  @ApiProperty({ description: '상품의 세로 길이 (cm)' })
   @IsNumber()
   length: number;
 
-  @ApiProperty({ description: '높이' })
+  @ApiProperty({ description: '상품의 높이 (cm)' })
   @IsNumber()
   height: number;
 
-  @ApiProperty({ description: '무게' })
+  @ApiProperty({ description: '상품의 무게 (kg)' })
   @IsNumber()
   weight: number;
 }
 
 export class OrderDetailDto {
-  @ApiProperty({ description: '주문 아이디' })
+  @ApiProperty({ description: '의뢰 ID' })
   @IsPositive()
   id: number;
 
-  @ApiProperty({ description: '세부 정보' })
+  @ApiProperty({ description: '의뢰에 대한 추가 세부 정보' })
   @IsString()
   detail: string;
 
-  @ApiProperty({ type: Product, description: '세부 정보' })
+  @ApiProperty({ type: Product, description: '배송할 상품의 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Product)
   product: Product;
 
-  @ApiProperty({ type: Departure, description: '출발지' })
+  @ApiProperty({ type: Departure, description: '배송 출발지 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Departure)
   departure: Departure;
 
-  @ApiProperty({ type: Destination, description: '도착지' })
+  @ApiProperty({ type: Destination, description: '배송 목적지 정보' })
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => Destination)

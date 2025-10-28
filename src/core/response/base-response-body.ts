@@ -2,9 +2,9 @@ import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 export abstract class BaseResponseBody {
-  @ApiProperty({ example: HttpStatus.OK, description: 'http 상태 코드' })
+  @ApiProperty({ description: 'HTTP 상태 코드', example: HttpStatus.OK })
   readonly code: HttpStatus;
-  @ApiProperty({ description: 'http 상태 메시지' })
+  @ApiProperty({ description: 'HTTP 상태 메시지' })
   readonly message: string;
 
   constructor(code: HttpStatus, message: string) {
