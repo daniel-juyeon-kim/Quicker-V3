@@ -41,7 +41,7 @@ export class UserService implements IUserService {
   }
 
   async findUserProfileImageIdByWalletAddress(walletAddress: string) {
-    return await this.userRepository.findUserProfileImageIdByWalletAddress(
+    return await this.userRepository.findProfileImageIdByWalletAddress(
       walletAddress,
     );
   }

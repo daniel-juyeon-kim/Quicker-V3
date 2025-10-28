@@ -107,22 +107,22 @@ describe('UserService', () => {
     test('통과하는 테스트', async () => {
       const walletAddress = '지갑주소';
       const expectReturnValue = { imageId: '300' };
-      repository.findUserProfileImageIdByWalletAddress.mockResolvedValue(
+      repository.findProfileImageIdByWalletAddress.mockResolvedValue(
         expectReturnValue,
       );
 
       await expect(
         service.findUserProfileImageIdByWalletAddress(walletAddress),
       ).resolves.toEqual(expectReturnValue);
-      expect(
-        repository.findUserProfileImageIdByWalletAddress,
-      ).toHaveBeenCalledWith(walletAddress);
+      expect(repository.findProfileImageIdByWalletAddress).toHaveBeenCalledWith(
+        walletAddress,
+      );
     });
 
     test('실패하는 테스트, 존재하지 않는 사용자의 지갑주소로 조회하면 NotExistDataError를 던짐', async () => {
       const walletAddress = '존재하지 않는 지갑주소';
       const error = new NotExistDataException(walletAddress);
-      repository.findUserProfileImageIdByWalletAddress.mockRejectedValue(error);
+      repository.findProfileImageIdByWalletAddress.mockRejectedValue(error);
 
       await expect(
         service.findUserProfileImageIdByWalletAddress(walletAddress),
